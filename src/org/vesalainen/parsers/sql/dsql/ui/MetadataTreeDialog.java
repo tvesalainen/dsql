@@ -30,10 +30,12 @@ import org.vesalainen.parsers.sql.dsql.Statistics;
  */
 public class MetadataTreeDialog extends JDialog implements KeyListener
 {
+    private Statistics statistics;
     private MetadataHandler handler;
     private final MetadataTree tree;
     public MetadataTreeDialog(Statistics statistics)
     {
+        this.statistics = statistics;
         this.handler = handler;
         tree = new MetadataTree(statistics);
         JScrollPane scrollPane = new JScrollPane(tree);
@@ -62,7 +64,7 @@ public class MetadataTreeDialog extends JDialog implements KeyListener
         {
             case KeyEvent.VK_ENTER:
                 TreePath[] paths = tree.getSelectionPaths();
-                handler.selected(paths);
+                handler.selected(statistics, paths);
                 setVisible(false);
                 break;
             case KeyEvent.VK_ESCAPE:

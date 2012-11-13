@@ -59,6 +59,7 @@ import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.SQLLocator;
 import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
+import org.vesalainen.parsers.sql.UpdateableFetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.DataStoreEngineProxy;
 
@@ -136,9 +137,13 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         JMenu sourceMenu = new JMenu("Source");
         menuBar.add(sourceMenu);
         
-        InsertHandler insertHandler = new InsertHandler(sqlArea);
-        MetadataTreeAction kindTreeAction = new MetadataTreeAction("Insert Properties", engine.getStatistics(), insertHandler);
-        sourceMenu.add(kindTreeAction).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK));
+        InsertPropertiesHandler insertPropertiesHandler = new InsertPropertiesHandler(sqlArea);
+        MetadataTreeAction insertPropertiesAction = new MetadataTreeAction("Insert Properties", engine.getStatistics(), insertPropertiesHandler);
+        sourceMenu.add(insertPropertiesAction).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK));
+
+        GenerateSelectHandler generateSelectHandler = new GenerateSelectHandler(sqlArea);
+        MetadataTreeAction generateSelectAction = new MetadataTreeAction("Generate Select", engine.getStatistics(), generateSelectHandler);
+        sourceMenu.add(generateSelectAction).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.ALT_DOWN_MASK));
 
         lowerPane = new JScrollPane();
 
@@ -204,37 +209,42 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
 
     private void execute()
     {
-        String sql = sqlArea.getText();
-        FetchResult result = engine.execute(sql);
-        if (result != null)
+        statement.execute();
+        if (tableModel != null)
         {
-            if (tableModel == null)
-            {
-                tableModel = new FetchResultTableModel(result);
-                JTable table = new DSJTable(tableModel);
-                lowerPane.setViewportView(table);
-            }
-            else
-            {
-                tableModel.updateDate(result);
-            }
-        }
-        else
-        {
-            if (tableModel != null)
-            {
-                tableModel.clear();
-            }
+            tableModel.clear();
         }
     }
 
     private void select()
     {
-        
+        SelectStatement select = (SelectStatement) statement;
+        FetchResult result = select.execute();
+        if (tableModel == null)
+        {
+            tableModel = new FetchResultTableModel(result);
+            JTable table = new DSJTable(tableModel);
+            lowerPane.setViewportView(table);
+        }
+        else
+        {
+            tableModel.updateDate(result);
+        }
     }
     private void selectAndUpdate()
     {
-        
+        SelectStatement select = (SelectStatement) statement;
+        UpdateableFetchResult result = select.selectForUpdate();
+        if (tableModel == null)
+        {
+            tableModel = new FetchResultTableModel(result);
+            JTable table = new DSJTable(tableModel);
+            lowerPane.setViewportView(table);
+        }
+        else
+        {
+            tableModel.updateDate(result);
+        }
     }
     
     private void changed()

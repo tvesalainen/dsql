@@ -19,21 +19,22 @@ package org.vesalainen.parsers.sql.dsql.ui;
 
 import javax.swing.JTextPane;
 import javax.swing.tree.TreePath;
+import org.vesalainen.parsers.sql.dsql.Statistics;
 
 /**
  * @author Timo Vesalainen
  */
-public class SelectHandler implements MetadataHandler
+public class InsertPropertiesHandler implements MetadataHandler
 {
     private JTextPane text;
 
-    public SelectHandler(JTextPane text)
+    public InsertPropertiesHandler(JTextPane text)
     {
         this.text = text;
     }
     
     @Override
-    public void selected(TreePath[] paths)
+    public void selected(Statistics statistics, TreePath[] paths)
     {
         StringBuilder sb = new StringBuilder();
         for (TreePath path : paths)

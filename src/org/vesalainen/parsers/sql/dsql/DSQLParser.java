@@ -55,11 +55,11 @@ import org.vesalainen.regex.Regex;
 
 /**
  * @author Timo Vesalainen
- * @see <a href="doc-files/statement.html#BNF">BNF Syntax for DSQL-statement</a>
+ * @see <a href="doc-files/DSQLParser-statement.html#BNF">BNF Syntax for DSQL-statement</a>
  */
-@GenClassname("org.vesalainen.parsers.sql.dsql.DSQLParser")
+@GenClassname("org.vesalainen.parsers.sql.dsql.DSQLParserImpl")
 @GrammarDef()
-public abstract class DSQLParserTmpl extends SqlParser<Entity,Object> implements ParserInfo
+public abstract class DSQLParser extends SqlParser<Entity,Object> implements ParserInfo
 {
     @Rule(left="comparisonPredicate", value="rowValuePredicant is key of identifier")
     protected Condition comparisonKeyOf(

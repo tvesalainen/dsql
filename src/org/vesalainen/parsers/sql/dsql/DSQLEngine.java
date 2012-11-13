@@ -46,7 +46,7 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
 
     private DSQLEngine(DSProxyInterface proxy)
     {
-        super(DSQLParserTmpl.class);
+        super(DSQLParser.class);
         this.proxy = proxy;
         statistics = proxy.getStatistics();
         proxy.setConverter(this);

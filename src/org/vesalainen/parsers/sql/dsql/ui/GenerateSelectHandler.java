@@ -17,46 +17,66 @@
 
 package org.vesalainen.parsers.sql.dsql.ui;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JTextPane;
 import javax.swing.tree.TreePath;
+import org.vesalainen.parsers.sql.ColumnMetadata;
+import org.vesalainen.parsers.sql.TableMetadata;
+import org.vesalainen.parsers.sql.dsql.Statistics;
 
 /**
  * @author Timo Vesalainen
  */
-public class InsertHandler implements MetadataHandler
+public class GenerateSelectHandler implements MetadataHandler
 {
     private JTextPane text;
 
-    public InsertHandler(JTextPane text)
+    public GenerateSelectHandler(JTextPane text)
     {
         this.text = text;
     }
     
     @Override
-    public void selected(TreePath[] paths)
+    public void selected(Statistics statistics, TreePath[] paths)
     {
-        StringBuilder sb = new StringBuilder();
+        String kind = null;
+        List<String> properties = new ArrayList<>();
         for (TreePath path : paths)
         {
             Object[] pathOb = path.getPath();
             switch (pathOb.length)
             {
                 case 2:
-                    if (sb.length() != 0)
-                    {
-                        sb.append(", ");
-                    }
-                    sb.append(pathOb[1].toString());
+                    kind = pathOb[1].toString();
                     break;
                 case 3:
-                    if (sb.length() != 0)
-                    {
-                        sb.append(", ");
-                    }
-                    sb.append(pathOb[1].toString()+"."+pathOb[2].toString());
+                    kind = pathOb[1].toString();
+                    properties.add(pathOb[2].toString());
                     break;
             }
         }
+        if (properties.isEmpty())
+        {
+            TableMetadata tm = statistics.getKind(kind);
+            for (ColumnMetadata cm : tm.getColumns())
+            {
+                properties.add(cm.getName());
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("select\n");
+        boolean f = true;
+        for (String p : properties)
+        {
+            if (!f)
+            {
+                sb.append(",\n");
+            }
+            f = false;
+            sb.append("  "+kind+"."+p);
+        }
+        sb.append("\nfrom\n  "+kind+"\n");
         text.replaceSelection(sb.toString());
     }
     

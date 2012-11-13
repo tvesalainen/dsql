@@ -17,6 +17,7 @@
 package org.vesalainen.parsers.sql.dsql.ui;
 
 import javax.swing.tree.TreePath;
+import org.vesalainen.parsers.sql.dsql.Statistics;
 
 /**
  *
@@ -24,5 +25,5 @@ import javax.swing.tree.TreePath;
  */
 public interface MetadataHandler
 {
-    void selected(TreePath[] paths);
+    void selected(Statistics statistics, TreePath[] paths);
 }
