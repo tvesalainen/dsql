@@ -19,11 +19,6 @@ package org.vesalainen.parsers.sql.dsql.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -69,6 +64,7 @@ public class CredentialsDialog extends OkCancelDialog
                 3, 2, //rows, cols
                 6, 6, //initX, initY
                 6, 6);       //xPad, yPad    
+        setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
     }
     
     public String getEmail()

@@ -21,6 +21,7 @@ import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Category;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.datastore.PhoneNumber;
@@ -29,8 +30,12 @@ import com.google.appengine.api.datastore.Rating;
 import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.User;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.parser.ParserConstants;
 import org.vesalainen.parser.ParserInfo;
 import org.vesalainen.parser.Trace;
@@ -46,6 +51,7 @@ import org.vesalainen.parsers.sql.Relation;
 import org.vesalainen.parsers.sql.ColumnReferenceImpl;
 import org.vesalainen.parsers.sql.Condition;
 import org.vesalainen.parsers.sql.Engine;
+import org.vesalainen.parsers.sql.Literal;
 import org.vesalainen.parsers.sql.LiteralImpl;
 import org.vesalainen.parsers.sql.RowValue;
 import org.vesalainen.parsers.sql.SQLLocator;
@@ -163,92 +169,184 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         return dse.createKey(parent, kind, id.longValue());
     }
     
+    @Rule("googleTextType '\\(' string '\\)'")
+    protected Literal<Entity, Object> literal(Class<?> type, String string)
+    {
+        try
+        {
+            Constructor constructor = type.getConstructor(String.class);
+            Object newInstance = constructor.newInstance(string);
+            return new LiteralImpl<>(newInstance);
+        }
+        catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
+        {
+            // TODO localisation
+            throw new UnsupportedOperationException(type+" not supported String type", ex);
+        }
+    }
+
+    @Rule("googleIntegerType '\\(' integer '\\)'")
+    protected Literal<Entity, Object> literal(Class<?> type, Number number)
+    {
+        try
+        {
+            Constructor constructor = type.getConstructor(int.class);
+            Object newInstance = constructor.newInstance(number.intValue());
+            return new LiteralImpl<>(newInstance);
+        }
+        catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
+        {
+            throw new UnsupportedOperationException(type+" not supported String type", ex);
+        }
+    }
+
+    @Rule("googleTypeGeoPt '\\(' decimal '\\,' decimal '\\)'")
+    protected Literal<Entity, Object> literal(Class<?> type, Number lat, Number lon)
+    {
+        Object geoPt = new GeoPt(lat.floatValue(), lon.floatValue());
+        return new LiteralImpl<>(geoPt);
+    }
+
     @Rules({
-    @Rule(left="placeholderType", value="long")
+    @Rule("googleTypeGeoPt"),
+    @Rule("googleOtherType"),
+    @Rule("googleIntegerType"),
+    @Rule("googleTextType")
     })
-    protected Class<?>  placeholderTypeLong()
+    protected Class<?>  placeholderType(Class<?> type)
+    {
+        return type;
+    }
+
+    @Rules({
+    @Rule("googleTypeCategory"),
+    @Rule("googleTypeLink"),
+    @Rule("googleTypePhoneNumber"),
+    @Rule("googleTypePostalAddress"),
+    @Rule("googleTypeText"),
+    @Rule("googleTypeEmail")
+    })
+    protected Class<?> googleTextType(Class<?> type)
+    {
+        return type;
+    }
+
+    @Rules({
+    @Rule("googleTypeLong"),
+    @Rule("googleTypeRating")
+    })
+    protected Class<?> googleIntegerType(Class<?> type)
+    {
+        return type;
+    }
+
+    @Rules({
+    @Rule("googleTypeShortBlob"),
+    @Rule("googleTypeBlob")
+    })
+    protected Class<?> googleOtherType(Class<?> type)
+    {
+        return type;
+    }
+
+    @Rule("googleTypeGeoPt")
+    protected Class<?> googlePairType(Class<?> type)
+    {
+        return type;
+    }
+
+    @Rules({
+    @Rule("long")
+    })
+    protected Class<?> googleTypeLong()
     {
         return Long.class;
     }
 
     @Rules({
-    @Rule(left="placeholderType", value="double")
+    @Rule("double")
     })
-    protected Class<?>  placeholderTypeDouble()
+    protected Class<?>  googleTypeDouble()
     {
         return Double.class;
     }
 
-    @Rule(left="placeholderType", value="date")
-    protected Class<?>  placeholderTypeDate()
+    @Rule("date")
+    protected Class<?>  googleTypeDate()
     {
         return Date.class;
     }
 
-    @Rule(left="placeholderType", value="category")
-    protected Class<?>  placeholderTypeCategory()
+    @Rule("category")
+    protected Class<?>  googleTypeCategory()
     {
         return Category.class;
     }
 
-    @Rule(left="placeholderType", value="email")
-    protected Class<?>  placeholderTypeEmail()
+    @Rule("email")
+    protected Class<?>  googleTypeEmail()
     {
         return Email.class;
     }
 
-    @Rule(left="placeholderType", value="link")
-    protected Class<?>  placeholderTypeLink()
+    @Rule("link")
+    protected Class<?>  googleTypeLink()
     {
         return Link.class;
     }
 
-    @Rule(left="placeholderType", value="phonenumber")
-    protected Class<?>  placeholderPhoneNumber()
+    @Rule("phonenumber")
+    protected Class<?>  googleTypePhoneNumber()
     {
         return PhoneNumber.class;
     }
 
-    @Rule(left="placeholderType", value="postaladdress")
-    protected Class<?>  placeholderPostalAddress()
+    @Rule("postaladdress")
+    protected Class<?>  googleTypePostalAddress()
     {
         return PostalAddress.class;
     }
 
-    @Rule(left="placeholderType", value="rating")
-    protected Class<?>  placeholderRating()
+    @Rule("rating")
+    protected Class<?>  googleTypeRating()
     {
         return Rating.class;
     }
 
-    @Rule(left="placeholderType", value="blob")
-    protected Class<?>  placeholderBlob()
+    @Rule("blob")
+    protected Class<?>  googleTypeBlob()
     {
         return Blob.class;
     }
 
-    @Rule(left="placeholderType", value="shortblob")
-    protected Class<?>  placeholderShortBlob()
+    @Rule("shortblob")
+    protected Class<?>  googleTypeShortBlob()
     {
         return ShortBlob.class;
     }
 
-    @Rule(left="placeholderType", value="text")
-    protected Class<?>  placeholderText()
+    @Rule("text")
+    protected Class<?>  googleTypeText()
     {
         return Text.class;
     }
 
-    @Rule(left="placeholderType", value="key")
-    protected Class<?>  placeholderKey()
+    @Rule("key")
+    protected Class<?>  googleTypeKey()
     {
         return Key.class;
     }
 
-    @Rule(left="placeholderType", value="user")
-    protected Class<?>  placeholderUser()
+    @Rule("user")
+    protected Class<?>  googleTypeUser()
     {
         return User.class;
+    }
+
+    @Rule("geopt")
+    protected Class<?>  googleTypeGeoPt()
+    {
+        return GeoPt.class;
     }
 
     @ReservedWords(value =
@@ -265,6 +363,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         "rating",
         "blob",
         "shortblob",
+        "geopt",
         "text",
         "key",
         "of",

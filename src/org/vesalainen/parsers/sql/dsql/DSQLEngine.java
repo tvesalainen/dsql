@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import org.vesalainen.parsers.sql.ColumnMetadata;
 import org.vesalainen.parsers.sql.Engine;
 import org.vesalainen.parsers.sql.Table;
 import org.vesalainen.parsers.sql.InsertStatement;
@@ -69,7 +70,7 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     }
     public static DSQLEngine getProxyInstance(String server, String user, String password) throws IOException, InterruptedException
     {
-        DataStoreEngineProxy dep = new DataStoreEngineProxy(server, user, password);
+        DatastoreEngineProxy dep = new DatastoreEngineProxy(server, user, password);
         dep.start();
         return new DSQLEngine(dep.getProxy());
     }
@@ -161,16 +162,24 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     }
 
     @Override
-    public Updateable<Entity, Object> getUpdateable(Entity r, String column)
+    public Updateable<Entity, Object> getUpdateable(Entity entity, String property)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        boolean indexed = false;
+        ColumnMetadata cm = statistics.getProperty(entity.getKind(), property);
+        if (cm != null)
+        {
+            indexed = cm.isIndexed();
+        }
+        return new UpdateableImpl(entity, property, indexed);
     }
 
+    @Override
     public void update(Collection<Entity> rows)
     {
         proxy.update(rows);
     }
 
+    @Override
     public void setConverter(SQLConverter converter)
     {
         proxy.setConverter(converter);

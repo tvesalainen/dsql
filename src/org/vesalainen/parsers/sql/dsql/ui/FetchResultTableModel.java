@@ -19,6 +19,7 @@ package org.vesalainen.parsers.sql.dsql.ui;
 
 import javax.swing.table.AbstractTableModel;
 import org.vesalainen.parsers.sql.FetchResult;
+import org.vesalainen.parsers.sql.UpdateableFetchResult;
 
 /**
  * @author Timo Vesalainen
@@ -34,7 +35,7 @@ public class FetchResultTableModel extends AbstractTableModel
         checkClasses();
     }
 
-    public void updateDate(FetchResult fetchResult)
+    public void updateData(FetchResult fetchResult)
     {
         this.fetchResult = fetchResult;
         columnClass = null;
@@ -47,6 +48,33 @@ public class FetchResultTableModel extends AbstractTableModel
         columnClass = null;
         fireTableStructureChanged();
     }
+
+    public void deleteRow(int rowIndex)
+    {
+        if (fetchResult instanceof UpdateableFetchResult)
+        {
+            UpdateableFetchResult ufr = (UpdateableFetchResult) fetchResult;
+            ufr.deleteRow(rowIndex);
+            fireTableRowsDeleted(rowIndex, rowIndex);
+        }
+    }
+    
+    @Override
+    public boolean isCellEditable(int rowIndex, int columnIndex)
+    {
+        return fetchResult instanceof UpdateableFetchResult;
+    }
+
+    @Override
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex)
+    {
+        if (fetchResult instanceof UpdateableFetchResult)
+        {
+            UpdateableFetchResult ufr = (UpdateableFetchResult) fetchResult;
+            ufr.setValueAt(aValue, rowIndex, columnIndex);
+        }
+    }
+    
     @Override
     public Object getValueAt(int row, int column)
     {

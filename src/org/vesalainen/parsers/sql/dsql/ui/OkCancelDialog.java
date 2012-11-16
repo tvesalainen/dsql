@@ -17,127 +17,106 @@
 
 package org.vesalainen.parsers.sql.dsql.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
 
 /**
  * @author Timo Vesalainen
  */
-public class OkCancelDialog extends JDialog
+public class OkCancelDialog extends CancelDialog
 {
-    private boolean accepted;
-
+    protected JButton okButton;
+    
     public OkCancelDialog(Window owner, String title, ModalityType modalityType, GraphicsConfiguration gc)
     {
         super(owner, title, modalityType, gc);
-        init();
     }
 
     public OkCancelDialog(Window owner, String title, ModalityType modalityType)
     {
         super(owner, title, modalityType);
-        init();
     }
 
     public OkCancelDialog(Window owner, String title)
     {
         super(owner, title);
-        init();
     }
 
     public OkCancelDialog(Window owner, ModalityType modalityType)
     {
         super(owner, modalityType);
-        init();
     }
 
     public OkCancelDialog(Window owner)
     {
         super(owner);
-        init();
     }
 
     public OkCancelDialog(Dialog owner, String title, boolean modal, GraphicsConfiguration gc)
     {
         super(owner, title, modal, gc);
-        init();
     }
 
     public OkCancelDialog(Dialog owner, String title, boolean modal)
     {
         super(owner, title, modal);
-        init();
     }
 
     public OkCancelDialog(Dialog owner, String title)
     {
         super(owner, title);
-        init();
     }
 
     public OkCancelDialog(Dialog owner, boolean modal)
     {
         super(owner, modal);
-        init();
     }
 
     public OkCancelDialog(Dialog owner)
     {
         super(owner);
-        init();
     }
 
     public OkCancelDialog(Frame owner, String title, boolean modal, GraphicsConfiguration gc)
     {
         super(owner, title, modal, gc);
-        init();
     }
 
     public OkCancelDialog(Frame owner, String title, boolean modal)
     {
         super(owner, title, modal);
-        init();
     }
 
     public OkCancelDialog(Frame owner, String title)
     {
         super(owner, title);
-        init();
     }
 
     public OkCancelDialog(Frame owner, boolean modal)
     {
         super(owner, modal);
-        init();
     }
 
     public OkCancelDialog(Frame owner)
     {
         super(owner);
-        init();
     }
 
     public OkCancelDialog()
     {
-        init();
     }
 
-    private void init()
+    @Override
+    protected void init()
     {
+        super.init();
         // buttons
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout());
-        add(buttonPanel, BorderLayout.SOUTH);
-        JButton ok = new JButton("Ok");
+        okButton = new JButton("Ok");
         ActionListener okAction = new ActionListener()
         {
 
@@ -148,31 +127,10 @@ public class OkCancelDialog extends JDialog
                 setVisible(false);
             }
         };
-        ok.addActionListener(okAction);
-        buttonPanel.add(ok);
-        JButton cancel = new JButton("Cancel");
-        ActionListener cancelAction = new ActionListener()
-        {
-
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                setVisible(false);
-            }
-        };
-        cancel.addActionListener(cancelAction);
-        buttonPanel.add(cancel);
-        setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
-        setLocationByPlatform(true);
-        getRootPane().setDefaultButton(ok);
+        okButton.addActionListener(okAction);
+        buttonPanel.add(okButton);
+        
+        getRootPane().setDefaultButton(okButton);
     }
     
-    public boolean input()
-    {
-        pack();
-        accepted = false;
-        setVisible(true);
-        return accepted;
-    }
-
 }

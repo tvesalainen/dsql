@@ -18,6 +18,7 @@
 package org.vesalainen.parsers.sql.dsql;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import org.vesalainen.parsers.sql.util.ArrayMap;
 import org.vesalainen.parsers.sql.Condition;

@@ -63,4 +63,5 @@ public interface DSProxyInterface
     String createKeyString(java.lang.String kind, java.lang.String name) ;
     String keyToString(Key key) ;
     Key	stringToKey(java.lang.String encoded) ;
+
 }

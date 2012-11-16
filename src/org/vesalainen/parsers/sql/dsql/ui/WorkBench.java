@@ -29,8 +29,10 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -46,6 +48,7 @@ import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableCellEditor;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.StyledEditorKit;
@@ -61,7 +64,7 @@ import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
 import org.vesalainen.parsers.sql.UpdateableFetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
-import org.vesalainen.parsers.sql.dsql.DataStoreEngineProxy;
+import org.vesalainen.parsers.sql.dsql.DatastoreEngineProxy;
 
 /**
  * @author Timo Vesalainen
@@ -90,9 +93,17 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
     private final Action grayAction;
     private final ForegroundAction orangeAction;
     private final UndoableEditListenerSwitch undoSwitch;
+    private final String storedStatementsKind;
+    private final JButton commitButton;
+    private final JButton rollbackButton;
+    private UpdateableFetchResult updateableFetchResult;
+    private DSJTable table;
+    private final JButton deleteRowButton;
+    private final JButton insertRowButton;
     
-    public WorkBench(DSQLEngine engine)
+    public WorkBench(final DSQLEngine engine, String storedStatementsKind)
     {
+        this.storedStatementsKind = storedStatementsKind;
         this.engine = engine;
         frame = new JFrame();
         frame.addWindowListener(this);
@@ -199,6 +210,82 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         selectAndUpdateButton.addActionListener(selectAndUpdateAction);
         buttonPanel.add(selectAndUpdateButton);
 
+        deleteRowButton = new JButton("Delete Row");
+        deleteRowButton.setEnabled(false);
+        ActionListener deleteRowAction = new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                int rowNum = table.getSelectedRow();
+                while (rowNum != -1)
+                {
+                    tableModel.deleteRow(rowNum);
+                    rowNum = table.getSelectedRow();
+                }
+            }
+        };
+        deleteRowAction = createActionListener(frame, deleteRowAction);
+        deleteRowButton.addActionListener(deleteRowAction);
+        buttonPanel.add(deleteRowButton);
+
+        insertRowButton = new JButton("Insert Row");
+        insertRowButton.setEnabled(false);
+        ActionListener insertRowAction = new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+            }
+        };
+        insertRowAction = createActionListener(frame, insertRowAction);
+        insertRowButton.addActionListener(insertRowAction);
+        buttonPanel.add(insertRowButton);
+
+        commitButton = new JButton("Commit");
+        commitButton.setEnabled(false);
+        ActionListener commitAction = new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                TableCellEditor cellEditor = table.getCellEditor();
+                if (cellEditor != null)
+                {
+                    cellEditor.stopCellEditing();
+                }
+                updateableFetchResult.update();
+                updateableFetchResult = null;
+                engine.commitTransaction();
+                commitButton.setEnabled(false);
+                rollbackButton.setEnabled(false);
+                insertRowButton.setEnabled(false);
+                deleteRowButton.setEnabled(false);
+            }
+        };
+        commitAction = createActionListener(frame, commitAction);
+        commitButton.addActionListener(commitAction);
+        buttonPanel.add(commitButton);
+
+        rollbackButton = new JButton("Rollback");
+        rollbackButton.setEnabled(false);
+        ActionListener rollbackAction = new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                updateableFetchResult = null;
+                engine.rollbackTransaction();
+                commitButton.setEnabled(false);
+                rollbackButton.setEnabled(false);
+                insertRowButton.setEnabled(false);
+                deleteRowButton.setEnabled(false);
+            }
+        };
+        rollbackAction = createActionListener(frame, rollbackAction);
+        rollbackButton.addActionListener(rollbackAction);
+        buttonPanel.add(rollbackButton);
+
         frame.setContentPane(contentPane);
         
         frame.pack();
@@ -223,28 +310,33 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         if (tableModel == null)
         {
             tableModel = new FetchResultTableModel(result);
-            JTable table = new DSJTable(tableModel);
+            table = new DSJTable(tableModel);
             lowerPane.setViewportView(table);
         }
         else
         {
-            tableModel.updateDate(result);
+            tableModel.updateData(result);
         }
     }
     private void selectAndUpdate()
     {
         SelectStatement select = (SelectStatement) statement;
-        UpdateableFetchResult result = select.selectForUpdate();
+        engine.beginTransaction();
+        updateableFetchResult = select.selectForUpdate();
         if (tableModel == null)
         {
-            tableModel = new FetchResultTableModel(result);
-            JTable table = new DSJTable(tableModel);
+            tableModel = new FetchResultTableModel(updateableFetchResult);
+            table = new DSJTable(tableModel);
             lowerPane.setViewportView(table);
         }
         else
         {
-            tableModel.updateDate(result);
+            tableModel.updateData(updateableFetchResult);
         }
+        commitButton.setEnabled(true);
+        rollbackButton.setEnabled(true);
+        insertRowButton.setEnabled(true);
+        deleteRowButton.setEnabled(true);
     }
     
     private void changed()
@@ -300,45 +392,6 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         System.exit(0);
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) 
-    {
-        try
-        {
-            String server = "";
-            String email = "";
-            String password = "";
-            if (args.length > 0)
-            {
-                server = args[0];
-            }
-            if (args.length > 1)
-            {
-                email = args[1];
-            }
-            if (args.length > 2)
-            {
-                password = args[2];
-            }
-            CredentialsDialog dia = new CredentialsDialog(server, email, password);
-            if (dia.input())
-            {
-                DSQLEngine engine = DSQLEngine.getProxyInstance(dia.getServer(), dia.getEmail(), new String(dia.getPassword()));
-                new WorkBench(engine);
-            }
-            else
-            {
-                System.exit(-1);
-            }
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-    }
-
     private void color(Action action, int start, int end)
     {
         try
@@ -416,6 +469,8 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
             executeButton.setEnabled(false);
             selectButton.setEnabled(false);
             selectAndUpdateButton.setEnabled(false);
+            commitButton.setEnabled(false);
+            rollbackButton.setEnabled(false);
             String sql = sqlArea.getText();
             if (!sql.isEmpty())
             {
@@ -450,4 +505,42 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         }
         
     }
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) 
+    {
+        try
+        {
+            if (args.length != 1)
+            {
+                System.err.println("usage: java ... <properties file>");
+                System.exit(-1);
+            }
+            final Properties properties = new Properties();
+            try (FileInputStream pFile = new FileInputStream(args[0]);)
+            {
+                properties.load(pFile);
+            }
+            CredentialsDialog dia = new CredentialsDialog(
+                    properties.getProperty("remoteserver"), 
+                    properties.getProperty("remoteuser"), 
+                    properties.getProperty("remotepassword")
+                    );
+            if (dia.input())
+            {
+                DSQLEngine engine = DSQLEngine.getProxyInstance(dia.getServer(), dia.getEmail(), new String(dia.getPassword()));
+                new WorkBench(engine, properties.getProperty("stored-statements-kind", "DSQLStatements"));
+            }
+            else
+            {
+                System.exit(-1);
+            }
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+
 }

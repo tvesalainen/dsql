@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 import org.vesalainen.parsers.sql.ColumnMetadata;
 import org.vesalainen.parsers.sql.TableMetadata;
 
@@ -36,7 +37,7 @@ public class Statistics
     
     private long nextUpdate;
     private DatastoreService datastore;
-    private final Map<String, TableMetadata> map = new HashMap<>();
+    private final Map<String, TableMetadata> map = new TreeMap<>();
 
     public Statistics(DatastoreService datastore)
     {
