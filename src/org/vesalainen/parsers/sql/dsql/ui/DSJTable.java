@@ -38,6 +38,7 @@ import java.util.Vector;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
@@ -60,6 +61,8 @@ public class DSJTable extends JTable
 {
     private static final Magic magic = Magic.newInstance();
     private static File currentDirectory;
+    
+    private JFrame frame;
     
     public DSJTable(Object[][] rowData, Object[] columnNames)
     {
@@ -100,6 +103,11 @@ public class DSJTable extends JTable
     public DSJTable()
     {
         init();
+    }
+
+    public void setFrame(JFrame frame)
+    {
+        this.frame = frame;
     }
 
     private void init()
@@ -161,7 +169,7 @@ public class DSJTable extends JTable
     {
         protected static final String EDIT = "edit";
         protected JButton button = new JButton();
-        protected BytesDialog dialog = new BytesDialog();
+        protected BytesDialog dialog = new BytesDialog(frame);
         protected byte[] bytes;
         protected MagicResult guess;
         protected String columnName;
@@ -204,6 +212,7 @@ public class DSJTable extends JTable
         {
             if (EDIT.equals(e.getActionCommand()))
             {
+                dialog.set(guess);
                 if (dialog.input())
                 {
                     switch (dialog.getInput())
@@ -250,10 +259,10 @@ public class DSJTable extends JTable
                         {
                             JFileChooser fc = new JFileChooser();
                             fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                            String[] extensions = guess.getExtensions();
-                            if (extensions.length > 0 && !extensions[0].isEmpty())
+                            String extension = dialog.getExtension();
+                            if (extension != null && !extension.isEmpty())
                             {
-                                FileFilter ff = new FileNameExtensionFilter(guess.getDescription(), guess.getExtensions());
+                                FileFilter ff = new FileNameExtensionFilter(guess.getDescription(), extension);
                                 fc.setFileFilter(ff);
                             }
                             if (currentDirectory != null)
@@ -261,9 +270,9 @@ public class DSJTable extends JTable
                                 fc.setCurrentDirectory(currentDirectory);
                             }
                             String suffix = "";
-                            if (extensions.length > 0)
+                            if (extension != null && !extension.isEmpty())
                             {
-                                suffix = "."+extensions[0].toLowerCase();
+                                suffix = "."+extension.toLowerCase();
                             }
                             fc.setSelectedFile(new File(columnName+suffix));
                             if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
@@ -298,25 +307,52 @@ public class DSJTable extends JTable
                             break;
                         case OPEN:
                         {
-                            String[] extensions = guess.getExtensions();
+                            String extension = dialog.getExtension();
                             String suffix = "";
-                            if (extensions.length > 0)
+                            if (extension != null && !extension.isEmpty())
                             {
-                                suffix = "."+extensions[0].toLowerCase();
+                                suffix = "."+extension.toLowerCase();
                             }
                             try
                             {
-                                    Path tempPath = Files.createTempFile(null, suffix);
-                                    try (FileOutputStream fos = new FileOutputStream(tempPath.toFile()))
+                                File file = File.createTempFile("tmp", suffix);
+                                Path tempPath = file.toPath();
+                                try (FileOutputStream fos = new FileOutputStream(file))
+                                {
+                                    fos.write(bytes);
+                                }
+                                catch (IOException ex)
+                                {
+                                    JOptionPane.showMessageDialog(null, ex.getLocalizedMessage());
+                                }
+                                ExternalEditor ee = new ExternalEditor(frame, tempPath);
+                                if (ee.input())
+                                {
+                                    long length = file.length();
+                                    if (length > 1000000)
                                     {
-                                        fos.write(bytes);
+                                        JOptionPane.showMessageDialog(null, file, "File is too big", JOptionPane.ERROR_MESSAGE);
                                     }
-                                    catch (IOException ex)
+                                    else
                                     {
-                                        JOptionPane.showMessageDialog(null, ex.getLocalizedMessage());
+                                        bytes = new byte[(int)length];
+                                        try (FileInputStream fis = new FileInputStream(file))
+                                        {
+                                            fis.read(bytes);
+                                        }
+                                        catch (IOException ex)
+                                        {
+                                            JOptionPane.showMessageDialog(null, ex.getLocalizedMessage());
+                                        }
                                     }
-                                    ExternalEditor ee = new ExternalEditor(tempPath);
-                                    ee.input();
+                                }
+                                try
+                                {
+                                    Files.delete(tempPath);
+                                }
+                                catch (IOException ex)
+                                {
+                                }
                             }
                             catch (IOException ex)
                             {
@@ -436,7 +472,7 @@ public class DSJTable extends JTable
     {
         private static final String EDIT = "edit";
         private JButton button = new JButton();
-        private TextDialog dialog = new TextDialog();
+        private TextDialog dialog = new TextDialog(frame);
 
         public TextCellEditor()
         {

@@ -311,6 +311,7 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         {
             tableModel = new FetchResultTableModel(result);
             table = new DSJTable(tableModel);
+            table.setFrame(frame);
             lowerPane.setViewportView(table);
         }
         else
@@ -327,6 +328,7 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         {
             tableModel = new FetchResultTableModel(updateableFetchResult);
             table = new DSJTable(tableModel);
+            table.setFrame(frame);
             lowerPane.setViewportView(table);
         }
         else

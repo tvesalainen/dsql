@@ -18,6 +18,7 @@
 package org.vesalainen.parsers.sql.dsql.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Frame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
@@ -27,6 +28,11 @@ import javax.swing.JTextArea;
 public class TextDialog extends OkCancelDialog
 {
     protected JTextArea textArea;
+
+    public TextDialog(Frame owner)
+    {
+        super(owner);
+    }
     
     public void setText(String text)
     {

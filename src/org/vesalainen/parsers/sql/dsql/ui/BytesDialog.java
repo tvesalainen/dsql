@@ -19,17 +19,12 @@ package org.vesalainen.parsers.sql.dsql.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileFilter;
 import org.vesalainen.parsers.magic.Magic.MagicResult;
 
 /**
@@ -37,6 +32,7 @@ import org.vesalainen.parsers.magic.Magic.MagicResult;
  */
 public class BytesDialog extends CancelDialog
 {
+
     public enum Input {CANCEL, LOAD, STORE, OPEN, REMOVE};
     
     protected JButton loadButton;
@@ -44,30 +40,21 @@ public class BytesDialog extends CancelDialog
     protected JButton openButton;
     protected JButton removeButton;
 
-    protected byte[] bytes;
     protected MagicResult magic;
-    protected String title;
-    protected int maxLength;
     private JLabel label;
     private Input input;
+    private JComboBox combobox;
 
-    public BytesDialog()
+    public BytesDialog(Frame owner)
     {
+        super(owner);
         setTitle("Blob Editor");
     }
 
-    public void set(byte[] bytes, MagicResult magic, String title, int maxLength)
+    public void set(MagicResult magic)
     {
-        this.bytes = bytes;
         this.magic = magic;
-        this.title = title;
-        this.maxLength = maxLength;
         label.setText(magic.getDescription());
-    }
-
-    public byte[] getBytes()
-    {
-        return bytes;
     }
 
     public Input getInput()
@@ -81,6 +68,9 @@ public class BytesDialog extends CancelDialog
         super.init();
         label = new JLabel();
         add(label, BorderLayout.NORTH);
+        
+        combobox = new JComboBox();
+        add(combobox, BorderLayout.CENTER);
         
         loadButton = new JButton("Load");
         ActionListener loadAction = new ActionListener()
@@ -112,20 +102,23 @@ public class BytesDialog extends CancelDialog
         storeButton.addActionListener(storeAction);
         buttonPanel.add(storeButton);
         
-        openButton = new JButton("Open");
-        ActionListener openAction = new ActionListener()
+        if (openSupported())
         {
-
-            @Override
-            public void actionPerformed(ActionEvent e)
+            openButton = new JButton("Open");
+            ActionListener openAction = new ActionListener()
             {
-                input = Input.OPEN;
-                accepted = true;
-                setVisible(false);
-            }
-        };
-        openButton.addActionListener(openAction);
-        buttonPanel.add(openButton);
+
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    input = Input.OPEN;
+                    accepted = true;
+                    setVisible(false);
+                }
+            };
+            openButton.addActionListener(openAction);
+            buttonPanel.add(openButton);
+        }
         
         removeButton = new JButton("Remove");
         ActionListener removeAction = new ActionListener()
@@ -145,11 +138,26 @@ public class BytesDialog extends CancelDialog
         setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
     }
 
+    public String getExtension()
+    {
+        return (String) combobox.getSelectedItem();
+    }
+    
     @Override
     public boolean input()
     {
+        combobox.removeAllItems();
+        for (String ext : magic.getExtensions())
+        {
+            combobox.addItem(ext);
+        }
+        combobox.setSelectedIndex(0);
         input = Input.CANCEL;
         return super.input();
     }
 
+    private boolean openSupported()
+    {
+        return System.getProperty("os.name", "").toLowerCase().startsWith("windows");
+    }
 }

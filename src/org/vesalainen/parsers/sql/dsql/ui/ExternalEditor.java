@@ -17,21 +17,34 @@
 
 package org.vesalainen.parsers.sql.dsql.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 
 /**
  * @author Timo Vesalainen
  */
-public class ExternalEditor extends OkCancelDialog
+public class ExternalEditor extends OkCancelDialog implements WindowFocusListener
 {
     private Path path;
-    private Thread processThread;
+    private File file;
+    private long lastModified;
+    private JLabel label;
 
-    public ExternalEditor(Path path)
+    public ExternalEditor(Frame owner, Path path)
     {
+        super(owner);
         this.path = path;
+        file = path.toFile();
+        lastModified = file.lastModified();
     }
 
     @Override
@@ -39,13 +52,11 @@ public class ExternalEditor extends OkCancelDialog
     {
         try
         {
-            ProcessBuilder pb = new ProcessBuilder("cmd", "/C", path.toString());   // TODO 
-            Process process = pb.start();
-            processThread = new Thread(new ProcessWaiter(process));
-            processThread.start();
+            ProcessBuilder pb = new ProcessBuilder("cmd", "/C", path.toString());
+            pb.start();
             
+            okButton.setEnabled(false);
             boolean result = super.input();
-            interrupt();
             return result;
         }
         catch (IOException ex)
@@ -53,44 +64,39 @@ public class ExternalEditor extends OkCancelDialog
             throw new IllegalArgumentException(ex);
         }
     }
-    
-    private synchronized void interrupt()
+
+    public void setLabel(String text)
     {
-        if (processThread != null)
-        {
-            processThread.interrupt();
-            processThread = null;
-        }
-        setVisible(false);
+        label.setText(text);
     }
+    
     @Override
     protected void init()
     {
         super.init();
+        
+        label = new JLabel();
+        add(label, BorderLayout.NORTH);
+        label.setText("Text");
+        
+        okButton.setText("Save");
         setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
+        setAlwaysOnTop(true);
+        addWindowFocusListener(this);
     }
 
-    private class ProcessWaiter implements Runnable
+    @Override
+    public void windowGainedFocus(WindowEvent e)
     {
-        private Process process;
-
-        public ProcessWaiter(Process process)
+        if (lastModified < file.lastModified())
         {
-            this.process = process;
+            okButton.setEnabled(true);
         }
-        
-        @Override
-        public void run()
-        {
-            try
-            {
-                process.waitFor();
-                interrupt();
-            }
-            catch (InterruptedException ex)
-            {
-            }
-        }
-        
     }
+
+    @Override
+    public void windowLostFocus(WindowEvent e)
+    {
+    }
+
 }
