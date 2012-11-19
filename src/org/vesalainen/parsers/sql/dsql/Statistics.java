@@ -18,6 +18,8 @@ package org.vesalainen.parsers.sql.dsql;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Index;
+import com.google.appengine.api.datastore.Index.IndexState;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import java.util.Date;
@@ -38,6 +40,7 @@ public class Statistics
     private long nextUpdate;
     private DatastoreService datastore;
     private final Map<String, TableMetadata> map = new TreeMap<>();
+    private Map<Index, IndexState> indexes;
 
     public Statistics(DatastoreService datastore)
     {
@@ -52,6 +55,7 @@ public class Statistics
         {
             if (System.currentTimeMillis() > nextUpdate)
             {
+                indexes = datastore.getIndexes();
                 map.clear();
                 Query q0 = new Query("__Stat_Total__");
                 Entity total = datastore.prepare(q0).asSingleEntity();
@@ -79,6 +83,11 @@ public class Statistics
                 }
             }
         }
+    }
+
+    public Map<Index, IndexState> getIndexes()
+    {
+        return indexes;
     }
     
     public TableMetadata getKind(String name)

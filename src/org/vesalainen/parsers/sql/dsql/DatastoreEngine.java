@@ -20,17 +20,24 @@ package org.vesalainen.parsers.sql.dsql;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.Index;
+import com.google.appengine.api.datastore.Index.IndexState;
+import com.google.appengine.api.datastore.Index.Property;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.PropertyProjection;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableSet;
+import java.util.Set;
 import org.vesalainen.parsers.sql.ColumnCondition;
 import org.vesalainen.parsers.sql.ColumnMetadata;
 import org.vesalainen.parsers.sql.ColumnReference;
@@ -72,7 +79,7 @@ public class DatastoreEngine  implements DSProxyInterface
     @Override
     public Collection<Entity> fetch(Table<Entity,Object> table)
     {
-        // TODO key only & projections
+        // TODO projections
         String kind = table.getName();
         TableMetadata kindStats = statistics.getKind(kind);
         Query query = new Query(kind);
@@ -89,11 +96,12 @@ public class DatastoreEngine  implements DSProxyInterface
                 locals.add(columnCondition);
             }
         }
+        checkKeysOnlyAndProjection(query, table, false);
         return fetchAndFilter(query, locals);
     }
     
     @Override
-    public Collection<Entity> fetch(TableContext<Entity,Object> tc)
+    public Collection<Entity> fetch(TableContext<Entity,Object> tc, boolean update)
     {
         DSTable<Entity,Object> table = (DSTable) tc.getTable();
         String kind = table.getName();
@@ -145,6 +153,7 @@ public class DatastoreEngine  implements DSProxyInterface
                 }
             }
         }
+        checkKeysOnlyAndProjection(query, table, update);
         return fetchAndFilter(query, locals);
     }
     
@@ -407,6 +416,80 @@ public class DatastoreEngine  implements DSProxyInterface
     public Key stringToKey(String encoded)
     {
         return KeyFactory.stringToKey(encoded);
+    }
+
+    private void checkKeysOnlyAndProjection(Query query, Table<Entity, Object> table, boolean update)
+    {
+        Set<String> columns = table.getColumns();
+        if (
+                columns.size() == 1 &&
+                Entity.KEY_RESERVED_PROPERTY.equals(table.getColumns().iterator().next())
+                )
+        {
+            query.setKeysOnly();
+            return;
+        }
+        if (!update)
+        {
+            // Only indexed properties can be projected.
+            for (String property : columns)
+            {
+                ColumnMetadata cm = statistics.getProperty(table.getName(), property);
+                if (cm == null || !cm.isIndexed())
+                {
+                    return;
+                }
+            }
+            for (FilterPredicate fp : query.getFilterPredicates())
+            {
+                switch (fp.getOperator())
+                {
+                    case EQUAL:
+                    case IN:
+                        if (columns.contains(fp.getPropertyName()))
+                        {
+                            return;
+                        }
+                }
+            }
+            if (columns.size() > 1)
+            {
+                boolean ok1 = false;
+                Map<Index, IndexState> indexes = statistics.getIndexes();
+                for (Entry<Index, IndexState> entry : indexes.entrySet())
+                {
+                    if (IndexState.SERVING.equals(entry.getValue()))
+                    {
+                        List<Property> properties = entry.getKey().getProperties();
+                        if (columns.size() == properties.size())
+                        {
+                            boolean ok2 = true;
+                            for (Property property : properties)
+                            {
+                                if (!columns.contains(property.getName()))
+                                {
+                                    ok2 = false;
+                                    break;
+                                }
+                            }
+                            if (ok2)
+                            {
+                                ok1 = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!ok1)
+                {
+                    return;
+                }
+            }
+            for (String property : columns)
+            {
+                query.addProjection(new PropertyProjection(property, null));
+            }
+        }
     }
 
 }

@@ -44,7 +44,7 @@ public interface DSProxyInterface
 
     Collection<Entity> fetch(Table<Entity, Object> table);
 
-    Collection<Entity> fetch(TableContext<Entity, Object> tc);
+    Collection<Entity> fetch(TableContext<Entity, Object> tc, boolean update);
 
     void rollbackTransaction();
 

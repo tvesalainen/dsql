@@ -20,6 +20,7 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.RawValue;
 import com.google.appengine.tools.remoteapi.RemoteApiInstaller;
 import com.google.appengine.tools.remoteapi.RemoteApiOptions;
 import java.io.IOException;
@@ -105,17 +106,23 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     }
 
     @Override
-    public Object get(Entity r, String column)
+    public Object get(Entity r, String property)
     {
-        if (Entity.KEY_RESERVED_PROPERTY.equals(column))
+        if (Entity.KEY_RESERVED_PROPERTY.equals(property))
         {
             return r.getKey();
         }
-        if (PARENT.equals(column))
+        if (PARENT.equals(property))
         {
             return r.getParent();
         }
-        return r.getProperty(column);
+        Object ob = r.getProperty(property);
+        if (ob instanceof RawValue)
+        {
+            RawValue rw = (RawValue) ob;
+            return rw.getValue();
+        }
+        return ob;
     }
 
     @Override
@@ -164,6 +171,7 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     @Override
     public Updateable<Entity, Object> getUpdateable(Entity entity, String property)
     {
+        assert entity.hasProperty(property) && !(entity.getProperty(property) instanceof RawValue);
         boolean indexed = false;
         ColumnMetadata cm = statistics.getProperty(entity.getKind(), property);
         if (cm != null)
@@ -200,9 +208,10 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
         return proxy.getStatistics();
     }
 
-    public Collection<Entity> fetch(TableContext<Entity, Object> tc)
+    @Override
+    public Collection<Entity> fetch(TableContext<Entity, Object> tc, boolean update)
     {
-        return proxy.fetch(tc);
+        return proxy.fetch(tc, update);
     }
 
     public Collection<Entity> fetch(Table<Entity, Object> table)

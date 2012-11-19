@@ -46,6 +46,7 @@ import org.vesalainen.parser.annotation.ParserContext;
 import org.vesalainen.parser.annotation.ReservedWords;
 import org.vesalainen.parser.annotation.Rule;
 import org.vesalainen.parser.annotation.Rules;
+import org.vesalainen.parser.annotation.Terminal;
 import org.vesalainen.parser.util.InputReader;
 import org.vesalainen.parsers.sql.Relation;
 import org.vesalainen.parsers.sql.ColumnReferenceImpl;
@@ -207,6 +208,13 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         return new LiteralImpl<>(geoPt);
     }
 
+    @Rule("googleTypeGeoPt '\\(' ns latitude '\\,' we longitude '\\)'")
+    protected Literal<Entity, Object> literal(Class<?> type, int ns, Number lat, int we, Number lon)
+    {
+        Object geoPt = new GeoPt(lat.floatValue(), lon.floatValue());
+        return new LiteralImpl<>(geoPt);
+    }
+
     @Rules({
     @Rule("googleTypeGeoPt"),
     @Rule("googleOtherType"),
@@ -349,6 +357,105 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         return GeoPt.class;
     }
 
+    
+    @Rule("integer degreeChar? decimal secondChar?")
+    protected Number latitude(Number degree, Number minutes,
+            @ParserContext(ParserConstants.INPUTREADER) InputReader reader)
+    {
+        double d = degree.doubleValue() + 
+                minutes.doubleValue()/60.0;
+        if (d < 0 || d > 90)
+        {
+            reader.throwSyntaxErrorException("latitude coordinate", String.valueOf(d));
+        }
+        return new Double(d);
+    }
+    
+    @Rule("integer degreeChar? integer secondChar? integer minuteChar?")
+    protected Number latitude(Number degree, Number minutes, Number seconds,
+            @ParserContext(ParserConstants.INPUTREADER) InputReader reader)
+    {
+        double d = degree.doubleValue() + 
+                minutes.doubleValue()/60.0 +
+                seconds.doubleValue()/360.0;
+        if (d < 0 || d > 90)
+        {
+            reader.throwSyntaxErrorException("latitude coordinate", String.valueOf(d));
+        }
+        return new Double(d);
+    }
+    
+    @Rule("integer degreeChar? decimal secondChar?")
+    protected Number longitude(Number degree, Number minutes,
+            @ParserContext(ParserConstants.INPUTREADER) InputReader reader)
+    {
+        double d = degree.doubleValue() + minutes.doubleValue()/60.0;
+        if (d < 0 || d > 180)
+        {
+            reader.throwSyntaxErrorException("longitude coordinate", String.valueOf(d));
+        }
+        return new Double(d);
+    }
+    
+    @Rule("integer degreeChar? integer secondChar? integer minuteChar?")
+    protected Number longitude(Number degree, Number minutes, Number seconds,
+            @ParserContext(ParserConstants.INPUTREADER) InputReader reader)
+    {
+        double d = degree.doubleValue() + 
+                minutes.doubleValue()/60.0 +
+                seconds.doubleValue()/360.0;
+        if (d < 0 || d > 180)
+        {
+            reader.throwSyntaxErrorException("longitude coordinate", String.valueOf(d));
+        }
+        return new Double(d);
+    }
+
+    @Terminal(expression="\u00b0")
+    protected abstract void degreeChar();
+    
+    @Terminal(expression="\"")
+    protected abstract void minuteChar();
+    
+    @Terminal(expression="'")
+    protected abstract void secondChar();
+    
+    @Rules({
+        @Rule("north"),
+        @Rule("south")
+    })
+    protected abstract int ns(int sign);
+    
+    @Rules({
+        @Rule("west"),
+        @Rule("east")
+    })
+    protected abstract int we(int sign);
+    
+    @Rule("'N'")
+    protected int north()
+    {
+        return 1;
+    }
+    
+    @Rule("'E'")
+    protected int east()
+    {
+        return 1;
+    }
+    
+    @Rule("'S'")
+    protected int south()
+    {
+        return -1;
+    }
+    
+    @Rule("'W'")
+    protected int west()
+    {
+        return -1;
+    }
+    
     @ReservedWords(value =
     {
         "long",
