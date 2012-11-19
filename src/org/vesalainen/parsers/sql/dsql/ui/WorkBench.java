@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -38,11 +39,9 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
@@ -64,22 +63,22 @@ import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
 import org.vesalainen.parsers.sql.UpdateableFetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
-import org.vesalainen.parsers.sql.dsql.DatastoreEngineProxy;
 
 /**
  * @author Timo Vesalainen
  */
 public class WorkBench extends WindowAdapter implements DocumentListener, SQLLocator, ErrorReporter
 {
-    public final static Cursor busyCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
-    public final static Cursor defaultCursor = Cursor.getDefaultCursor();
-    private Engine engine;
-    private JFrame frame;
+    static final String TITLE = "Datastore Query 1.0";
+    final static Cursor busyCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+    final static Cursor defaultCursor = Cursor.getDefaultCursor();
+    Engine engine;
+    JFrame frame;
     private JMenuBar menuBar;
     private final JScrollPane sqlPane;
     private final JScrollPane lowerPane;
     private final JSplitPane splitPane;
-    private final JTextPane sqlArea;
+    final JTextPane sqlArea;
     private FetchResultTableModel tableModel;
     private InputReader reader;
     private Statement statement;
@@ -93,7 +92,7 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
     private final Action grayAction;
     private final ForegroundAction orangeAction;
     private final UndoableEditListenerSwitch undoSwitch;
-    private final String storedStatementsKind;
+    final String storedStatementsKind;
     private final JButton commitButton;
     private final JButton rollbackButton;
     private UpdateableFetchResult updateableFetchResult;
@@ -107,14 +106,12 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         this.engine = engine;
         frame = new JFrame();
         frame.addWindowListener(this);
+        Toolkit.getDefaultToolkit().getSystemEventQueue().push(new ExceptionHandler());
 
         timer = new Timer(500, new AL(this));
         timer.stop();
         timer.setRepeats(false);
         
-        menuBar = new JMenuBar();
-        frame.setJMenuBar(menuBar);
-
         sqlArea = new JTextPane();
         sqlArea.getDocument().putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
         sqlArea.setPreferredSize(new Dimension(700, 200));
@@ -134,6 +131,16 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         UndoManager undo = new UndoManager();
         undoSwitch = new UndoableEditListenerSwitch(undo);
         document.addUndoableEditListener(undoSwitch);
+        
+        menuBar = new JMenuBar();
+        frame.setJMenuBar(menuBar);
+
+        JMenu fileMenu = new JMenu("File");
+        menuBar.add(fileMenu);
+        fileMenu.add(new OpenStatementAction("Open Statement", this));
+        fileMenu.add(new SaveStatementAction("Save Statement", this));
+        fileMenu.add(new SaveAsStatementAction("Save As Statement", this));
+        fileMenu.add(new RemoveStatementAction("Remove Statement", this));
         
         JMenu editMenu = new JMenu("Edit");
         menuBar.add(editMenu);
@@ -455,6 +462,29 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         sqlArea.setCaretPosition(save);
         undoSwitch.setOn();
     }
+
+    String getOpenStatement()
+    {
+        String title = frame.getTitle();
+        if (TITLE.equals(title))
+        {
+            return null;
+        }
+        else
+        {
+            return title.substring(0, title.length()-TITLE.length()-3);
+        }
+    }
+    void setOpenStatement(String name, String sql)
+    {
+        frame.setTitle(name+" - "+TITLE);
+        sqlArea.setText(sql);
+    }
+    void setOpenStatement(String name)
+    {
+        frame.setTitle(name+" - "+TITLE);
+    }
+    
     private class AL implements ActionListener
     {
         WorkBench parent;

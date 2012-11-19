@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
 import org.vesalainen.parsers.magic.Magic.MagicResult;
 
 /**
@@ -41,7 +42,7 @@ public class BytesDialog extends CancelDialog
     protected JButton removeButton;
 
     protected MagicResult magic;
-    private JLabel label;
+    private JTextArea label;
     private Input input;
     private JComboBox combobox;
 
@@ -49,12 +50,6 @@ public class BytesDialog extends CancelDialog
     {
         super(owner);
         setTitle("Blob Editor");
-    }
-
-    public void set(MagicResult magic)
-    {
-        this.magic = magic;
-        label.setText(magic.getDescription());
     }
 
     public Input getInput()
@@ -66,11 +61,16 @@ public class BytesDialog extends CancelDialog
     protected void init()
     {
         super.init();
-        label = new JLabel();
+        label = new JTextArea();
+        label.setOpaque(true);
+        label.setLineWrap(true);
+        label.setEditable(false);
+        label.setRows(3);
         add(label, BorderLayout.NORTH);
         
         combobox = new JComboBox();
         add(combobox, BorderLayout.CENTER);
+        combobox.setEditable(true);
         
         loadButton = new JButton("Load");
         ActionListener loadAction = new ActionListener()
@@ -143,9 +143,35 @@ public class BytesDialog extends CancelDialog
         return (String) combobox.getSelectedItem();
     }
     
-    @Override
-    public boolean input()
+    public boolean input(MagicResult magic)
     {
+        this.magic = magic;
+        String[] extensions = magic.getExtensions();
+        if (extensions.length == 0 || (extensions.length == 1 && extensions[0].isEmpty()))
+        {
+            label.setText(
+                    "Blob propertys value type is "+
+                    magic.getDescription()+
+                    ". Enter file extension if known.");
+        }
+        else
+        {
+            if (extensions.length == 1)
+            {
+                label.setText(
+                        "Blob propertys value type is "+
+                        magic.getDescription()+
+                        ".");
+            }
+            else
+            {
+                label.setText(
+                        "Blob propertys value type is "+
+                        magic.getDescription()+
+                        ".Choose the extension before trying to open.");
+            }
+        }
+
         combobox.removeAllItems();
         for (String ext : magic.getExtensions())
         {

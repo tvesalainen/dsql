@@ -212,8 +212,7 @@ public class DSJTable extends JTable
         {
             if (EDIT.equals(e.getActionCommand()))
             {
-                dialog.set(guess);
-                if (dialog.input())
+                if (dialog.input(guess))
                 {
                     switch (dialog.getInput())
                     {
@@ -231,13 +230,13 @@ public class DSJTable extends JTable
                             {
                                 fc.setCurrentDirectory(currentDirectory);
                             }
-                            if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+                            if (fc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION)
                             {
                                 File file = fc.getSelectedFile();
                                 long length = file.length();
                                 if (length > 1000000)
                                 {
-                                    JOptionPane.showMessageDialog(null, file, "File is too big", JOptionPane.ERROR_MESSAGE);
+                                    JOptionPane.showMessageDialog(frame, file, "File is too big", JOptionPane.ERROR_MESSAGE);
                                 }
                                 else
                                 {
@@ -249,7 +248,7 @@ public class DSJTable extends JTable
                                     }
                                     catch (IOException ex)
                                     {
-                                        JOptionPane.showMessageDialog(null, ex.getLocalizedMessage());
+                                        JOptionPane.showMessageDialog(frame, ex.getLocalizedMessage());
                                     }
                                 }
                             }
@@ -275,7 +274,7 @@ public class DSJTable extends JTable
                                 suffix = "."+extension.toLowerCase();
                             }
                             fc.setSelectedFile(new File(columnName+suffix));
-                            if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
+                            if (fc.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION)
                             {
                                 File file = fc.getSelectedFile();
                                 if (file != null)
@@ -287,7 +286,7 @@ public class DSJTable extends JTable
                                     currentDirectory = file.getParentFile();
                                     if (file.exists())
                                     {
-                                        int confirm = JOptionPane.showConfirmDialog(null, file, "File exists! Overwrite?", JOptionPane.OK_CANCEL_OPTION);
+                                        int confirm = JOptionPane.showConfirmDialog(frame, file, "File exists! Overwrite?", JOptionPane.OK_CANCEL_OPTION);
                                         if (JOptionPane.YES_OPTION == confirm)
                                         {
                                             return;
@@ -299,7 +298,7 @@ public class DSJTable extends JTable
                                     }
                                     catch (IOException ex)
                                     {
-                                        JOptionPane.showMessageDialog(null, ex.getLocalizedMessage());
+                                        JOptionPane.showMessageDialog(frame, ex.getLocalizedMessage());
                                     }
                                 }
                             }
@@ -323,7 +322,7 @@ public class DSJTable extends JTable
                                 }
                                 catch (IOException ex)
                                 {
-                                    JOptionPane.showMessageDialog(null, ex.getLocalizedMessage());
+                                    JOptionPane.showMessageDialog(frame, ex.getLocalizedMessage());
                                 }
                                 ExternalEditor ee = new ExternalEditor(frame, tempPath);
                                 if (ee.input())
@@ -331,7 +330,7 @@ public class DSJTable extends JTable
                                     long length = file.length();
                                     if (length > 1000000)
                                     {
-                                        JOptionPane.showMessageDialog(null, file, "File is too big", JOptionPane.ERROR_MESSAGE);
+                                        JOptionPane.showMessageDialog(frame, file, "File is too big", JOptionPane.ERROR_MESSAGE);
                                     }
                                     else
                                     {
@@ -342,7 +341,7 @@ public class DSJTable extends JTable
                                         }
                                         catch (IOException ex)
                                         {
-                                            JOptionPane.showMessageDialog(null, ex.getLocalizedMessage());
+                                            JOptionPane.showMessageDialog(frame, ex.getLocalizedMessage());
                                         }
                                     }
                                 }
@@ -356,12 +355,16 @@ public class DSJTable extends JTable
                             }
                             catch (IOException ex)
                             {
-                                JOptionPane.showMessageDialog(null, ex.getLocalizedMessage());
+                                JOptionPane.showMessageDialog(frame, ex.getLocalizedMessage());
                             }
                         }
                             break;
                         case REMOVE:
-                            bytes = null;
+                            int confirm = JOptionPane.showConfirmDialog(frame, "Removing blob", "Continue?", JOptionPane.OK_CANCEL_OPTION);
+                            if (JOptionPane.YES_OPTION == confirm)
+                            {
+                                bytes = null;
+                            }
                             break;
                         case CANCEL:
                             break;

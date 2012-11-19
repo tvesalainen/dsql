@@ -25,9 +25,8 @@ import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
 
 /**
  * @author Timo Vesalainen
@@ -37,7 +36,7 @@ public class ExternalEditor extends OkCancelDialog implements WindowFocusListene
     private Path path;
     private File file;
     private long lastModified;
-    private JLabel label;
+    private JTextArea label;
 
     public ExternalEditor(Frame owner, Path path)
     {
@@ -75,13 +74,17 @@ public class ExternalEditor extends OkCancelDialog implements WindowFocusListene
     {
         super.init();
         
-        label = new JLabel();
+        label = new JTextArea();
+        label.setOpaque(true);
+        label.setLineWrap(true);
+        label.setEditable(false);
+        label.setRows(3);
         add(label, BorderLayout.NORTH);
-        label.setText("Text");
+        label.setText("Trying to open blob content in external application.");
         
         okButton.setText("Save");
         setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
-        setAlwaysOnTop(true);
+        //setAlwaysOnTop(true);
         addWindowFocusListener(this);
     }
 
@@ -90,6 +93,10 @@ public class ExternalEditor extends OkCancelDialog implements WindowFocusListene
     {
         if (lastModified < file.lastModified())
         {
+            label.setText(
+                    "Trying to open blob content in external application. "+
+                    "Press Save to update modified content to datastore"
+                    );
             okButton.setEnabled(true);
         }
     }
