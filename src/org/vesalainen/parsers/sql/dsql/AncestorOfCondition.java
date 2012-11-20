@@ -48,7 +48,7 @@ public class AncestorOfCondition extends ParserLocator2Impl implements Condition
     public void associateCondition(SelectStatement select, boolean andPath)
     {
         descendant.setDescendantOf(ancestor);
-        ancestor.addIndexedColumn(Entity.KEY_RESERVED_PROPERTY);
+        ancestor.addAndColumn(Entity.KEY_RESERVED_PROPERTY);
     }
 
     @Override

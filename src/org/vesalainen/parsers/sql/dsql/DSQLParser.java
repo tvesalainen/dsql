@@ -78,7 +78,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     {
         DSTable table = (DSTable) getTableForCorrelation(identifier, engine, correlationMap);
         Condition<Object, Object> comparisonCondition = newComparisonCondition(rv1, Relation.EQ, new ColumnReferenceImpl(table, Entity.KEY_RESERVED_PROPERTY));
-        table.addIndexedColumn(Entity.KEY_RESERVED_PROPERTY);
+        table.addAndColumn(Entity.KEY_RESERVED_PROPERTY);
         return comparisonCondition;
     }
     @Rule(left="comparisonPredicate", value="identifier is ancestor of identifier")
@@ -114,7 +114,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
             )
     {
         Table table = getTableForCorrelation(null, engine, correlationMap);
-        table.addColumn(Entity.KEY_RESERVED_PROPERTY);
+        table.addConditionColumn(Entity.KEY_RESERVED_PROPERTY);
         return new ColumnReferenceImpl<>(table, Entity.KEY_RESERVED_PROPERTY);
     }
     
@@ -126,7 +126,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
             )
     {
         Table table = getTableForCorrelation(id1, engine, correlationMap);
-        table.addColumn(Entity.KEY_RESERVED_PROPERTY);
+        table.addConditionColumn(Entity.KEY_RESERVED_PROPERTY);
         return new ColumnReferenceImpl<>(table, id1, Entity.KEY_RESERVED_PROPERTY);
     }
     
@@ -377,7 +377,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     {
         double d = degree.doubleValue() + 
                 minutes.doubleValue()/60.0 +
-                seconds.doubleValue()/360.0;
+                seconds.doubleValue()/3600.0;
         if (d < 0 || d > 90)
         {
             reader.throwSyntaxErrorException("latitude coordinate", String.valueOf(d));
@@ -403,7 +403,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     {
         double d = degree.doubleValue() + 
                 minutes.doubleValue()/60.0 +
-                seconds.doubleValue()/360.0;
+                seconds.doubleValue()/3600.0;
         if (d < 0 || d > 180)
         {
             reader.throwSyntaxErrorException("longitude coordinate", String.valueOf(d));

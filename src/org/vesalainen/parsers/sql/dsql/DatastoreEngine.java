@@ -425,7 +425,15 @@ public class DatastoreEngine  implements DSProxyInterface
         minOutput.addAll(table.getConditionColumns()); // all columns needed in conditions
         for (FilterPredicate fp : query.getFilterPredicates())
         {
-            minOutput.remove(fp.getPropertyName());     // minus and-path filtered
+            switch (fp.getOperator())
+            {
+                case EQUAL:
+                case IN:
+                    break;
+                default:
+                    minOutput.remove(fp.getPropertyName());     // minus and-path filtered
+                    break;
+            }
         }
         minOutput.addAll(table.getSelectListColumns()); // plus all in select list
         if (
