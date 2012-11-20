@@ -33,6 +33,7 @@ import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -420,10 +421,16 @@ public class DatastoreEngine  implements DSProxyInterface
 
     private void checkKeysOnlyAndProjection(Query query, Table<Entity, Object> table, boolean update)
     {
-        Set<String> columns = table.getColumns();
+        Set<String> minOutput = new HashSet<>();       // minimum set of output
+        minOutput.addAll(table.getConditionColumns()); // all columns needed in conditions
+        for (FilterPredicate fp : query.getFilterPredicates())
+        {
+            minOutput.remove(fp.getPropertyName());     // minus and-path filtered
+        }
+        minOutput.addAll(table.getSelectListColumns()); // plus all in select list
         if (
-                columns.size() == 1 &&
-                Entity.KEY_RESERVED_PROPERTY.equals(table.getColumns().iterator().next())
+                minOutput.size() == 1 &&
+                Entity.KEY_RESERVED_PROPERTY.equals(minOutput.iterator().next())
                 )
         {
             query.setKeysOnly();
@@ -432,7 +439,7 @@ public class DatastoreEngine  implements DSProxyInterface
         if (!update)
         {
             // Only indexed properties can be projected.
-            for (String property : columns)
+            for (String property : minOutput)
             {
                 ColumnMetadata cm = statistics.getProperty(table.getName(), property);
                 if (cm == null || !cm.isIndexed())
@@ -446,13 +453,13 @@ public class DatastoreEngine  implements DSProxyInterface
                 {
                     case EQUAL:
                     case IN:
-                        if (columns.contains(fp.getPropertyName()))
+                        if (minOutput.contains(fp.getPropertyName()))
                         {
                             return;
                         }
                 }
             }
-            if (columns.size() > 1)
+            if (minOutput.size() > 1)
             {
                 boolean ok1 = false;
                 Map<Index, IndexState> indexes = statistics.getIndexes();
@@ -461,12 +468,12 @@ public class DatastoreEngine  implements DSProxyInterface
                     if (IndexState.SERVING.equals(entry.getValue()))
                     {
                         List<Property> properties = entry.getKey().getProperties();
-                        if (columns.size() == properties.size())
+                        if (minOutput.size() == properties.size())
                         {
                             boolean ok2 = true;
                             for (Property property : properties)
                             {
-                                if (!columns.contains(property.getName()))
+                                if (!minOutput.contains(property.getName()))
                                 {
                                     ok2 = false;
                                     break;
@@ -485,7 +492,7 @@ public class DatastoreEngine  implements DSProxyInterface
                     return;
                 }
             }
-            for (String property : columns)
+            for (String property : minOutput)
             {
                 query.addProjection(new PropertyProjection(property, null));
             }
