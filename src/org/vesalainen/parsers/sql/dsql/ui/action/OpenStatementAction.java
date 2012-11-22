@@ -15,20 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.parsers.sql.dsql.ui;
+package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import org.vesalainen.parsers.sql.FetchResult;
+import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
 /**
  * @author Timo Vesalainen
  */
-class OpenStatementAction extends PersistenceStatementAction
+public class OpenStatementAction extends PersistenceStatementAction
 {
 
-    OpenStatementAction(String name, WorkBench workBench)
+    public OpenStatementAction(String name, WorkBench workBench, String storedStatementsKind)
     {
-        super(name, workBench);
+        super(name, workBench, storedStatementsKind);
     }
 
     @Override
@@ -37,10 +39,10 @@ class OpenStatementAction extends PersistenceStatementAction
         String name = chooseStatement();
         if (name != null)
         {
-            FetchResult result = workBench.engine.execute(
+            FetchResult result = workBench.getEngine().execute(
                                         "select sql from "+
-                                        workBench.storedStatementsKind+
-                                        " where key = "+workBench.storedStatementsKind+"( '"+name+"' )"
+                                        storedStatementsKind+
+                                        " where key = "+storedStatementsKind+"( '"+name+"' )"
                                         );
             if (result.getRowCount() > 0)
             {

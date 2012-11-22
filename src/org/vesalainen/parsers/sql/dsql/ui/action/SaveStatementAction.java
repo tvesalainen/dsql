@@ -15,20 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.parsers.sql.dsql.ui;
+package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
 import org.vesalainen.parsers.sql.Statement;
+import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
 /**
  * @author Timo Vesalainen
  */
-class SaveStatementAction extends PersistenceStatementAction
+public class SaveStatementAction extends PersistenceStatementAction
 {
 
-    public SaveStatementAction(String name, WorkBench workBench)
+    public SaveStatementAction(String name, WorkBench workBench, String storedStatementsKind)
     {
-        super(name, workBench);
+        super(name, workBench, storedStatementsKind);
     }
 
     @Override
@@ -37,12 +38,12 @@ class SaveStatementAction extends PersistenceStatementAction
         String name = workBench.getOpenStatement();
         if (name != null)
         {
-            Statement update = workBench.engine.prepare(
+            Statement update = workBench.getEngine().prepare(
                                         "update "+
-                                        workBench.storedStatementsKind+
-                                        " set sql = :sql where key = "+workBench.storedStatementsKind+"( '"+name+"' )"
+                                        storedStatementsKind+
+                                        " set sql = :sql where key = "+storedStatementsKind+"( '"+name+"' )"
                                         );
-            update.bindValue("sql", workBench.sqlArea.getText());
+            update.bindValue("sql", getTextComponent(e));
             update.execute();
         }
     }

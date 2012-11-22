@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.parsers.sql.dsql.ui;
+package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
 import javax.swing.text.TextAction;

@@ -58,7 +58,7 @@ public class StatementListDialog extends OkCancelDialog
         }
     }
 
-    String getSelected()
+    public String getSelected()
     {
         return (String) list.getSelectedValue();
     }

@@ -15,40 +15,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.parsers.sql.dsql.ui;
+package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import com.google.appengine.api.datastore.Entity;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
+import javax.swing.text.TextAction;
 import org.vesalainen.parsers.sql.FetchResult;
+import org.vesalainen.parsers.sql.dsql.ui.StatementListDialog;
+import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
 /**
  * @author Timo Vesalainen
  */
-abstract class PersistenceStatementAction extends AbstractAction
+public abstract class PersistenceStatementAction extends TextAction
 {
     protected WorkBench workBench;
+    protected String storedStatementsKind;
     private FetchResult statements;
     private static StatementListDialog dialog;
 
-    PersistenceStatementAction(String name, WorkBench workBench)
+    PersistenceStatementAction(String name, WorkBench workBench, String storedStatementsKind)
     {
         super(name);
         this.workBench = workBench;
+        this.storedStatementsKind = storedStatementsKind;
     }
     
     protected boolean confirmInstalled()
     {
         if (statements == null)
         {
-            statements = workBench.engine.execute("select key, sql from "+workBench.storedStatementsKind);
+            statements = workBench.getEngine().execute("select key, sql from "+storedStatementsKind);
         }
         if (statements.getRowCount() == 0)
         {
             int confirm = JOptionPane.showConfirmDialog(
-                    workBench.frame, 
+                    workBench.getFrame(), 
                     "Create "
-                    +workBench.storedStatementsKind+
+                    +storedStatementsKind+
                     " kind for saved statements? (if kind is not ok, change kind name in properties)", 
                     "Connected datastore doesn't have store for saved statements", 
                     JOptionPane.OK_CANCEL_OPTION

@@ -17,6 +17,13 @@
 
 package org.vesalainen.parsers.sql.dsql.ui;
 
+import org.vesalainen.parsers.sql.dsql.ui.action.MetadataTreeAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.RedoAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.OpenStatementAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.UndoAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.SaveStatementAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.SaveAsStatementAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.RemoveStatementAction;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -142,10 +149,10 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
 
         JMenu fileMenu = new JMenu("File");
         menuBar.add(fileMenu);
-        fileMenu.add(new OpenStatementAction("Open Statement", this));
-        fileMenu.add(new SaveStatementAction("Save Statement", this));
-        fileMenu.add(new SaveAsStatementAction("Save As Statement", this));
-        fileMenu.add(new RemoveStatementAction("Remove Statement", this));
+        fileMenu.add(new OpenStatementAction("Open Statement", this, storedStatementsKind));
+        fileMenu.add(new SaveStatementAction("Save Statement", this, storedStatementsKind));
+        fileMenu.add(new SaveAsStatementAction("Save As Statement", this, storedStatementsKind));
+        fileMenu.add(new RemoveStatementAction("Remove Statement", this, storedStatementsKind));
         
         JMenu editMenu = new JMenu("Edit");
         menuBar.add(editMenu);
@@ -512,7 +519,7 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         undoSwitch.setOn();
     }
 
-    String getOpenStatement()
+    public String getOpenStatement()
     {
         String title = frame.getTitle();
         if (TITLE.equals(title))
@@ -524,14 +531,24 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
             return title.substring(0, title.length()-TITLE.length()-3);
         }
     }
-    void setOpenStatement(String name, String sql)
+    public void setOpenStatement(String name, String sql)
     {
         frame.setTitle(name+" - "+TITLE);
         sqlArea.setText(sql);
     }
-    void setOpenStatement(String name)
+    public void setOpenStatement(String name)
     {
         frame.setTitle(name+" - "+TITLE);
+    }
+
+    public Engine getEngine()
+    {
+        return engine;
+    }
+
+    public JFrame getFrame()
+    {
+        return frame;
     }
 
     private class AL implements ActionListener

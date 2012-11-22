@@ -15,23 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.parsers.sql.dsql.ui;
+package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import com.google.appengine.api.datastore.Entity;
 import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.Statement;
+import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
 /**
  * @author Timo Vesalainen
  */
-class SaveAsStatementAction extends PersistenceStatementAction
+public class SaveAsStatementAction extends PersistenceStatementAction
 {
 
-    public SaveAsStatementAction(String name, WorkBench workBench)
+    public SaveAsStatementAction(String name, WorkBench workBench, String storedStatementsKind)
     {
-        super(name, workBench);
+        super(name, workBench, storedStatementsKind);
     }
 
     @Override
@@ -39,19 +40,19 @@ class SaveAsStatementAction extends PersistenceStatementAction
     {
         if (confirmInstalled())
         {
-            String name = JOptionPane.showInputDialog(workBench.frame, "Enter name for statement", "");
+            String name = JOptionPane.showInputDialog(workBench.getFrame(), "Enter name for statement", "");
             if (name != null)
             {
                 name = name.replace("'", "");
-                FetchResult result = workBench.engine.execute(
+                FetchResult result = workBench.getEngine().execute(
                                             "select "+Entity.KEY_RESERVED_PROPERTY+" from "+
-                                            workBench.storedStatementsKind+
-                                            " where key = "+workBench.storedStatementsKind+"( '"+name+"' )"
+                                            storedStatementsKind+
+                                            " where key = "+storedStatementsKind+"( '"+name+"' )"
                                             );
                 if (result.getRowCount() > 0)
                 {
                     int confirm = JOptionPane.showConfirmDialog(
-                            workBench.frame, 
+                            workBench.getFrame(), 
                             name, 
                             "Exist Already! Overwrite?",
                             JOptionPane.OK_CANCEL_OPTION
@@ -61,12 +62,12 @@ class SaveAsStatementAction extends PersistenceStatementAction
                         return;
                     }
                 }
-                Statement insert = workBench.engine.prepare(
+                Statement insert = workBench.getEngine().prepare(
                                             "insert into "+
-                                            workBench.storedStatementsKind+
-                                            " ( key, sql ) values ( "+workBench.storedStatementsKind+"( '"+name+"' ), :sql )"
+                                            storedStatementsKind+
+                                            " ( key, sql ) values ( "+storedStatementsKind+"( '"+name+"' ), :sql )"
                                             );
-                insert.bindValue("sql", workBench.sqlArea.getText());
+                insert.bindValue("sql", getTextComponent(e));
                 insert.execute();
                 workBench.setOpenStatement(name);
             }

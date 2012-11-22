@@ -15,31 +15,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.parsers.sql.dsql.ui;
+package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
+import javax.swing.JFrame;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
-import javax.swing.undo.UndoManager;
+import org.vesalainen.parsers.sql.dsql.Statistics;
+import org.vesalainen.parsers.sql.dsql.ui.MetadataHandler;
+import org.vesalainen.parsers.sql.dsql.ui.MetadataTreeDialog;
 
 /**
  * @author Timo Vesalainen
  */
-public class RedoAction extends TextAction
+public class MetadataTreeAction extends TextAction
 {
-    private UndoManager manager;
-    public RedoAction(String name, UndoManager manager)
+    private static MetadataTreeDialog tree;
+    
+    private Statistics statistics;
+    private MetadataHandler handler;
+    
+    public MetadataTreeAction(String name, Statistics statistics, MetadataHandler handler)
     {
         super(name);
-        this.manager = manager;
+        this.statistics = statistics;
+        this.handler = handler;
     }
 
     @Override
     public void actionPerformed(ActionEvent e)
     {
-        if (manager.canRedo())
+        JTextComponent focusedComponent = getFocusedComponent();
+        if (tree == null)
         {
-            manager.redo();
+            tree = new MetadataTreeDialog(statistics);
         }
+        tree.setLocationRelativeTo(focusedComponent);
+        tree.doIt(handler);
     }
 
 }
