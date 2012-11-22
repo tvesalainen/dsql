@@ -83,36 +83,56 @@ public abstract class DatastoreProxy<T> implements Runnable, InvocationHandler
     @Override
     public void run()
     {
-        try
+        T engine = null;
+        while (true)
         {
-            RemoteApiInstaller installer = new RemoteApiInstaller();
-            RemoteApiOptions options = new RemoteApiOptions();
-            options.server(server, port);
-            options.credentials(user, password);
-            installer.install(options);
-            DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-            T engine = create(datastore);
-            while (true)
+            MethodCall mc = null;
+            try
             {
-                MethodCall mc = queue.take();
-                try
+                mc = queue.take();
+                if (engine == null)
                 {
-                    Object rv = mc.invoke(engine);
-                    mc.setReturnValue(rv);
+                    RemoteApiInstaller installer = new RemoteApiInstaller();
+                    RemoteApiOptions options = new RemoteApiOptions();
+                    options.server(server, port);
+                    options.credentials(user, password);
+                    installer.install(options);
+                    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+                    engine = create(datastore);
                 }
-                catch (InvocationTargetException ex)
+                Object rv = mc.invoke(engine);
+                mc.setReturnValue(rv);
+            }
+            catch (InterruptedException ex)
+            {
+                return;
+            }
+            catch (InvocationTargetException ex)
+            {
+                if (mc != null)
                 {
                     mc.setThrowable(ex.getCause());
                 }
+                else
+                {
+                    throw new IllegalArgumentException(ex);
+                }
+            }
+            catch (Throwable ex)
+            {
+                if (mc != null)
+                {
+                    mc.setThrowable(ex);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(ex);
+                }
+            }
+            finally
+            {
                 semaphore.release();
             }
-        }
-        catch (InterruptedException ex)
-        {
-        }
-        catch (IOException ex)
-        {
-            throw new IllegalArgumentException(ex);
         }
     }
 

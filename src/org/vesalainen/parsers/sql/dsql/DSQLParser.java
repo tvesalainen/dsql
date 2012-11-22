@@ -33,15 +33,17 @@ import com.google.appengine.api.users.User;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.vesalainen.parser.ParserCompiler;
 import org.vesalainen.parser.ParserConstants;
+import org.vesalainen.parser.ParserFactory;
 import org.vesalainen.parser.ParserInfo;
 import org.vesalainen.parser.Trace;
 import org.vesalainen.parser.TraceHelper;
 import org.vesalainen.parser.annotation.GenClassname;
 import org.vesalainen.parser.annotation.GrammarDef;
+import org.vesalainen.parser.annotation.ParseMethod;
 import org.vesalainen.parser.annotation.ParserContext;
 import org.vesalainen.parser.annotation.ReservedWords;
 import org.vesalainen.parser.annotation.Rule;
@@ -68,6 +70,44 @@ import org.vesalainen.regex.Regex;
 @GrammarDef()
 public abstract class DSQLParser extends SqlParser<Entity,Object> implements ParserInfo
 {
+    private static Map<String,Class<?>> googleTypeMap = new HashMap<>();
+    static
+    {
+        addGoogleType(Long.class);
+        addGoogleType(Double.class);
+        addGoogleType(Date.class);
+        addGoogleType(Category.class);
+        addGoogleType(Email.class);
+        addGoogleType(Link.class);
+        addGoogleType(PhoneNumber.class);
+        addGoogleType(PostalAddress.class);
+        addGoogleType(Rating.class);
+        addGoogleType(Blob.class);
+        addGoogleType(ShortBlob.class);
+        addGoogleType(Text.class);
+        addGoogleType(Key.class);
+        addGoogleType(User.class);
+        addGoogleType(GeoPt.class);
+
+    }
+    public static DSQLParser newInstance()
+    {
+        return (DSQLParser) ParserFactory.getParserInstance(DSQLParser.class);
+    }
+
+    private static void addGoogleType(Class<?> aClass)
+    {
+        googleTypeMap.put(aClass.getSimpleName().toLowerCase(), aClass);
+    }
+    /**
+     * 
+     * @param text
+     * @return 
+     * @see <a href="doc-files/DSQLParser-coordinate.html#BNF">BNF Syntax for Geological Coordinate</a>
+     */
+    @ParseMethod(start="coordinate", whiteSpace ="whiteSpace")
+    public abstract GeoPt parseCoordinate(String text, @ParserContext("locator") SQLLocator locator);
+    
     @Rule(left="comparisonPredicate", value="rowValuePredicant is key of identifier")
     protected Condition comparisonKeyOf(
             RowValue rv1, 
@@ -130,241 +170,146 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         return new ColumnReferenceImpl<>(table, id1, Entity.KEY_RESERVED_PROPERTY);
     }
     
-    @Rule(value="key")
+    @Rule("key")
     protected String column()
     {
         return Entity.KEY_RESERVED_PROPERTY;
     }
     
-    @Rule(left="literal", value="keyLiteral")
-    protected RowValue rowValuePredicantKeyLiteral(Key key)
+    @Rule("identifier")
+    protected Class<?> placeholderType(
+            String typeName,
+            @ParserContext(ParserConstants.INPUTREADER) InputReader reader
+            )
     {
-        return new LiteralImpl<>(key);
+        Class<?> type = googleTypeMap.get(typeName);
+        if (type == null)
+        {
+            reader.throwSyntaxErrorException("Key", typeName);
+        }
+        return type;
     }
-    
+            
+    @Rule("identifier '\\(' keyValue '\\)'")
+    protected Literal<Entity, Object> literal(
+            String typeName, 
+            Key key, 
+            @ParserContext(ParserConstants.INPUTREADER) InputReader reader
+            )
+    {
+        Class<?> type = googleTypeMap.get(typeName);
+        if (!Key.class.equals(type))
+        {
+            reader.throwSyntaxErrorException("Key", typeName);
+        }
+        return new LiteralImpl<Entity, Object>(key);
+    }
+
     @Rule("identifier '\\(' string '\\)'")
-    protected Key keyLiteral(String kind, String name, @ParserContext("engine") Engine<Entity,Object> engine)
+    protected Key keyValue(String kind, String name, @ParserContext("engine") Engine<Entity,Object> engine)
     {
         DSQLEngine dse = (DSQLEngine) engine;
         return dse.createKey(kind, name);
     }
     
     @Rule("identifier '\\(' integer '\\)'")
-    protected Key keyLiteral(String kind, Number id, @ParserContext("engine") Engine<Entity,Object> engine)
+    protected Key keyValue(String kind, Number id, @ParserContext("engine") Engine<Entity,Object> engine)
     {
         DSQLEngine dse = (DSQLEngine) engine;
         return dse.createKey(kind, id.longValue());
     }
     
-    @Rule("keyLiteral '/' identifier '\\(' string '\\)'")
-    protected Key keyLiteral(Key parent, String kind, String name, @ParserContext("engine") Engine<Entity,Object> engine)
+    @Rule("keyValue '/' identifier '\\(' string '\\)'")
+    protected Key keyValue(Key parent, String kind, String name, @ParserContext("engine") Engine<Entity,Object> engine)
     {
         DSQLEngine dse = (DSQLEngine) engine;
         return dse.createKey(parent, kind, name);
     }
     
-    @Rule(left="keyLiteral", value="keyLiteral '/' identifier '\\(' integer '\\)'")
-    protected Key keyLiteral(Key parent, String kind, Number id, @ParserContext("engine") Engine<Entity,Object> engine)
+    @Rule("keyValue '/' identifier '\\(' integer '\\)'")
+    protected Key keyValue(Key parent, String kind, Number id, @ParserContext("engine") Engine<Entity,Object> engine)
     {
         DSQLEngine dse = (DSQLEngine) engine;
         return dse.createKey(parent, kind, id.longValue());
     }
     
-    @Rule("googleTextType '\\(' string '\\)'")
-    protected Literal<Entity, Object> literal(Class<?> type, String string)
+    @Rule("identifier '\\(' string '\\)'")
+    protected Literal<Entity, Object> literal(
+            String typeName, 
+            String string,
+            @ParserContext(ParserConstants.INPUTREADER) InputReader reader
+            )
     {
         try
         {
+            Class<?> type = googleTypeMap.get(typeName);
             Constructor constructor = type.getConstructor(String.class);
             Object newInstance = constructor.newInstance(string);
             return new LiteralImpl<>(newInstance);
         }
         catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
         {
-            // TODO localisation
-            throw new UnsupportedOperationException(type+" not supported String type", ex);
+            reader.throwSyntaxErrorException(typeName, "Category, Email, Link, PhoneNumber, Text, User");
         }
+        return null;
     }
-
-    @Rule("googleIntegerType '\\(' integer '\\)'")
-    protected Literal<Entity, Object> literal(Class<?> type, Number number)
+    
+    @Rule("identifier '\\(' integer '\\)'")
+    protected Literal<Entity, Object> literal(
+            String typeName, 
+            Number number, 
+            @ParserContext(ParserConstants.INPUTREADER) InputReader reader
+            )
     {
         try
         {
+            Class<?> type = googleTypeMap.get(typeName);
             Constructor constructor = type.getConstructor(int.class);
             Object newInstance = constructor.newInstance(number.intValue());
             return new LiteralImpl<>(newInstance);
         }
         catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
         {
-            throw new UnsupportedOperationException(type+" not supported String type", ex);
+            reader.throwSyntaxErrorException(typeName, "Long, Rating");
         }
+        return null;
     }
 
-    @Rule("googleTypeGeoPt '\\(' decimal '\\,' decimal '\\)'")
-    protected Literal<Entity, Object> literal(Class<?> type, Number lat, Number lon)
+    @Rule("identifier '\\(' coordinate '\\)'")
+    protected Literal<Entity, Object> literal(
+            String typeName, 
+            GeoPt pt, 
+            @ParserContext(ParserConstants.INPUTREADER) InputReader reader
+            )
     {
-        Object geoPt = new GeoPt(lat.floatValue(), lon.floatValue());
-        return new LiteralImpl<>(geoPt);
+        Class<?> type = googleTypeMap.get(typeName);
+        if (!GeoPt.class.equals(type))
+        {
+            reader.throwSyntaxErrorException("GeoPt", typeName);
+        }
+        return new LiteralImpl<Entity, Object>(pt);
     }
 
-    @Rule("googleTypeGeoPt '\\(' ns latitude '\\,' we longitude '\\)'")
-    protected Literal<Entity, Object> literal(Class<?> type, int ns, Number lat, int we, Number lon)
+    @Rule("decimal '\\,' decimal")
+    protected GeoPt coordinate(Number lat, Number lon)
     {
-        Object geoPt = new GeoPt(lat.floatValue(), lon.floatValue());
-        return new LiteralImpl<>(geoPt);
+        return new GeoPt(lat.floatValue(), lon.floatValue());
     }
 
-    @Rules({
-    @Rule("googleTypeGeoPt"),
-    @Rule("googleOtherType"),
-    @Rule("googleIntegerType"),
-    @Rule("googleTextType")
-    })
-    protected Class<?>  placeholderType(Class<?> type)
+    @Rule("ns latitude '\\,' we longitude")
+    protected GeoPt coordinate(int ns, Number lat, int we, Number lon)
     {
-        return type;
+        return new GeoPt(ns*lat.floatValue(), we*lon.floatValue());
     }
-
-    @Rules({
-    @Rule("googleTypeCategory"),
-    @Rule("googleTypeLink"),
-    @Rule("googleTypePhoneNumber"),
-    @Rule("googleTypePostalAddress"),
-    @Rule("googleTypeText"),
-    @Rule("googleTypeEmail")
-    })
-    protected Class<?> googleTextType(Class<?> type)
-    {
-        return type;
-    }
-
-    @Rules({
-    @Rule("googleTypeLong"),
-    @Rule("googleTypeRating")
-    })
-    protected Class<?> googleIntegerType(Class<?> type)
-    {
-        return type;
-    }
-
-    @Rules({
-    @Rule("googleTypeShortBlob"),
-    @Rule("googleTypeBlob")
-    })
-    protected Class<?> googleOtherType(Class<?> type)
-    {
-        return type;
-    }
-
-    @Rule("googleTypeGeoPt")
-    protected Class<?> googlePairType(Class<?> type)
-    {
-        return type;
-    }
-
-    @Rules({
-    @Rule("long")
-    })
-    protected Class<?> googleTypeLong()
-    {
-        return Long.class;
-    }
-
-    @Rules({
-    @Rule("double")
-    })
-    protected Class<?>  googleTypeDouble()
-    {
-        return Double.class;
-    }
-
-    @Rule("date")
-    protected Class<?>  googleTypeDate()
-    {
-        return Date.class;
-    }
-
-    @Rule("category")
-    protected Class<?>  googleTypeCategory()
-    {
-        return Category.class;
-    }
-
-    @Rule("email")
-    protected Class<?>  googleTypeEmail()
-    {
-        return Email.class;
-    }
-
-    @Rule("link")
-    protected Class<?>  googleTypeLink()
-    {
-        return Link.class;
-    }
-
-    @Rule("phonenumber")
-    protected Class<?>  googleTypePhoneNumber()
-    {
-        return PhoneNumber.class;
-    }
-
-    @Rule("postaladdress")
-    protected Class<?>  googleTypePostalAddress()
-    {
-        return PostalAddress.class;
-    }
-
-    @Rule("rating")
-    protected Class<?>  googleTypeRating()
-    {
-        return Rating.class;
-    }
-
-    @Rule("blob")
-    protected Class<?>  googleTypeBlob()
-    {
-        return Blob.class;
-    }
-
-    @Rule("shortblob")
-    protected Class<?>  googleTypeShortBlob()
-    {
-        return ShortBlob.class;
-    }
-
-    @Rule("text")
-    protected Class<?>  googleTypeText()
-    {
-        return Text.class;
-    }
-
-    @Rule("key")
-    protected Class<?>  googleTypeKey()
-    {
-        return Key.class;
-    }
-
-    @Rule("user")
-    protected Class<?>  googleTypeUser()
-    {
-        return User.class;
-    }
-
-    @Rule("geopt")
-    protected Class<?>  googleTypeGeoPt()
-    {
-        return GeoPt.class;
-    }
-
     
     @Rule("integer degreeChar? decimal secondChar?")
     protected Number latitude(Number degree, Number minutes,
             @ParserContext(ParserConstants.INPUTREADER) InputReader reader)
     {
-        double d = degree.doubleValue() + 
-                minutes.doubleValue()/60.0;
-        if (d < 0 || d > 90)
+        double deg = degree.doubleValue();
+        double min = minutes.doubleValue();
+        double d = deg + min/60.0;
+        if (d < 0 || d > 90 || min < 0 || min > 60)
         {
             reader.throwSyntaxErrorException("latitude coordinate", String.valueOf(d));
         }
@@ -375,10 +320,11 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     protected Number latitude(Number degree, Number minutes, Number seconds,
             @ParserContext(ParserConstants.INPUTREADER) InputReader reader)
     {
-        double d = degree.doubleValue() + 
-                minutes.doubleValue()/60.0 +
-                seconds.doubleValue()/3600.0;
-        if (d < 0 || d > 90)
+        double deg = degree.doubleValue();
+        double min = minutes.doubleValue();
+        double sec = seconds.doubleValue();
+        double d = deg + min/60.0 + sec/3600.0;
+        if (d < 0 || d > 90 || min < 0 || min > 60 || sec < 0 || sec > 60)
         {
             reader.throwSyntaxErrorException("latitude coordinate", String.valueOf(d));
         }
@@ -389,8 +335,10 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     protected Number longitude(Number degree, Number minutes,
             @ParserContext(ParserConstants.INPUTREADER) InputReader reader)
     {
-        double d = degree.doubleValue() + minutes.doubleValue()/60.0;
-        if (d < 0 || d > 180)
+        double deg = degree.doubleValue();
+        double min = minutes.doubleValue();
+        double d = deg + min/60.0;
+        if (d < 0 || d > 180 || min < 0 || min > 60)
         {
             reader.throwSyntaxErrorException("longitude coordinate", String.valueOf(d));
         }
@@ -401,10 +349,11 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     protected Number longitude(Number degree, Number minutes, Number seconds,
             @ParserContext(ParserConstants.INPUTREADER) InputReader reader)
     {
-        double d = degree.doubleValue() + 
-                minutes.doubleValue()/60.0 +
-                seconds.doubleValue()/3600.0;
-        if (d < 0 || d > 180)
+        double deg = degree.doubleValue();
+        double min = minutes.doubleValue();
+        double sec = seconds.doubleValue();
+        double d = deg + min/60.0 + sec/3600.0;
+        if (d < 0 || d > 180 || min < 0 || min > 60 || sec < 0 || sec > 60)
         {
             reader.throwSyntaxErrorException("longitude coordinate", String.valueOf(d));
         }
@@ -432,25 +381,25 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     })
     protected abstract int we(int sign);
     
-    @Rule("'N'")
+    @Rule("n")
     protected int north()
     {
         return 1;
     }
     
-    @Rule("'E'")
+    @Rule("e")
     protected int east()
     {
         return 1;
     }
     
-    @Rule("'S'")
+    @Rule("s")
     protected int south()
     {
         return -1;
     }
     
-    @Rule("'W'")
+    @Rule("w")
     protected int west()
     {
         return -1;
@@ -458,20 +407,10 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     
     @ReservedWords(value =
     {
-        "long",
-        "double",
-        "user",
-        "date",
-        "category",
-        "email",
-        "link",
-        "phonenumber",
-        "postaladdress",
-        "rating",
-        "blob",
-        "shortblob",
-        "geopt",
-        "text",
+        "n",
+        "s",
+        "w",
+        "e",
         "key",
         "of",
         "parent",
@@ -569,5 +508,17 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
                 break;
         }
     }
-    
+
+    public static void main(String... args)
+    {
+        try
+        {
+            ParserCompiler pc = new ParserCompiler(DSQLParser.class);
+            pc.compile();
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
 }

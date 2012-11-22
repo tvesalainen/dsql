@@ -19,6 +19,7 @@ package org.vesalainen.parsers.sql.dsql.ui;
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Category;
 import com.google.appengine.api.datastore.Email;
+import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.datastore.PhoneNumber;
 import com.google.appengine.api.datastore.PostalAddress;
@@ -34,6 +35,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Vector;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
@@ -53,6 +55,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.vesalainen.parsers.magic.Magic;
 import org.vesalainen.parsers.magic.Magic.MagicResult;
+import org.vesalainen.parsers.sql.dsql.DSQLParser;
 
 /**
  * @author Timo Vesalainen
@@ -60,6 +63,7 @@ import org.vesalainen.parsers.magic.Magic.MagicResult;
 public class DSJTable extends JTable
 {
     private static final Magic magic = Magic.newInstance();
+    private static final DSQLParser parser = DSQLParser.newInstance();
     private static File currentDirectory;
     
     private JFrame frame;
@@ -114,6 +118,7 @@ public class DSJTable extends JTable
     {
         setRowSelectionAllowed(true);
         
+        setDefaultEditor(GeoPt.class, new GeoPtCellEditor());
         setDefaultEditor(ShortBlob.class, new ShortBlobCellEditor());
         setDefaultEditor(Blob.class, new BlobCellEditor());
         setDefaultEditor(Rating.class, new RatingCellEditor());
@@ -124,6 +129,7 @@ public class DSJTable extends JTable
         setDefaultEditor(Email.class, new EmailCellEditor());
         setDefaultEditor(Category.class, new CategoryCellEditor());
         
+        setDefaultRenderer(GeoPt.class, new GeoPtTableCellRenderer());
         setDefaultRenderer(ShortBlob.class, new ShortBlobTableCellRenderer());
         setDefaultRenderer(Blob.class, new BlobTableCellRenderer());
         setDefaultRenderer(Rating.class, new RatingTableCellRenderer());
@@ -135,6 +141,36 @@ public class DSJTable extends JTable
         setDefaultRenderer(Category.class, new CategoryTableCellRenderer());
     }
 
+    public class GeoPtCellEditor extends AbstractCellEditor implements TableCellEditor
+    {
+        private JTextField editor = new JTextField();
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
+        {
+            if (value != null)
+            {
+                GeoPt pt = (GeoPt) value;
+                editor.setText(DSJTable.toString(pt));
+            }
+            return editor;
+        }
+
+        @Override
+        public Object getCellEditorValue()
+        {
+            String text = editor.getText();
+            if (text != null && !text.isEmpty())
+            {
+                return parser.parseCoordinate(editor.getText(), null);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        
+    }
     public class ShortBlobCellEditor extends BlobCellEditor
     {
         @Override
@@ -558,6 +594,46 @@ public class DSJTable extends JTable
             return new Category(editor.getText());
         }
         
+    }
+    public class GeoPtTableCellRenderer extends TooltippedTableCellRenderer
+    {
+
+        @Override
+        protected void setValue(Object value)
+        {
+            if (value != null)
+            {
+                GeoPt pt = (GeoPt) value;
+                super.setValue(toString(pt));
+            }
+            else
+            {
+                super.setValue(value);
+            }
+        }
+    }
+
+    public static String toString(GeoPt pt)
+    {
+        float lat = pt.getLatitude();
+        char ns = lat > 0 ? 'N' : 'S';
+        lat = Math.abs(lat);
+        int lati = (int) lat;
+        lat = lat-lati;
+        float lon = pt.getLongitude();
+        char we = lon > 0 ? 'E' : 'W';
+        lon = Math.abs(lon);
+        int loni = (int) lon;
+        lon = lon-loni;
+        return String.format(Locale.US,
+                "%c %d\u00b0 %.3f', %c %d\u00b0 %.3f'", 
+                ns,
+                lati,
+                lat*60,
+                we,
+                loni,
+                lon*60
+                );
     }
     public class BlobTableCellRenderer extends TooltippedTableCellRenderer
     {

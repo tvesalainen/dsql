@@ -32,13 +32,16 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -58,6 +61,7 @@ import org.vesalainen.parser.util.OffsetLocatorException;
 import org.vesalainen.parsers.sql.Engine;
 import org.vesalainen.parsers.sql.ErrorReporter;
 import org.vesalainen.parsers.sql.FetchResult;
+import org.vesalainen.parsers.sql.Placeholder;
 import org.vesalainen.parsers.sql.SQLLocator;
 import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
@@ -99,6 +103,7 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
     private DSJTable table;
     private final JButton deleteRowButton;
     private final JButton insertRowButton;
+    private Level errorLevel;
     
     public WorkBench(final DSQLEngine engine, String storedStatementsKind)
     {
@@ -303,49 +308,88 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
 
     private void execute()
     {
-        statement.execute();
-        if (tableModel != null)
+        if (enterPlaceHolders(statement))
         {
-            tableModel.clear();
+            statement.execute();
+            if (tableModel != null)
+            {
+                tableModel.clear();
+            }
         }
     }
 
     private void select()
     {
-        SelectStatement select = (SelectStatement) statement;
-        FetchResult result = select.execute();
-        if (tableModel == null)
+        if (enterPlaceHolders(statement))
         {
-            tableModel = new FetchResultTableModel(result);
-            table = new DSJTable(tableModel);
-            table.setFrame(frame);
-            lowerPane.setViewportView(table);
-        }
-        else
-        {
-            tableModel.updateData(result);
+            SelectStatement select = (SelectStatement) statement;
+            FetchResult result = select.execute();
+            if (tableModel == null)
+            {
+                tableModel = new FetchResultTableModel(result);
+                table = new DSJTable(tableModel);
+                table.setFrame(frame);
+                lowerPane.setViewportView(table);
+            }
+            else
+            {
+                tableModel.updateData(result);
+            }
         }
     }
     private void selectAndUpdate()
     {
-        SelectStatement select = (SelectStatement) statement;
-        engine.beginTransaction();
-        updateableFetchResult = select.selectForUpdate();
-        if (tableModel == null)
+        if (enterPlaceHolders(statement))
         {
-            tableModel = new FetchResultTableModel(updateableFetchResult);
-            table = new DSJTable(tableModel);
-            table.setFrame(frame);
-            lowerPane.setViewportView(table);
+            SelectStatement select = (SelectStatement) statement;
+            engine.beginTransaction();
+            updateableFetchResult = select.selectForUpdate();
+            if (tableModel == null)
+            {
+                tableModel = new FetchResultTableModel(updateableFetchResult);
+                table = new DSJTable(tableModel);
+                table.setFrame(frame);
+                lowerPane.setViewportView(table);
+            }
+            else
+            {
+                tableModel.updateData(updateableFetchResult);
+            }
+            commitButton.setEnabled(true);
+            rollbackButton.setEnabled(true);
+            insertRowButton.setEnabled(true);
+            deleteRowButton.setEnabled(true);
         }
-        else
+    }
+    
+    private boolean enterPlaceHolders(Statement statement)
+    {
+        LinkedHashMap<String,Placeholder> placeholderMap = statement.getPlaceholderMap();
+        if (!placeholderMap.isEmpty())
         {
-            tableModel.updateData(updateableFetchResult);
+            
+            InputDialog inputDialog = new InputDialog(frame, "Enter Placeholder Values");
+            for (Entry<String,Placeholder> entry : placeholderMap.entrySet())
+            {
+                Placeholder ph = entry.getValue();
+                inputDialog.add(ph.getName(), ph.getValue(), ph.getType());
+            }
+            if (inputDialog.input())
+            {
+                int row = 0;
+                for (Entry<String,Placeholder> entry : placeholderMap.entrySet())
+                {
+                    Placeholder ph = entry.getValue();
+                    statement.bindValue(ph.getName(), inputDialog.get(row++));
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
-        commitButton.setEnabled(true);
-        rollbackButton.setEnabled(true);
-        insertRowButton.setEnabled(true);
-        deleteRowButton.setEnabled(true);
+        return true;
     }
     
     private void changed()
@@ -449,6 +493,11 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
             default:
                 assert false;
         }
+        sqlArea.setToolTipText(message);
+        if (level.ordinal() > errorLevel.ordinal())
+        {
+            errorLevel = level;
+        }
     }
 
     @Override
@@ -484,7 +533,7 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
     {
         frame.setTitle(name+" - "+TITLE);
     }
-    
+
     private class AL implements ActionListener
     {
         WorkBench parent;
@@ -497,6 +546,7 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         @Override
         public void actionPerformed(ActionEvent e)
         {
+            sqlArea.setToolTipText("");
             color(blackAction, 0, sqlArea.getDocument().getLength());
             executeButton.setEnabled(false);
             selectButton.setEnabled(false);
@@ -516,17 +566,21 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
                 }
                 try
                 {
+                    parent.errorLevel = Level.Ok;
                     engine.check(reader, parent);
                     statement = engine.prepare(sql);
                     statement.check(engine, parent);
-                    if (statement instanceof SelectStatement)
+                    if (parent.errorLevel != Level.Fatal)
                     {
-                        selectButton.setEnabled(true);
-                        selectAndUpdateButton.setEnabled(true);
-                    }
-                    else
-                    {
-                        executeButton.setEnabled(true);
+                        if (statement instanceof SelectStatement)
+                        {
+                            selectButton.setEnabled(true);
+                            selectAndUpdateButton.setEnabled(true);
+                        }
+                        else
+                        {
+                            executeButton.setEnabled(true);
+                        }
                     }
                 }
                 catch (OffsetLocatorException ex)
@@ -569,9 +623,12 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
                 System.exit(-1);
             }
         }
-        catch (Exception ex)
+        catch (Throwable ex)
         {
+            ex = ex.getCause() == null ? ex : ex.getCause();
+            JOptionPane.showMessageDialog(null, ex.getLocalizedMessage(), ex.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
+            System.exit(-1);
         }
     }
 

@@ -30,19 +30,12 @@ import javax.swing.SpringLayout;
  */
 public class CredentialsDialog extends OkCancelDialog
 {
-    private String server;
-    private String email;
-    private String password;
     private final JTextField serverField;
     private final JTextField emailField;
     private final JPasswordField passwordField;
 
     public CredentialsDialog(String server, String email, String password)
     {
-        this.server = server;
-        this.email = email;
-        this.password = password;
-
         setTitle("Login");
         serverField = new JTextField(server, 30);
         emailField = new JTextField(email, 30);

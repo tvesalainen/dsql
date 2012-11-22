@@ -80,7 +80,6 @@ public class DatastoreEngine  implements DSProxyInterface
     @Override
     public Collection<Entity> fetch(Table<Entity,Object> table)
     {
-        // TODO projections
         String kind = table.getName();
         TableMetadata kindStats = statistics.getKind(kind);
         Query query = new Query(kind);
