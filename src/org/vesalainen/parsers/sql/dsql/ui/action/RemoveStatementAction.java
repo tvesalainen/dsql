@@ -52,10 +52,11 @@ public class RemoveStatementAction extends PersistenceStatementAction
             Statement update = workBench.getEngine().prepare(
                                         "delete from "+
                                         storedStatementsKind+
-                                        " where key = "+storedStatementsKind+"( '"+name+"' )"
+                                        " where key = key("+storedStatementsKind+"( '"+name+"' ))"
                                         );
             update.execute();
             workBench.setOpenStatement(null, "");
+            refresh();
         }
     }
 

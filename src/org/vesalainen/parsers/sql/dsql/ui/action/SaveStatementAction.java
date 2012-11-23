@@ -17,6 +17,7 @@
 
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
+import com.google.appengine.api.datastore.Text;
 import java.awt.event.ActionEvent;
 import org.vesalainen.parsers.sql.Statement;
 import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
@@ -41,9 +42,9 @@ public class SaveStatementAction extends PersistenceStatementAction
             Statement update = workBench.getEngine().prepare(
                                         "update "+
                                         storedStatementsKind+
-                                        " set sql = :sql where key = "+storedStatementsKind+"( '"+name+"' )"
+                                        " set sql = :sql text where key = key("+storedStatementsKind+"( '"+name+"' ))"
                                         );
-            update.bindValue("sql", getTextComponent(e));
+            update.bindValue("sql", new Text(workBench.getActiveTextPane().getText()));
             update.execute();
         }
     }

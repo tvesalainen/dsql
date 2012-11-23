@@ -190,18 +190,12 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         return type;
     }
             
-    @Rule("identifier '\\(' keyValue '\\)'")
+    @Rule("key '\\(' keyValue '\\)'")
     protected Literal<Entity, Object> literal(
-            String typeName, 
             Key key, 
             @ParserContext(ParserConstants.INPUTREADER) InputReader reader
             )
     {
-        Class<?> type = googleTypeMap.get(typeName);
-        if (!Key.class.equals(type))
-        {
-            reader.throwSyntaxErrorException("Key", typeName);
-        }
         return new LiteralImpl<Entity, Object>(key);
     }
 
@@ -247,7 +241,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
             Object newInstance = constructor.newInstance(string);
             return new LiteralImpl<>(newInstance);
         }
-        catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
+        catch (NullPointerException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
         {
             reader.throwSyntaxErrorException(typeName, "Category, Email, Link, PhoneNumber, Text, User");
         }
@@ -268,7 +262,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
             Object newInstance = constructor.newInstance(number.intValue());
             return new LiteralImpl<>(newInstance);
         }
-        catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
+        catch (NullPointerException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
         {
             reader.throwSyntaxErrorException(typeName, "Long, Rating");
         }

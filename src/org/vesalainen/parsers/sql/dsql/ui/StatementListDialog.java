@@ -47,7 +47,7 @@ public class StatementListDialog extends OkCancelDialog
         refresh();
     }
 
-    private void refresh()
+    public void refresh()
     {
         model.clear();
         FetchResult results = workBench.engine.execute("select "+Entity.KEY_RESERVED_PROPERTY+" from "+workBench.storedStatementsKind);

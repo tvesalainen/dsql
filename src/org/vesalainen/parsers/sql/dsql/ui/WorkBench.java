@@ -25,7 +25,6 @@ import org.vesalainen.parsers.sql.dsql.ui.action.SaveStatementAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.SaveAsStatementAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.RemoveStatementAction;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -39,9 +38,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -54,31 +51,23 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
-import javax.swing.Timer;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
-import javax.swing.text.StyledEditorKit;
-import javax.swing.text.StyledEditorKit.ForegroundAction;
 import javax.swing.undo.UndoManager;
-import org.vesalainen.parser.util.InputReader;
-import org.vesalainen.parser.util.OffsetLocatorException;
 import org.vesalainen.parsers.sql.Engine;
-import org.vesalainen.parsers.sql.ErrorReporter;
-import org.vesalainen.parsers.sql.FetchResult;
-import org.vesalainen.parsers.sql.Placeholder;
-import org.vesalainen.parsers.sql.SQLLocator;
-import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
 import org.vesalainen.parsers.sql.UpdateableFetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
+import org.vesalainen.parsers.sql.dsql.ui.action.DSqlParseAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.ExecuteAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.FetchResultHandler;
+import org.vesalainen.parsers.sql.dsql.ui.action.SelectForUpdateAction;
 
 /**
  * @author Timo Vesalainen
  */
-public class WorkBench extends WindowAdapter implements DocumentListener, SQLLocator, ErrorReporter
+public class WorkBench extends WindowAdapter
 {
     static final String TITLE = "Datastore Query 1.0";
     final static Cursor busyCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
@@ -86,63 +75,39 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
     Engine engine;
     JFrame frame;
     private JMenuBar menuBar;
-    private final JScrollPane sqlPane;
-    private final JScrollPane lowerPane;
+    private final JScrollPane upperPane;
+    private final JScrollPane resultPane;
     private final JSplitPane splitPane;
-    final JTextPane sqlArea;
-    private FetchResultTableModel tableModel;
-    private InputReader reader;
-    private Statement statement;
+    final JTextPane sqlPane;
     private final JButton executeButton;
-    private final JButton selectButton;
     private final JButton selectAndUpdateButton;
-    private final Action redAction;
-    private final Action blueAction;
-    private final Action blackAction;
-    private final Timer timer;
-    private final Action grayAction;
-    private final ForegroundAction orangeAction;
-    private final UndoableEditListenerSwitch undoSwitch;
     final String storedStatementsKind;
     private final JButton commitButton;
     private final JButton rollbackButton;
-    private UpdateableFetchResult updateableFetchResult;
-    private DSJTable table;
     private final JButton deleteRowButton;
-    private final JButton insertRowButton;
-    private Level errorLevel;
+    private final DSqlParseAction parseAction;
     
     public WorkBench(final DSQLEngine engine, String storedStatementsKind)
     {
         this.storedStatementsKind = storedStatementsKind;
         this.engine = engine;
-        frame = new JFrame();
+        frame = new JFrame(TITLE);
         frame.addWindowListener(this);
         Toolkit.getDefaultToolkit().getSystemEventQueue().push(new ExceptionHandler());
 
-        timer = new Timer(500, new AL(this));
-        timer.stop();
-        timer.setRepeats(false);
-        
-        sqlArea = new JTextPane();
-        sqlArea.getDocument().putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
-        sqlArea.setPreferredSize(new Dimension(700, 200));
+        sqlPane = new JTextPane();
+        sqlPane.getDocument().putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
+        sqlPane.setPreferredSize(new Dimension(700, 200));
         Map<Object,Action> actions = new HashMap<>();
-        for (Action action : sqlArea.getActions())
+        for (Action action : sqlPane.getActions())
         {
             actions.put(action.getValue(Action.NAME), action);
         }
-        blackAction = new StyledEditorKit.ForegroundAction("Black", Color.BLACK);
-        redAction = new StyledEditorKit.ForegroundAction("Red", Color.red);
-        blueAction = new StyledEditorKit.ForegroundAction("Blue", Color.BLUE);
-        grayAction = new StyledEditorKit.ForegroundAction("Green", Color.LIGHT_GRAY);
-        orangeAction = new StyledEditorKit.ForegroundAction("Orange", Color.ORANGE);
-        
-        Document document = sqlArea.getDocument();
-        document.addDocumentListener(this);
-        UndoManager undo = new UndoManager();
-        undoSwitch = new UndoableEditListenerSwitch(undo);
-        document.addUndoableEditListener(undoSwitch);
+        Document document = sqlPane.getDocument();
+        UndoManager undoManager = new UndoManager();
+        parseAction = new DSqlParseAction(this, undoManager);
+        document.addDocumentListener(parseAction);
+        document.addUndoableEditListener(parseAction);
         
         menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
@@ -156,28 +121,28 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         
         JMenu editMenu = new JMenu("Edit");
         menuBar.add(editMenu);
-        editMenu.add(new UndoAction("Undo", undo)).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
-        editMenu.add(new RedoAction("Redo", undo)).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
+        editMenu.add(new UndoAction("Undo", undoManager)).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+        editMenu.add(new RedoAction("Redo", undoManager)).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
         editMenu.add(actions.get(DefaultEditorKit.cutAction));
         editMenu.add(actions.get(DefaultEditorKit.copyAction));
         editMenu.add(actions.get(DefaultEditorKit.pasteAction));
         
-        sqlPane = new JScrollPane(sqlArea);
+        upperPane = new JScrollPane(sqlPane);
         
         JMenu sourceMenu = new JMenu("Source");
         menuBar.add(sourceMenu);
         
-        InsertPropertiesHandler insertPropertiesHandler = new InsertPropertiesHandler(sqlArea);
+        InsertPropertiesHandler insertPropertiesHandler = new InsertPropertiesHandler(sqlPane);
         MetadataTreeAction insertPropertiesAction = new MetadataTreeAction("Insert Properties", engine.getStatistics(), insertPropertiesHandler);
         sourceMenu.add(insertPropertiesAction).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK));
 
-        GenerateSelectHandler generateSelectHandler = new GenerateSelectHandler(sqlArea);
+        GenerateSelectHandler generateSelectHandler = new GenerateSelectHandler(sqlPane);
         MetadataTreeAction generateSelectAction = new MetadataTreeAction("Generate Select", engine.getStatistics(), generateSelectHandler);
         sourceMenu.add(generateSelectAction).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.ALT_DOWN_MASK));
 
-        lowerPane = new JScrollPane();
+        resultPane = new JScrollPane();
 
-        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sqlPane, lowerPane);
+        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, upperPane, resultPane);
         splitPane.setDividerLocation(0.5);
         
         JPanel contentPane = new JPanel(new BorderLayout());
@@ -186,124 +151,37 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
         contentPane.add(buttonPanel, BorderLayout.SOUTH);
-
-        executeButton = new JButton("Execute");
-        executeButton.setEnabled(false);
-        ActionListener executeAction = new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                execute();
-            }
-        };
-        executeAction = createActionListener(frame, executeAction);
-        executeButton.addActionListener(executeAction);
+        
+        JMenu actionMenu = new JMenu("Actions");
+        menuBar.add(actionMenu);
+        
+        ExecuteAction executeAction = new ExecuteAction(frame);
+        parseAction.addPropertyChangeListener(executeAction);
+        executeButton = new JButton(executeAction);
         buttonPanel.add(executeButton);
-
-        selectButton = new JButton("Select");
-        selectButton.setEnabled(false);
-        ActionListener selectAction = new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                select();
-            }
-        };
-        selectAction = createActionListener(frame, selectAction);
-        selectButton.addActionListener(selectAction);
-        buttonPanel.add(selectButton);
-
-        selectAndUpdateButton = new JButton("Select&Update");
-        selectAndUpdateButton.setEnabled(false);
-        ActionListener selectAndUpdateAction = new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                selectAndUpdate();
-            }
-        };
-        selectAndUpdateAction = createActionListener(frame, selectAndUpdateAction);
-        selectAndUpdateButton.addActionListener(selectAndUpdateAction);
+        actionMenu.add(executeButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK));;
+        
+        SelectForUpdateAction selectForUpdateAction = new SelectForUpdateAction(frame);
+        parseAction.addPropertyChangeListener(selectForUpdateAction);
+        selectAndUpdateButton = new JButton(selectForUpdateAction);
         buttonPanel.add(selectAndUpdateButton);
-
-        deleteRowButton = new JButton("Delete Row");
-        deleteRowButton.setEnabled(false);
-        ActionListener deleteRowAction = new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                int rowNum = table.getSelectedRow();
-                while (rowNum != -1)
-                {
-                    tableModel.deleteRow(rowNum);
-                    rowNum = table.getSelectedRow();
-                }
-            }
-        };
-        deleteRowAction = createActionListener(frame, deleteRowAction);
-        deleteRowButton.addActionListener(deleteRowAction);
+        actionMenu.add(selectAndUpdateButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));;;
+        
+        FetchResultHandler fetchResultHandler = new FetchResultHandler(frame, resultPane);
+        executeAction.addPropertyChangeListener(fetchResultHandler);
+        selectForUpdateAction.addPropertyChangeListener(fetchResultHandler);
+                
+        deleteRowButton = new JButton(fetchResultHandler.getDeleteRowAction());
         buttonPanel.add(deleteRowButton);
+        actionMenu.add(deleteRowButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK));;;
 
-        insertRowButton = new JButton("Insert Row");
-        insertRowButton.setEnabled(false);
-        ActionListener insertRowAction = new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-            }
-        };
-        insertRowAction = createActionListener(frame, insertRowAction);
-        insertRowButton.addActionListener(insertRowAction);
-        buttonPanel.add(insertRowButton);
-
-        commitButton = new JButton("Commit");
-        commitButton.setEnabled(false);
-        ActionListener commitAction = new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                TableCellEditor cellEditor = table.getCellEditor();
-                if (cellEditor != null)
-                {
-                    cellEditor.stopCellEditing();
-                }
-                updateableFetchResult.update();
-                updateableFetchResult = null;
-                engine.commitTransaction();
-                commitButton.setEnabled(false);
-                rollbackButton.setEnabled(false);
-                insertRowButton.setEnabled(false);
-                deleteRowButton.setEnabled(false);
-            }
-        };
-        commitAction = createActionListener(frame, commitAction);
-        commitButton.addActionListener(commitAction);
+        commitButton = new JButton(fetchResultHandler.getCommitAction());
         buttonPanel.add(commitButton);
+        actionMenu.add(commitButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK));;;
 
-        rollbackButton = new JButton("Rollback");
-        rollbackButton.setEnabled(false);
-        ActionListener rollbackAction = new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                updateableFetchResult = null;
-                engine.rollbackTransaction();
-                commitButton.setEnabled(false);
-                rollbackButton.setEnabled(false);
-                insertRowButton.setEnabled(false);
-                deleteRowButton.setEnabled(false);
-            }
-        };
-        rollbackAction = createActionListener(frame, rollbackAction);
-        rollbackButton.addActionListener(rollbackAction);
+        rollbackButton = new JButton(fetchResultHandler.getRollbackAction());
         buttonPanel.add(rollbackButton);
+        actionMenu.add(rollbackButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));;;
 
         frame.setContentPane(contentPane);
         
@@ -313,115 +191,11 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         frame.setSize(800, 580);
     }
 
-    private void execute()
+    public JTextPane getActiveTextPane()
     {
-        if (enterPlaceHolders(statement))
-        {
-            statement.execute();
-            if (tableModel != null)
-            {
-                tableModel.clear();
-            }
-        }
-    }
-
-    private void select()
-    {
-        if (enterPlaceHolders(statement))
-        {
-            SelectStatement select = (SelectStatement) statement;
-            FetchResult result = select.execute();
-            if (tableModel == null)
-            {
-                tableModel = new FetchResultTableModel(result);
-                table = new DSJTable(tableModel);
-                table.setFrame(frame);
-                lowerPane.setViewportView(table);
-            }
-            else
-            {
-                tableModel.updateData(result);
-            }
-        }
-    }
-    private void selectAndUpdate()
-    {
-        if (enterPlaceHolders(statement))
-        {
-            SelectStatement select = (SelectStatement) statement;
-            engine.beginTransaction();
-            updateableFetchResult = select.selectForUpdate();
-            if (tableModel == null)
-            {
-                tableModel = new FetchResultTableModel(updateableFetchResult);
-                table = new DSJTable(tableModel);
-                table.setFrame(frame);
-                lowerPane.setViewportView(table);
-            }
-            else
-            {
-                tableModel.updateData(updateableFetchResult);
-            }
-            commitButton.setEnabled(true);
-            rollbackButton.setEnabled(true);
-            insertRowButton.setEnabled(true);
-            deleteRowButton.setEnabled(true);
-        }
+        return sqlPane;
     }
     
-    private boolean enterPlaceHolders(Statement statement)
-    {
-        LinkedHashMap<String,Placeholder> placeholderMap = statement.getPlaceholderMap();
-        if (!placeholderMap.isEmpty())
-        {
-            
-            InputDialog inputDialog = new InputDialog(frame, "Enter Placeholder Values");
-            for (Entry<String,Placeholder> entry : placeholderMap.entrySet())
-            {
-                Placeholder ph = entry.getValue();
-                inputDialog.add(ph.getName(), ph.getValue(), ph.getType());
-            }
-            if (inputDialog.input())
-            {
-                int row = 0;
-                for (Entry<String,Placeholder> entry : placeholderMap.entrySet())
-                {
-                    Placeholder ph = entry.getValue();
-                    statement.bindValue(ph.getName(), inputDialog.get(row++));
-                }
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    private void changed()
-    {
-        timer.restart();
-    }
-
-    @Override
-    public void insertUpdate(DocumentEvent e)
-    {
-        changed();
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e)
-    {
-        changed();
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e)
-    {
-        //changed();
-    }
-
     public ActionListener createActionListener(final Component component, final ActionListener actionListener)
     {
         ActionListener al = new ActionListener()
@@ -452,73 +226,6 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         System.exit(0);
     }
     
-    private void color(Action action, int start, int end)
-    {
-        try
-        {
-            undoSwitch.setOff();
-            int save = sqlArea.getCaretPosition();
-            sqlArea.setCaretPosition(start);
-            sqlArea.moveCaretPosition(end);
-            action.actionPerformed(null);
-            sqlArea.setCaretPosition(save);
-            undoSwitch.setOn();
-        }
-        catch (IllegalArgumentException ex)
-        {
-            ex.printStackTrace();
-        }
-    }
-
-    @Override
-    public void locate(int start, int end, Type type)
-    {
-        switch (type)
-        {
-            case COMMENT:
-                color(grayAction, start, end);
-                break;
-            case RESERVED_WORD:
-                color(blueAction, start, end);
-                break;
-            default:
-                assert false;
-        }
-    }
-
-    @Override
-    public void report(String message, Level level, String source, int start, int end)
-    {
-        switch (level)
-        {
-            case Fatal:
-                color(redAction, start, end);
-                break;
-            case Hint:
-                color(orangeAction, start, end);
-                break;
-            default:
-                assert false;
-        }
-        sqlArea.setToolTipText(message);
-        if (level.ordinal() > errorLevel.ordinal())
-        {
-            errorLevel = level;
-        }
-    }
-
-    @Override
-    public void replace(String newText, int start, int end)
-    {
-        undoSwitch.setOff();
-        int save = sqlArea.getCaretPosition();
-        sqlArea.setCaretPosition(start);
-        sqlArea.moveCaretPosition(end);
-        sqlArea.replaceSelection(newText);
-        sqlArea.setCaretPosition(save);
-        undoSwitch.setOn();
-    }
-
     public String getOpenStatement()
     {
         String title = frame.getTitle();
@@ -534,7 +241,7 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
     public void setOpenStatement(String name, String sql)
     {
         frame.setTitle(name+" - "+TITLE);
-        sqlArea.setText(sql);
+        sqlPane.setText(sql);
     }
     public void setOpenStatement(String name)
     {
@@ -551,63 +258,6 @@ public class WorkBench extends WindowAdapter implements DocumentListener, SQLLoc
         return frame;
     }
 
-    private class AL implements ActionListener
-    {
-        WorkBench parent;
-
-        public AL(WorkBench parent)
-        {
-            this.parent = parent;
-        }
-        
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-            sqlArea.setToolTipText("");
-            color(blackAction, 0, sqlArea.getDocument().getLength());
-            executeButton.setEnabled(false);
-            selectButton.setEnabled(false);
-            selectAndUpdateButton.setEnabled(false);
-            commitButton.setEnabled(false);
-            rollbackButton.setEnabled(false);
-            String sql = sqlArea.getText();
-            if (!sql.isEmpty())
-            {
-                if (reader == null)
-                {
-                    reader = new InputReader(sql);
-                }
-                else
-                {
-                    reader.reuse(sql);
-                }
-                try
-                {
-                    parent.errorLevel = Level.Ok;
-                    engine.check(reader, parent);
-                    statement = engine.prepare(sql);
-                    statement.check(engine, parent);
-                    if (parent.errorLevel != Level.Fatal)
-                    {
-                        if (statement instanceof SelectStatement)
-                        {
-                            selectButton.setEnabled(true);
-                            selectAndUpdateButton.setEnabled(true);
-                        }
-                        else
-                        {
-                            executeButton.setEnabled(true);
-                        }
-                    }
-                }
-                catch (OffsetLocatorException ex)
-                {
-                    color(redAction, ex.getStart(), ex.getEnd());
-                }
-            }
-        }
-        
-    }
     /**
      * @param args the command line arguments
      */

@@ -153,6 +153,10 @@ public class DSJTable extends JTable
                 GeoPt pt = (GeoPt) value;
                 editor.setText(DSJTable.toString(pt));
             }
+            else
+            {
+                editor.setText(null);
+            }
             return editor;
         }
 
@@ -183,6 +187,10 @@ public class DSJTable extends JTable
                 bytes = blob.getBytes();
                 guess = magic.guess(bytes);
                 button.setText(guess.getDescription());
+            }
+            else
+            {
+                button.setText(null);
             }
             return button;
         }
@@ -226,6 +234,10 @@ public class DSJTable extends JTable
                 bytes = blob.getBytes();
                 guess = magic.guess(bytes);
                 button.setText(guess.getDescription());
+            }
+            else
+            {
+                button.setText(null);
             }
             return button;
         }
@@ -431,6 +443,10 @@ public class DSJTable extends JTable
                 Rating rating = (Rating) value;
                 editor.setValue(rating.getRating());
             }
+            else
+            {
+                editor.setValue(0);
+            }
             return editor;
         }
 
@@ -452,6 +468,10 @@ public class DSJTable extends JTable
             {
                 PostalAddress addr = (PostalAddress) value;
                 editor.setText(addr.getAddress());
+            }
+            else
+            {
+                editor.setText(null);
             }
             return editor;
         }
@@ -475,6 +495,10 @@ public class DSJTable extends JTable
                 PhoneNumber phone = (PhoneNumber) value;
                 editor.setText(phone.getNumber());
             }
+            else
+            {
+                editor.setText(null);
+            }
             return editor;
         }
 
@@ -496,6 +520,10 @@ public class DSJTable extends JTable
             {
                 Link link = (Link) value;
                 editor.setText(link.getValue());
+            }
+            else
+            {
+                editor.setText(null);
             }
             return editor;
         }
@@ -526,6 +554,10 @@ public class DSJTable extends JTable
             {
                 Text text = (Text) value;
                 button.setText(text.getValue());
+            }
+            else
+            {
+                button.setText(null);
             }
             return button;
         }
@@ -563,6 +595,10 @@ public class DSJTable extends JTable
                 Email email = (Email) value;
                 editor.setText(email.getEmail());
             }
+            else
+            {
+                editor.setText(null);
+            }
             return editor;
         }
 
@@ -584,6 +620,10 @@ public class DSJTable extends JTable
             {
                 Category category = (Category) value;
                 editor.setText(category.getCategory());
+            }
+            else
+            {
+                editor.setText(null);
             }
             return editor;
         }

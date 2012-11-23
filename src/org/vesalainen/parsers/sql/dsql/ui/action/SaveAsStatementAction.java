@@ -18,6 +18,7 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Text;
 import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
 import org.vesalainen.parsers.sql.FetchResult;
@@ -47,7 +48,7 @@ public class SaveAsStatementAction extends PersistenceStatementAction
                 FetchResult result = workBench.getEngine().execute(
                                             "select "+Entity.KEY_RESERVED_PROPERTY+" from "+
                                             storedStatementsKind+
-                                            " where key = "+storedStatementsKind+"( '"+name+"' )"
+                                            " where key = key("+storedStatementsKind+"( '"+name+"' ))"
                                             );
                 if (result.getRowCount() > 0)
                 {
@@ -65,11 +66,12 @@ public class SaveAsStatementAction extends PersistenceStatementAction
                 Statement insert = workBench.getEngine().prepare(
                                             "insert into "+
                                             storedStatementsKind+
-                                            " ( key, sql ) values ( "+storedStatementsKind+"( '"+name+"' ), :sql )"
+                                            " ( key, sql ) values ( key("+storedStatementsKind+"( '"+name+"' )), :sql text )"
                                             );
-                insert.bindValue("sql", getTextComponent(e));
+                insert.bindValue("sql", new Text(workBench.getActiveTextPane().getText()));
                 insert.execute();
                 workBench.setOpenStatement(name);
+                refresh();
             }
         }
     }

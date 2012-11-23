@@ -17,38 +17,49 @@
 
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
-import com.google.appengine.api.datastore.Text;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import javax.swing.JFrame;
 import org.vesalainen.parsers.sql.FetchResult;
-import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
+import org.vesalainen.parsers.sql.SelectStatement;
+import org.vesalainen.parsers.sql.Statement;
 
 /**
  * @author Timo Vesalainen
  */
-public class OpenStatementAction extends PersistenceStatementAction
+public class SelectForUpdateAction extends ExecuteAction
 {
 
-    public OpenStatementAction(String name, WorkBench workBench, String storedStatementsKind)
+    public SelectForUpdateAction(JFrame frame)
     {
-        super(name, workBench, storedStatementsKind);
+        super(frame);
+        putValue(NAME, "Select for Update");
     }
 
     @Override
     public void actionPerformed(ActionEvent e)
     {
-        String name = chooseStatement();
-        if (name != null)
+        if (enterPlaceHolders(statement))
         {
-            FetchResult result = workBench.getEngine().execute(
-                                        "select sql from "+
-                                        storedStatementsKind+
-                                        " where key = key("+storedStatementsKind+"( '"+name+"' ))"
-                                        );
-            if (result.getRowCount() > 0)
+            SelectStatement select = (SelectStatement) statement;
+            FetchResult fetchResult = select.selectForUpdate();
+            firePropertyChange(PropertyName, null, fetchResult);
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt)
+    {
+        if (DSqlParseAction.PropertyName.equals(evt.getPropertyName()))
+        {
+            statement = (Statement) evt.getNewValue();
+            if (statement != null && (statement instanceof SelectStatement))
             {
-                Text text = (Text) result.getValueAt(0, 0);
-                workBench.setOpenStatement(name, text.getValue());
+                setEnabled(true);
+            }
+            else
+            {
+                setEnabled(false);
             }
         }
     }

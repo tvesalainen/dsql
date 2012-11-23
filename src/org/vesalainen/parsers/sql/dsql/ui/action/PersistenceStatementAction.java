@@ -74,4 +74,16 @@ public abstract class PersistenceStatementAction extends TextAction
         }
         return null;
     }
+    public void refresh()
+    {
+        if (dialog == null)
+        {
+            dialog = new StatementListDialog(workBench);
+        }
+        else
+        {
+            dialog.refresh();
+        }
+    }
+    
 }
