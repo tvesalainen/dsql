@@ -17,6 +17,7 @@
 
 package org.vesalainen.parsers.sql.dsql.ui;
 
+import com.google.appengine.api.datastore.Entity;
 import javax.swing.table.AbstractTableModel;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.UpdateableFetchResult;
@@ -26,7 +27,7 @@ import org.vesalainen.parsers.sql.UpdateableFetchResult;
  */
 public class FetchResultTableModel extends AbstractTableModel
 {
-    private FetchResult fetchResult;
+    private FetchResult<Entity,Object> fetchResult;
     private Class<?>[] columnClass;
 
     public FetchResultTableModel(FetchResult fetchResult)
@@ -35,7 +36,12 @@ public class FetchResultTableModel extends AbstractTableModel
         checkClasses();
     }
 
-    public void updateData(FetchResult fetchResult)
+    public FetchResult<Entity,Object> getFetchResult()
+    {
+        return fetchResult;
+    }
+
+    public void updateData(FetchResult<Entity,Object> fetchResult)
     {
         this.fetchResult = fetchResult;
         columnClass = null;

@@ -23,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
+import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.table.TableCellEditor;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.UpdateableFetchResult;
@@ -34,6 +35,10 @@ import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
  */
 public class FetchResultHandler implements PropertyChangeListener
 {
+    public static final String PropertyName = "fetchResultModel";
+    
+    protected SwingPropertyChangeSupport changeSupport;
+    
     private JFrame frame;
     private JScrollPane scrollPane;
     private FetchResultTableModel tableModel;
@@ -50,6 +55,7 @@ public class FetchResultHandler implements PropertyChangeListener
         deleteRowAction = new DeleteRowAction();
         commitAction = new CommitAction();
         rollbackAction = new RollbackAction();
+        changeSupport = new SwingPropertyChangeSupport(this);
     }
 
     public DeleteRowAction getDeleteRowAction()
@@ -97,6 +103,7 @@ public class FetchResultHandler implements PropertyChangeListener
                 {
                     tableModel.updateData(fetchResult);
                 }
+                firePropertyChange(PropertyName, null, tableModel);
             }
             else
             {
@@ -104,10 +111,37 @@ public class FetchResultHandler implements PropertyChangeListener
                 {
                     tableModel.clear();
                 }
+                firePropertyChange(PropertyName, null, null);
                 setButtonsEnabled(false);
             }
         }
     }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener)
+    {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener)
+    {
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
+    {
+        changeSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener)
+    {
+        changeSupport.removePropertyChangeListener(propertyName, listener);
+    }
+
+    public void firePropertyChange(String propertyName, Object oldValue, Object newValue)
+    {
+        changeSupport.firePropertyChange(propertyName, oldValue, newValue);
+    }
+    
     public class DeleteRowAction extends AbstractAction 
     {
 

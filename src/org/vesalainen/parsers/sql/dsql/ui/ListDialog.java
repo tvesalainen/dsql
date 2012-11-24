@@ -17,50 +17,41 @@
 
 package org.vesalainen.parsers.sql.dsql.ui;
 
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.Collection;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
-import org.vesalainen.parsers.sql.FetchResult;
 
 /**
  * @author Timo Vesalainen
  */
-public class StatementListDialog extends OkCancelDialog
+public class ListDialog<T> extends OkCancelDialog implements MouseListener
 {
-    private JButton refreshButton;
     private JList list;
     private DefaultListModel model;
-    private WorkBench workBench;
 
-    public StatementListDialog(WorkBench workBench)
+    public ListDialog(Frame owner, Collection<T> list)
     {
-        super(workBench.frame);
-        this.workBench = workBench;
-        refresh();
+        super(owner);
+        refresh(list);
     }
 
-    public void refresh()
+    public void refresh(Collection<T> list)
     {
         model.clear();
-        FetchResult results = workBench.engine.execute("select "+Entity.KEY_RESERVED_PROPERTY+" from "+workBench.storedStatementsKind);
-        for (int row = 0;row < results.getRowCount();row++)
+        for (T t : list)
         {
-            Key key = (Key) results.getValueAt(row, 0);
-            model.addElement(key.getName());
+            model.addElement(t);
         }
     }
-
-    public String getSelected()
+    public T getSelected()
     {
-        return (String) list.getSelectedValue();
+        return (T) list.getSelectedValue();
     }
     
     @Override
@@ -70,22 +61,21 @@ public class StatementListDialog extends OkCancelDialog
 
         model = new DefaultListModel();
         list = new JList(model);
+        list.addMouseListener(this);
         JScrollPane scrollPane = new JScrollPane(list);
         add(scrollPane, BorderLayout.CENTER);
         
-        refreshButton = new JButton("Refresh");
-        ActionListener refreshAction = new ActionListener()
-        {
-
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                refresh();
-            }
-        };
-        refreshButton.addActionListener(refreshAction);
-        buttonPanel.add(refreshButton);
         setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e)
+    {
+        if (e.getClickCount() > 1)
+        {
+            accepted = true;
+            setVisible(false);
+        }
     }
 
 }

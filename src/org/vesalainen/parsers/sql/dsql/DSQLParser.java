@@ -32,8 +32,10 @@ import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.User;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.vesalainen.parser.ParserCompiler;
 import org.vesalainen.parser.ParserConstants;
@@ -42,6 +44,7 @@ import org.vesalainen.parser.ParserInfo;
 import org.vesalainen.parser.Trace;
 import org.vesalainen.parser.TraceHelper;
 import org.vesalainen.parser.annotation.GenClassname;
+import org.vesalainen.parser.annotation.GenRegex;
 import org.vesalainen.parser.annotation.GrammarDef;
 import org.vesalainen.parser.annotation.ParseMethod;
 import org.vesalainen.parser.annotation.ParserContext;
@@ -70,6 +73,9 @@ import org.vesalainen.regex.Regex;
 @GrammarDef()
 public abstract class DSQLParser extends SqlParser<Entity,Object> implements ParserInfo
 {
+    @GenRegex("\\$\\{[^\\}]+\\}")
+    public static Regex dollarTag;
+
     private static Map<String,Class<?>> googleTypeMap = new HashMap<>();
     static
     {
@@ -227,27 +233,29 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         return dse.createKey(parent, kind, id.longValue());
     }
     
-    @Rule("identifier '\\(' string '\\)'")
+    @Rule("identifier '\\(' string ('\\,' string)* '\\)'")
     protected Literal<Entity, Object> literal(
             String typeName, 
             String string,
+            List<String> list,
             @ParserContext(ParserConstants.INPUTREADER) InputReader reader
             )
     {
+        list.add(0, string);
         try
         {
             Class<?> type = googleTypeMap.get(typeName);
-            Constructor constructor = type.getConstructor(String.class);
-            Object newInstance = constructor.newInstance(string);
-            return new LiteralImpl<>(newInstance);
+            Class[] params = new Class[list.size()];
+            Arrays.fill(params, String.class);
+            Constructor constructor = type.getConstructor(params);
+            return new LiteralImpl<>(constructor.newInstance(list.toArray(new String[list.size()])));
         }
         catch (NullPointerException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
         {
-            reader.throwSyntaxErrorException(typeName, "Category, Email, Link, PhoneNumber, Text, User");
+            reader.throwSyntaxErrorException("Category, Email, Link, PhoneNumber, Text, User", typeName);
         }
         return null;
     }
-    
     @Rule("identifier '\\(' integer '\\)'")
     protected Literal<Entity, Object> literal(
             String typeName, 
@@ -264,7 +272,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         }
         catch (NullPointerException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
         {
-            reader.throwSyntaxErrorException(typeName, "Long, Rating");
+            reader.throwSyntaxErrorException("Long, Rating", typeName);
         }
         return null;
     }
@@ -421,7 +429,6 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     {
         reservedWords(reader, locator);
     }
-
 
     //@TraceMethod
     protected void trace(

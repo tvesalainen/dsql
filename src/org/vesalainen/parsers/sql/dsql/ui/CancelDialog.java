@@ -25,6 +25,8 @@ import java.awt.GraphicsConfiguration;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -32,7 +34,7 @@ import javax.swing.JPanel;
 /**
  * @author Timo Vesalainen
  */
-public class CancelDialog extends JDialog
+public class CancelDialog extends JDialog implements MouseListener
 {
     protected boolean accepted;
     protected JPanel buttonPanel;
@@ -161,6 +163,31 @@ public class CancelDialog extends JDialog
         accepted = false;
         setVisible(true);
         return accepted;
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e)
+    {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e)
+    {
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e)
+    {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e)
+    {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e)
+    {
     }
 
 }

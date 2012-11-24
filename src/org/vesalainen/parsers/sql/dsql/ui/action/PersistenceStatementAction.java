@@ -18,11 +18,13 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import com.google.appengine.api.datastore.Entity;
-import javax.swing.AbstractAction;
+import com.google.appengine.api.datastore.Key;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.text.TextAction;
 import org.vesalainen.parsers.sql.FetchResult;
-import org.vesalainen.parsers.sql.dsql.ui.StatementListDialog;
+import org.vesalainen.parsers.sql.dsql.ui.ListDialog;
 import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
 /**
@@ -33,7 +35,7 @@ public abstract class PersistenceStatementAction extends TextAction
     protected WorkBench workBench;
     protected String storedStatementsKind;
     private FetchResult statements;
-    private static StatementListDialog dialog;
+    private static ListDialog<String> dialog;
 
     PersistenceStatementAction(String name, WorkBench workBench, String storedStatementsKind)
     {
@@ -66,7 +68,7 @@ public abstract class PersistenceStatementAction extends TextAction
     {
         if (dialog == null)
         {
-            dialog = new StatementListDialog(workBench);
+            dialog = new ListDialog(workBench.getFrame(), getStatements());
         }
         if (dialog.input())
         {
@@ -76,14 +78,17 @@ public abstract class PersistenceStatementAction extends TextAction
     }
     public void refresh()
     {
-        if (dialog == null)
-        {
-            dialog = new StatementListDialog(workBench);
-        }
-        else
-        {
-            dialog.refresh();
-        }
+        dialog = new ListDialog(workBench.getFrame(), getStatements());
     }
-    
+    private List<String> getStatements()
+    {
+        List<String> list = new ArrayList<>();
+        FetchResult results = workBench.getEngine().execute("select "+Entity.KEY_RESERVED_PROPERTY+" from "+storedStatementsKind);
+        for (int row = 0;row < results.getRowCount();row++)
+        {
+            Key key = (Key) results.getValueAt(row, 0);
+            list.add(key.getName());
+        }
+        return list;
+    }
 }

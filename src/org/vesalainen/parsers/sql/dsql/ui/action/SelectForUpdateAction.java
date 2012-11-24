@@ -19,7 +19,9 @@ package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JFrame;
+import javax.swing.event.SwingPropertyChangeSupport;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
@@ -62,6 +64,15 @@ public class SelectForUpdateAction extends ExecuteAction
                 setEnabled(false);
             }
         }
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
+    {
+        if (changeSupport == null)
+        {
+            changeSupport = new SwingPropertyChangeSupport(this);
+        }
+        changeSupport.addPropertyChangeListener(propertyName, listener);
     }
 
 }

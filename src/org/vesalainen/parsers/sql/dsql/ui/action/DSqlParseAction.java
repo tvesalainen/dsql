@@ -19,12 +19,13 @@ package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.StyledEditorKit;
@@ -36,7 +37,6 @@ import org.vesalainen.parsers.sql.Engine;
 import org.vesalainen.parsers.sql.ErrorReporter;
 import org.vesalainen.parsers.sql.ErrorReporter.Level;
 import org.vesalainen.parsers.sql.SQLLocator;
-import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
 import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
@@ -223,6 +223,15 @@ public class DSqlParseAction extends TextAction implements DocumentListener, SQL
         {
             listener.undoableEditHappened(e);
         }
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
+    {
+        if (changeSupport == null)
+        {
+            changeSupport = new SwingPropertyChangeSupport(this);
+        }
+        changeSupport.addPropertyChangeListener(propertyName, listener);
     }
 
 }

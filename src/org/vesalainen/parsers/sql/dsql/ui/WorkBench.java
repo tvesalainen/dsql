@@ -51,18 +51,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
-import javax.swing.table.TableCellEditor;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 import org.vesalainen.parsers.sql.Engine;
-import org.vesalainen.parsers.sql.Statement;
-import org.vesalainen.parsers.sql.UpdateableFetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.ui.action.DSqlParseAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.ExecuteAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.FetchResultHandler;
 import org.vesalainen.parsers.sql.dsql.ui.action.SelectForUpdateAction;
+import org.vesalainen.parsers.sql.dsql.ui.plugin.MailPlugin;
 
 /**
  * @author Timo Vesalainen
@@ -86,6 +84,11 @@ public class WorkBench extends WindowAdapter
     private final JButton rollbackButton;
     private final JButton deleteRowButton;
     private final DSqlParseAction parseAction;
+    private final JPanel buttonPanel;
+    private final JMenu sourceMenu;
+    private final JMenu actionMenu;
+    private final FetchResultHandler fetchResultHandler;
+    private final ExecuteAction executeAction;
     
     public WorkBench(final DSQLEngine engine, String storedStatementsKind)
     {
@@ -129,7 +132,7 @@ public class WorkBench extends WindowAdapter
         
         upperPane = new JScrollPane(sqlPane);
         
-        JMenu sourceMenu = new JMenu("Source");
+        sourceMenu = new JMenu("Source");
         menuBar.add(sourceMenu);
         
         InsertPropertiesHandler insertPropertiesHandler = new InsertPropertiesHandler(sqlPane);
@@ -148,40 +151,40 @@ public class WorkBench extends WindowAdapter
         JPanel contentPane = new JPanel(new BorderLayout());
         contentPane.add(splitPane, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel();
+        buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
         contentPane.add(buttonPanel, BorderLayout.SOUTH);
         
-        JMenu actionMenu = new JMenu("Actions");
+        actionMenu = new JMenu("Actions");
         menuBar.add(actionMenu);
         
-        ExecuteAction executeAction = new ExecuteAction(frame);
-        parseAction.addPropertyChangeListener(executeAction);
+        executeAction = new ExecuteAction(frame);
+        parseAction.addPropertyChangeListener(ExecuteAction.PropertyName, executeAction);
         executeButton = new JButton(executeAction);
         buttonPanel.add(executeButton);
         actionMenu.add(executeButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK));;
         
         SelectForUpdateAction selectForUpdateAction = new SelectForUpdateAction(frame);
-        parseAction.addPropertyChangeListener(selectForUpdateAction);
+        parseAction.addPropertyChangeListener(SelectForUpdateAction.PropertyName, selectForUpdateAction);
         selectAndUpdateButton = new JButton(selectForUpdateAction);
         buttonPanel.add(selectAndUpdateButton);
         actionMenu.add(selectAndUpdateButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));;;
         
-        FetchResultHandler fetchResultHandler = new FetchResultHandler(frame, resultPane);
-        executeAction.addPropertyChangeListener(fetchResultHandler);
-        selectForUpdateAction.addPropertyChangeListener(fetchResultHandler);
+        fetchResultHandler = new FetchResultHandler(frame, resultPane);
+        executeAction.addPropertyChangeListener(FetchResultHandler.PropertyName, fetchResultHandler);
+        selectForUpdateAction.addPropertyChangeListener(FetchResultHandler.PropertyName, fetchResultHandler);
                 
         deleteRowButton = new JButton(fetchResultHandler.getDeleteRowAction());
         buttonPanel.add(deleteRowButton);
-        actionMenu.add(deleteRowButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK));;;
+        actionMenu.add(deleteRowButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK));
 
         commitButton = new JButton(fetchResultHandler.getCommitAction());
         buttonPanel.add(commitButton);
-        actionMenu.add(commitButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK));;;
+        actionMenu.add(commitButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK));
 
         rollbackButton = new JButton(fetchResultHandler.getRollbackAction());
         buttonPanel.add(rollbackButton);
-        actionMenu.add(rollbackButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));;;
+        actionMenu.add(rollbackButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
 
         frame.setContentPane(contentPane);
         
@@ -190,7 +193,20 @@ public class WorkBench extends WindowAdapter
         frame.setVisible(true);
         frame.setSize(800, 580);
     }
-
+    /**
+     * Adds a FetchResultHandler.
+     * @param plugin 
+     */
+    public void addFetchResultPlugin(FetchResultPlugin plugin)
+    {
+        Action action = (Action) plugin;
+        JButton button = new JButton(action);
+        buttonPanel.add(button);
+        actionMenu.add(action);
+        plugin.setFrame(frame);
+        fetchResultHandler.addPropertyChangeListener(FetchResultHandler.PropertyName, plugin);
+    }
+    
     public JTextPane getActiveTextPane()
     {
         return sqlPane;
@@ -283,7 +299,8 @@ public class WorkBench extends WindowAdapter
             if (dia.input())
             {
                 DSQLEngine engine = DSQLEngine.getProxyInstance(dia.getServer(), dia.getEmail(), new String(dia.getPassword()));
-                new WorkBench(engine, properties.getProperty("stored-statements-kind", "DSQLStatements"));
+                WorkBench workBench = new WorkBench(engine, properties.getProperty("stored-statements-kind", "DSQLStatements"));
+                workBench.addFetchResultPlugin(new MailPlugin());
             }
             else
             {
