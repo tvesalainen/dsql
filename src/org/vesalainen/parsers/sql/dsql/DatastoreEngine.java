@@ -31,6 +31,10 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+import com.google.appengine.api.mail.MailService;
+import com.google.appengine.api.mail.MailService.Message;
+import com.google.appengine.api.mail.MailServiceFactory;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -38,7 +42,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
+import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.MimeMessage;
 import org.vesalainen.parsers.sql.ColumnCondition;
 import org.vesalainen.parsers.sql.ColumnMetadata;
 import org.vesalainen.parsers.sql.ColumnReference;
@@ -62,6 +73,8 @@ public class DatastoreEngine  implements DSProxyInterface
     private DatastoreService datastore;
     private Statistics statistics;
     private SQLConverter converter;
+    private MailService mailService = MailServiceFactory.getMailService();
+    private Session session = Session.getDefaultInstance(new Properties(), null);
 
     public DatastoreEngine(DatastoreService datastore)
     {
@@ -503,6 +516,31 @@ public class DatastoreEngine  implements DSProxyInterface
             {
                 query.addProjection(new PropertyProjection(property, null));
             }
+        }
+    }
+
+    @Override
+    public void send(Message message) throws IOException
+    {
+        mailService.send(message);
+    }
+
+    @Override
+    public Session getSession()
+    {
+        return session;
+    }
+
+    @Override
+    public void send(MimeMessage message) throws IOException
+    {
+        try
+        {
+            Transport.send(message);
+        }
+        catch (MessagingException ex)
+        {
+            throw new IOException(ex);
         }
     }
 

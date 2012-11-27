@@ -96,9 +96,9 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         addGoogleType(GeoPt.class);
 
     }
-    public static DSQLParser newInstance()
+    public static DSQLParser getInstance()
     {
-        return (DSQLParser) ParserFactory.getParserInstance(DSQLParser.class);
+        return (DSQLParser) ParserFactory.loadParserInstance(DSQLParser.class);
     }
 
     private static void addGoogleType(Class<?> aClass)
@@ -245,12 +245,10 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         try
         {
             Class<?> type = googleTypeMap.get(typeName);
-            Class[] params = new Class[list.size()];
-            Arrays.fill(params, String.class);
-            Constructor constructor = type.getConstructor(params);
-            return new LiteralImpl<>(constructor.newInstance(list.toArray(new String[list.size()])));
+            Object obj = GObjectHelper.valueOf(type, list.toArray(new String[list.size()]));
+            return new LiteralImpl<>(obj);
         }
-        catch (NullPointerException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
+        catch (Exception ex)
         {
             reader.throwSyntaxErrorException("Category, Email, Link, PhoneNumber, Text, User", typeName);
         }

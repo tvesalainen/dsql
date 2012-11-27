@@ -66,13 +66,4 @@ public class SelectForUpdateAction extends ExecuteAction
         }
     }
 
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
-    {
-        if (changeSupport == null)
-        {
-            changeSupport = new SwingPropertyChangeSupport(this);
-        }
-        changeSupport.addPropertyChangeListener(propertyName, listener);
-    }
-
 }

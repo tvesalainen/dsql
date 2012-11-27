@@ -50,6 +50,7 @@ public class BytesDialog extends CancelDialog
     {
         super(owner);
         setTitle("Blob Editor");
+        init();
     }
 
     public Input getInput()
@@ -57,10 +58,8 @@ public class BytesDialog extends CancelDialog
         return input;
     }
     
-    @Override
-    protected void init()
+    private void init()
     {
-        super.init();
         label = new JTextArea();
         label.setOpaque(true);
         label.setLineWrap(true);
@@ -146,16 +145,16 @@ public class BytesDialog extends CancelDialog
     public boolean input(MagicResult magic)
     {
         this.magic = magic;
-        String[] extensions = magic.getExtensions();
-        if (extensions.length == 0 || (extensions.length == 1 && extensions[0].isEmpty()))
+        if (magic == null || magic.getExtensions().length == 0)
         {
             label.setText(
                     "Blob propertys value type is "+
-                    magic.getDescription()+
+                    "unknown "+
                     ". Enter file extension if known.");
         }
         else
         {
+            String[] extensions = magic.getExtensions();
             if (extensions.length == 1)
             {
                 label.setText(
@@ -173,11 +172,17 @@ public class BytesDialog extends CancelDialog
         }
 
         combobox.removeAllItems();
-        for (String ext : magic.getExtensions())
+        if (magic != null)
         {
-            combobox.addItem(ext);
+            for (String ext : magic.getExtensions())
+            {
+                combobox.addItem(ext);
+            }
         }
-        combobox.setSelectedIndex(0);
+        if (combobox.getItemCount() > 0)
+        {
+            combobox.setSelectedIndex(0);
+        }
         input = Input.CANCEL;
         return super.input();
     }

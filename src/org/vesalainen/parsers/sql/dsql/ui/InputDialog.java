@@ -34,10 +34,12 @@ public class InputDialog extends OkCancelDialog
     public InputDialog(Frame owner, String title)
     {
         super(owner, title);
+        init();
     }
 
     public InputDialog(String title)
     {
+        init();
         setTitle(title);
     }
 
@@ -68,11 +70,8 @@ public class InputDialog extends OkCancelDialog
         return result;
     }
 
-    @Override
-    protected void init()
+    private void init()
     {
-        super.init();
-        
         table = new InputTable();
         add(table, BorderLayout.CENTER);
         setMinimumSize(new Dimension(800, 0));

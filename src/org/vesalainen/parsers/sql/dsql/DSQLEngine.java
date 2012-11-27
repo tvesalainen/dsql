@@ -21,12 +21,15 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.RawValue;
+import com.google.appengine.api.mail.MailService.Message;
 import com.google.appengine.tools.remoteapi.RemoteApiInstaller;
 import com.google.appengine.tools.remoteapi.RemoteApiOptions;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
 import org.vesalainen.parsers.sql.ColumnMetadata;
 import org.vesalainen.parsers.sql.Engine;
 import org.vesalainen.parsers.sql.Table;
@@ -45,6 +48,7 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
 {
     private DSProxyInterface proxy;
     private static Statistics statistics;
+    private String email;
 
     private DSQLEngine(DSProxyInterface proxy)
     {
@@ -54,26 +58,30 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
         proxy.setConverter(this);
     }
 
-    public static DSQLEngine getInstance(String server, String user, String password) throws IOException
+    public static DSQLEngine getInstance(String server, String email, String password) throws IOException
     {
         RemoteApiInstaller installer = new RemoteApiInstaller();
         RemoteApiOptions options = new RemoteApiOptions();
         options.server(server, 443);
-        options.credentials(user, password);
+        options.credentials(email, password);
         installer.install(options);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        return getInstance(datastore);
+        DSQLEngine engine = getInstance(datastore);
+        engine.email = email;
+        return engine;
     }
     public static DSQLEngine getInstance(DatastoreService datastore)
     {
         DatastoreEngine dse = new DatastoreEngine(datastore);
         return new DSQLEngine(dse);
     }
-    public static DSQLEngine getProxyInstance(String server, String user, String password) throws IOException, InterruptedException
+    public static DSQLEngine getProxyInstance(String server, String email, String password) throws IOException, InterruptedException
     {
-        DatastoreEngineProxy dep = new DatastoreEngineProxy(server, user, password);
+        DatastoreEngineProxy dep = new DatastoreEngineProxy(server, email, password);
         dep.start();
-        return new DSQLEngine(dep.getProxy());
+        DSQLEngine engine = new DSQLEngine(dep.getProxy());
+        engine.email = email;
+        return engine;
     }
     @Override
     public Object convert(String string)
@@ -293,6 +301,29 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     public Class<? extends Object> getDefaultPlaceholderType()
     {
         return String.class;
+    }
+
+    public String getEmail()
+    {
+        return email;
+    }
+
+    @Override
+    public void send(Message message) throws IOException
+    {
+        proxy.send(message);
+    }
+
+    @Override
+    public Session getSession()
+    {
+        return proxy.getSession();
+    }
+
+    @Override
+    public void send(MimeMessage message) throws IOException
+    {
+        proxy.send(message);
     }
 
 }

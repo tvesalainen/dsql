@@ -44,6 +44,10 @@ public abstract class AbstractMessagePlugin extends FetchResultPlugin
     {
         this.owner = owner;
         this.model = model;
+        if (dialog == null)
+        {
+            dialog = createMessageDialog(owner, sendAction);
+        }
         setEnabled(true);
     }
 
@@ -56,10 +60,6 @@ public abstract class AbstractMessagePlugin extends FetchResultPlugin
     @Override
     public void actionPerformed(ActionEvent e)
     {
-        if (dialog == null)
-        {
-            dialog = createMessageDialog(owner, sendAction);
-        }
         dialog.input(model);
     }
 

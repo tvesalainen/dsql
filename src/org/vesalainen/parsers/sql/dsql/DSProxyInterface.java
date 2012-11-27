@@ -18,7 +18,11 @@ package org.vesalainen.parsers.sql.dsql;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.mail.MailService.Message;
+import java.io.IOException;
 import java.util.Collection;
+import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
 import org.vesalainen.parsers.sql.InsertStatement;
 import org.vesalainen.parsers.sql.SQLConverter;
 import org.vesalainen.parsers.sql.Table;
@@ -64,4 +68,8 @@ public interface DSProxyInterface
     String keyToString(Key key) ;
     Key	stringToKey(java.lang.String encoded) ;
 
+    // Email
+    void send(Message message) throws IOException;
+    Session getSession();
+    void send(MimeMessage message) throws IOException;
 }

@@ -57,7 +57,7 @@ public class ReplacerAction extends TextAction
         List<String> list = new ArrayList<>();
         for (ColumnReference<Entity, Object> cf : model.getFetchResult().getSelectList())
         {
-            list.add(cf.getTable().getName()+"."+cf.getColumn());
+            list.add(cf.toString());
         }
         if (dialog == null)
         {

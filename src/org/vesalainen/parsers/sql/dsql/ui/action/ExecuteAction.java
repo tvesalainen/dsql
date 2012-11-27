@@ -112,13 +112,4 @@ public class ExecuteAction extends AbstractAction implements PropertyChangeListe
         return true;
     }
 
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
-    {
-        if (changeSupport == null)
-        {
-            changeSupport = new SwingPropertyChangeSupport(this);
-        }
-        changeSupport.addPropertyChangeListener(propertyName, listener);
-    }
-    
 }

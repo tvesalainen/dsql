@@ -20,12 +20,17 @@ package org.vesalainen.parsers.sql.dsql.ui.plugin;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
 import org.vesalainen.parsers.sql.dsql.ui.TextDialog;
 
@@ -38,11 +43,13 @@ public class MessageDialog extends TextDialog
     private ReplacerAction action;
     private JButton tagButton;
     private JTextField subjectField;
+    private JMenuBar menuBar;
 
     public MessageDialog(JFrame owner, Action sendAction)
     {
         super(owner);
         this.sendAction = sendAction;
+        init();
     }
 
     public boolean input(FetchResultTableModel model)
@@ -51,10 +58,14 @@ public class MessageDialog extends TextDialog
         return super.input();
     }
 
-    @Override
-    protected void init()
+    public String getSubject()
     {
-        super.init();
+        return subjectField.getText();
+    }
+    
+    private void init()
+    {
+        textPane.setContentType("text/html");
         // Subject
         JPanel subjectPanel = new JPanel();
         subjectPanel.setLayout(new FlowLayout());
@@ -64,9 +75,18 @@ public class MessageDialog extends TextDialog
         subjectField = new JTextField(60);
         subjectPanel.add(subjectField);
         
+        menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+
+        JMenu fileMenu = new JMenu("Edit");
+        menuBar.add(fileMenu);
+        
+        fileMenu.add(sendAction).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_DOWN_MASK));
         okButton.setAction(sendAction);
         
         action = new ReplacerAction((Frame)getParent());
+        fileMenu.add(action).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
+        
         tagButton = new JButton(action);
         buttonPanel.add(tagButton);
         

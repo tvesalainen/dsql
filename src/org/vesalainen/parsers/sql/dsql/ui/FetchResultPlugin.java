@@ -53,13 +53,19 @@ public abstract class FetchResultPlugin extends AbstractAction implements Proper
         FetchResultTableModel model = (FetchResultTableModel) evt.getNewValue();
         if (model != null)
         {
+            boolean handles = false;
             for (int col = 0;col < model.getColumnCount();col++)
             {
                 if (accept(model.getColumnClass(col)))
                 {
+                    handles = true;
                     handle(frame, model);
                     break;
                 }
+            }
+            if (!handles)
+            {
+                disable();
             }
         }
         else

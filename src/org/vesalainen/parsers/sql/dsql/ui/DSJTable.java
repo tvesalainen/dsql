@@ -62,8 +62,8 @@ import org.vesalainen.parsers.sql.dsql.DSQLParser;
  */
 public class DSJTable extends JTable
 {
-    private static final Magic magic = Magic.newInstance();
-    private static final DSQLParser parser = DSQLParser.newInstance();
+    private static final Magic magic = Magic.getInstance();
+    private static final DSQLParser parser = DSQLParser.getInstance();
     private static File currentDirectory;
     
     private JFrame frame;
@@ -268,9 +268,9 @@ public class DSJTable extends JTable
                         {
                             JFileChooser fc = new JFileChooser();
                             fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                            String[] extensions = guess.getExtensions();
-                            if (extensions.length > 0 && !extensions[0].isEmpty())
+                            if (guess != null && guess.getExtensions().length == 0)
                             {
+                                String[] extensions = guess.getExtensions();
                                 FileFilter ff = new FileNameExtensionFilter(guess.getDescription(), guess.getExtensions());
                                 fc.setFileFilter(ff);
                             }

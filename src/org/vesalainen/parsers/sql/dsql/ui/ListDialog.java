@@ -38,6 +38,7 @@ public class ListDialog<T> extends OkCancelDialog implements MouseListener
     public ListDialog(Frame owner, Collection<T> list)
     {
         super(owner);
+        init();
         refresh(list);
     }
 
@@ -54,11 +55,8 @@ public class ListDialog<T> extends OkCancelDialog implements MouseListener
         return (T) list.getSelectedValue();
     }
     
-    @Override
-    protected void init()
+    private void init()
     {
-        super.init();
-
         model = new DefaultListModel();
         list = new JList(model);
         list.addMouseListener(this);

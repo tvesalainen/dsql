@@ -18,46 +18,50 @@
 package org.vesalainen.parsers.sql.dsql.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Frame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 
 /**
  * @author Timo Vesalainen
  */
 public class TextDialog extends OkCancelDialog
 {
-    protected JTextArea textArea;
+    protected JTextPane textPane;
 
     public TextDialog(Frame owner)
     {
         super(owner);
+        init();
     }
     
     public void setText(String text)
     {
-        textArea.setText(text);
+        textPane.setText(text);
     }
     
     public String getText()
     {
-        return textArea.getText();
+        return textPane.getText();
     }
     
-    @Override
-    protected void init()
+    private void init()
     {
-        textArea = new JTextArea(30, 80);
-        JScrollPane scrollPane = new JScrollPane(textArea);
+        textPane = new JTextPane();
+        JScrollPane scrollPane = new JScrollPane(textPane);
         add(scrollPane, BorderLayout.CENTER);
-        
-        super.init();
+        setMinimumSize(new Dimension(800, 500));
+        setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
+
     }
 
     @Override
     public boolean input()
     {
-        textArea.requestFocusInWindow();
+        textPane.requestFocusInWindow();
         return super.input();
     }
 

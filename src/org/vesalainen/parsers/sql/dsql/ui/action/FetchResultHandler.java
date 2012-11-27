@@ -127,16 +127,6 @@ public class FetchResultHandler implements PropertyChangeListener
         changeSupport.removePropertyChangeListener(listener);
     }
 
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
-    {
-        changeSupport.addPropertyChangeListener(propertyName, listener);
-    }
-
-    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener)
-    {
-        changeSupport.removePropertyChangeListener(propertyName, listener);
-    }
-
     public void firePropertyChange(String propertyName, Object oldValue, Object newValue)
     {
         changeSupport.firePropertyChange(propertyName, oldValue, newValue);

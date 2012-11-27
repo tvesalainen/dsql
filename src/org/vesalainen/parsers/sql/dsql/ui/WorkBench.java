@@ -51,10 +51,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.table.TableCellEditor;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 import org.vesalainen.parsers.sql.Engine;
+import org.vesalainen.parsers.sql.Statement;
+import org.vesalainen.parsers.sql.UpdateableFetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.ui.action.DSqlParseAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.ExecuteAction;
@@ -159,20 +162,20 @@ public class WorkBench extends WindowAdapter
         menuBar.add(actionMenu);
         
         executeAction = new ExecuteAction(frame);
-        parseAction.addPropertyChangeListener(ExecuteAction.PropertyName, executeAction);
+        parseAction.addPropertyChangeListener(executeAction);
         executeButton = new JButton(executeAction);
         buttonPanel.add(executeButton);
         actionMenu.add(executeButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK));;
         
         SelectForUpdateAction selectForUpdateAction = new SelectForUpdateAction(frame);
-        parseAction.addPropertyChangeListener(SelectForUpdateAction.PropertyName, selectForUpdateAction);
+        parseAction.addPropertyChangeListener(selectForUpdateAction);
         selectAndUpdateButton = new JButton(selectForUpdateAction);
         buttonPanel.add(selectAndUpdateButton);
         actionMenu.add(selectAndUpdateButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));;;
         
         fetchResultHandler = new FetchResultHandler(frame, resultPane);
-        executeAction.addPropertyChangeListener(FetchResultHandler.PropertyName, fetchResultHandler);
-        selectForUpdateAction.addPropertyChangeListener(FetchResultHandler.PropertyName, fetchResultHandler);
+        executeAction.addPropertyChangeListener(fetchResultHandler);
+        selectForUpdateAction.addPropertyChangeListener(fetchResultHandler);
                 
         deleteRowButton = new JButton(fetchResultHandler.getDeleteRowAction());
         buttonPanel.add(deleteRowButton);
@@ -204,7 +207,7 @@ public class WorkBench extends WindowAdapter
         buttonPanel.add(button);
         actionMenu.add(action);
         plugin.setFrame(frame);
-        fetchResultHandler.addPropertyChangeListener(FetchResultHandler.PropertyName, plugin);
+        fetchResultHandler.addPropertyChangeListener(plugin);
     }
     
     public JTextPane getActiveTextPane()
@@ -300,7 +303,7 @@ public class WorkBench extends WindowAdapter
             {
                 DSQLEngine engine = DSQLEngine.getProxyInstance(dia.getServer(), dia.getEmail(), new String(dia.getPassword()));
                 WorkBench workBench = new WorkBench(engine, properties.getProperty("stored-statements-kind", "DSQLStatements"));
-                workBench.addFetchResultPlugin(new MailPlugin());
+                workBench.addFetchResultPlugin(new MailPlugin(engine));
             }
             else
             {

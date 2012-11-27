@@ -44,6 +44,7 @@ public class ExternalEditor extends OkCancelDialog implements WindowFocusListene
         this.path = path;
         file = path.toFile();
         lastModified = file.lastModified();
+        init();
     }
 
     @Override
@@ -69,11 +70,8 @@ public class ExternalEditor extends OkCancelDialog implements WindowFocusListene
         label.setText(text);
     }
     
-    @Override
-    protected void init()
+    private void init()
     {
-        super.init();
-        
         label = new JTextArea();
         label.setOpaque(true);
         label.setLineWrap(true);

@@ -35,86 +35,100 @@ public class OkCancelDialog extends CancelDialog
     public OkCancelDialog(Window owner, String title, ModalityType modalityType, GraphicsConfiguration gc)
     {
         super(owner, title, modalityType, gc);
+        init();
     }
 
     public OkCancelDialog(Window owner, String title, ModalityType modalityType)
     {
         super(owner, title, modalityType);
+        init();
     }
 
     public OkCancelDialog(Window owner, String title)
     {
         super(owner, title);
+        init();
     }
 
     public OkCancelDialog(Window owner, ModalityType modalityType)
     {
         super(owner, modalityType);
+        init();
     }
 
     public OkCancelDialog(Window owner)
     {
         super(owner);
+        init();
     }
 
     public OkCancelDialog(Dialog owner, String title, boolean modal, GraphicsConfiguration gc)
     {
         super(owner, title, modal, gc);
+        init();
     }
 
     public OkCancelDialog(Dialog owner, String title, boolean modal)
     {
         super(owner, title, modal);
+        init();
     }
 
     public OkCancelDialog(Dialog owner, String title)
     {
         super(owner, title);
+        init();
     }
 
     public OkCancelDialog(Dialog owner, boolean modal)
     {
         super(owner, modal);
+        init();
     }
 
     public OkCancelDialog(Dialog owner)
     {
         super(owner);
+        init();
     }
 
     public OkCancelDialog(Frame owner, String title, boolean modal, GraphicsConfiguration gc)
     {
         super(owner, title, modal, gc);
+        init();
     }
 
     public OkCancelDialog(Frame owner, String title, boolean modal)
     {
         super(owner, title, modal);
+        init();
     }
 
     public OkCancelDialog(Frame owner, String title)
     {
         super(owner, title);
+        init();
     }
 
     public OkCancelDialog(Frame owner, boolean modal)
     {
         super(owner, modal);
+        init();
     }
 
     public OkCancelDialog(Frame owner)
     {
         super(owner);
+        init();
     }
 
     public OkCancelDialog()
     {
+        init();
     }
 
-    @Override
-    protected void init()
+    private void init()
     {
-        super.init();
         // buttons
         okButton = new JButton("Ok");
         ActionListener okAction = new ActionListener()

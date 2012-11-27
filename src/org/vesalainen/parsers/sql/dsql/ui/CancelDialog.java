@@ -135,7 +135,7 @@ public class CancelDialog extends JDialog implements MouseListener
         init();
     }
 
-    protected void init()
+    private void init()
     {
         buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
