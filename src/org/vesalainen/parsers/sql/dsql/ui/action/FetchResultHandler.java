@@ -96,7 +96,7 @@ public class FetchResultHandler implements PropertyChangeListener
                 {
                     tableModel = new FetchResultTableModel(fetchResult);
                     table = new DSJTable(tableModel);
-                    table.setFrame(frame);
+                    table.setOwner(frame);
                     scrollPane.setViewportView(table);
                 }
                 else

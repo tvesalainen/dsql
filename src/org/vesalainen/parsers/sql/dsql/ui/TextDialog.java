@@ -21,6 +21,7 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Window;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
@@ -32,7 +33,7 @@ public class TextDialog extends OkCancelDialog
 {
     protected JTextPane textPane;
 
-    public TextDialog(Frame owner)
+    public TextDialog(Window owner)
     {
         super(owner);
         init();
@@ -54,7 +55,7 @@ public class TextDialog extends OkCancelDialog
         JScrollPane scrollPane = new JScrollPane(textPane);
         add(scrollPane, BorderLayout.CENTER);
         setMinimumSize(new Dimension(800, 500));
-        setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
+        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
 
     }
 

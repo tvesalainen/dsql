@@ -40,44 +40,47 @@ public class GenerateSelectHandler implements MetadataHandler
     @Override
     public void selected(Statistics statistics, TreePath[] paths)
     {
-        String kind = null;
-        List<String> properties = new ArrayList<>();
-        for (TreePath path : paths)
+        if (paths != null)
         {
-            Object[] pathOb = path.getPath();
-            switch (pathOb.length)
+            String kind = null;
+            List<String> properties = new ArrayList<>();
+            for (TreePath path : paths)
             {
-                case 2:
-                    kind = pathOb[1].toString();
-                    break;
-                case 3:
-                    kind = pathOb[1].toString();
-                    properties.add(pathOb[2].toString());
-                    break;
+                Object[] pathOb = path.getPath();
+                switch (pathOb.length)
+                {
+                    case 2:
+                        kind = pathOb[1].toString();
+                        break;
+                    case 3:
+                        kind = pathOb[1].toString();
+                        properties.add(pathOb[2].toString());
+                        break;
+                }
             }
-        }
-        if (properties.isEmpty())
-        {
-            TableMetadata tm = statistics.getKind(kind);
-            for (ColumnMetadata cm : tm.getColumns())
+            if (properties.isEmpty())
             {
-                properties.add(cm.getName());
+                TableMetadata tm = statistics.getKind(kind);
+                for (ColumnMetadata cm : tm.getColumns())
+                {
+                    properties.add(cm.getName());
+                }
             }
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append("select\n");
-        boolean f = true;
-        for (String p : properties)
-        {
-            if (!f)
+            StringBuilder sb = new StringBuilder();
+            sb.append("select\n");
+            boolean f = true;
+            for (String p : properties)
             {
-                sb.append(",\n");
+                if (!f)
+                {
+                    sb.append(",\n");
+                }
+                f = false;
+                sb.append("  "+kind+"."+p);
             }
-            f = false;
-            sb.append("  "+kind+"."+p);
+            sb.append("\nfrom\n  "+kind+"\n");
+            text.replaceSelection(sb.toString());
         }
-        sb.append("\nfrom\n  "+kind+"\n");
-        text.replaceSelection(sb.toString());
     }
     
 }

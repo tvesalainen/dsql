@@ -63,7 +63,7 @@ public class ListDialog<T> extends OkCancelDialog implements MouseListener
         JScrollPane scrollPane = new JScrollPane(list);
         add(scrollPane, BorderLayout.CENTER);
         
-        setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
+        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
     }
 
     @Override

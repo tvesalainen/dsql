@@ -57,7 +57,7 @@ public class CredentialsDialog extends OkCancelDialog
                 3, 2, //rows, cols
                 6, 6, //initX, initY
                 6, 6);       //xPad, yPad    
-        setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
+        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
     }
     
     public String getEmail()

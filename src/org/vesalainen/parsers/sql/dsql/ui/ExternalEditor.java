@@ -20,6 +20,7 @@ package org.vesalainen.parsers.sql.dsql.ui;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
@@ -38,7 +39,7 @@ public class ExternalEditor extends OkCancelDialog implements WindowFocusListene
     private long lastModified;
     private JTextArea label;
 
-    public ExternalEditor(Frame owner, Path path)
+    public ExternalEditor(Window owner, Path path)
     {
         super(owner);
         this.path = path;
@@ -81,7 +82,7 @@ public class ExternalEditor extends OkCancelDialog implements WindowFocusListene
         label.setText("Trying to open blob content in external application.");
         
         okButton.setText("Save");
-        setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
+        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         //setAlwaysOnTop(true);
         addWindowFocusListener(this);
     }

@@ -19,13 +19,23 @@ package org.vesalainen.parsers.sql.dsql.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import org.vesalainen.parsers.magic.Magic;
 import org.vesalainen.parsers.magic.Magic.MagicResult;
 
 /**
@@ -33,31 +43,26 @@ import org.vesalainen.parsers.magic.Magic.MagicResult;
  */
 public class BytesDialog extends CancelDialog
 {
+    private static final Magic magic = Magic.getInstance();
 
-    public enum Input {CANCEL, LOAD, STORE, OPEN, REMOVE};
-    
     protected JButton loadButton;
     protected JButton storeButton;
     protected JButton openButton;
     protected JButton removeButton;
 
-    protected MagicResult magic;
+    protected MagicResult guess;
     private JTextArea label;
-    private Input input;
     private JComboBox combobox;
+    private static File currentDirectory;
+    protected byte[] bytes;
 
-    public BytesDialog(Frame owner)
+    public BytesDialog(Window owner)
     {
         super(owner);
         setTitle("Blob Editor");
         init();
     }
 
-    public Input getInput()
-    {
-        return input;
-    }
-    
     private void init()
     {
         label = new JTextArea();
@@ -78,7 +83,49 @@ public class BytesDialog extends CancelDialog
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                input = Input.LOAD;
+                JFileChooser fc = new JFileChooser();
+                fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                if (guess != null && guess.getExtensions().length == 0)
+                {
+                    String[] extensions = guess.getExtensions();
+                    FileFilter ff = new FileNameExtensionFilter(guess.getDescription(), guess.getExtensions());
+                    fc.setFileFilter(ff);
+                }
+                else
+                {
+                    String extension = (String) combobox.getSelectedItem();
+                    if (extension != null)
+                    {
+                        FileFilter ff = new FileNameExtensionFilter("", extension);
+                        fc.setFileFilter(ff);
+                    }
+                }
+                if (currentDirectory != null)
+                {
+                    fc.setCurrentDirectory(currentDirectory);
+                }
+                if (fc.showOpenDialog(BytesDialog.this) == JFileChooser.APPROVE_OPTION)
+                {
+                    File file = fc.getSelectedFile();
+                    long length = file.length();
+                    if (length > 1000000)
+                    {
+                        JOptionPane.showMessageDialog(BytesDialog.this, file, "File is too big", JOptionPane.ERROR_MESSAGE);
+                    }
+                    else
+                    {
+                        bytes = new byte[(int)length];
+                        try (FileInputStream fis = new FileInputStream(file))
+                        {
+                            fis.read(bytes);
+                            currentDirectory = file.getParentFile();
+                        }
+                        catch (IOException ex)
+                        {
+                            JOptionPane.showMessageDialog(BytesDialog.this, ex.getLocalizedMessage());
+                        }
+                    }
+                }
                 accepted = true;
                 setVisible(false);
             }
@@ -93,7 +140,52 @@ public class BytesDialog extends CancelDialog
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                input = Input.STORE;
+                JFileChooser fc = new JFileChooser();
+                fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                String extension = getExtension();
+                if (extension != null && !extension.isEmpty())
+                {
+                    FileFilter ff = new FileNameExtensionFilter(guess.getDescription(), extension);
+                    fc.setFileFilter(ff);
+                }
+                if (currentDirectory != null)
+                {
+                    fc.setCurrentDirectory(currentDirectory);
+                }
+                String suffix = "";
+                if (extension != null && !extension.isEmpty())
+                {
+                    suffix = "."+extension.toLowerCase();
+                }
+                fc.setSelectedFile(new File("file"+suffix));
+                if (fc.showSaveDialog(BytesDialog.this) == JFileChooser.APPROVE_OPTION)
+                {
+                    File file = fc.getSelectedFile();
+                    if (file != null)
+                    {
+                        if (file.getName().indexOf('.') == -1)
+                        {
+                            file = new File(file.getPath() + suffix);
+                        }
+                        currentDirectory = file.getParentFile();
+                        if (file.exists())
+                        {
+                            int confirm = JOptionPane.showConfirmDialog(BytesDialog.this, file, "File exists! Overwrite?", JOptionPane.OK_CANCEL_OPTION);
+                            if (JOptionPane.YES_OPTION == confirm)
+                            {
+                                return;
+                            }
+                        }
+                        try (FileOutputStream fos = new FileOutputStream(file))
+                        {
+                            fos.write(bytes);
+                        }
+                        catch (IOException ex)
+                        {
+                            JOptionPane.showMessageDialog(BytesDialog.this, ex.getLocalizedMessage());
+                        }
+                    }
+                }
                 accepted = true;
                 setVisible(false);
             }
@@ -110,7 +202,57 @@ public class BytesDialog extends CancelDialog
                 @Override
                 public void actionPerformed(ActionEvent e)
                 {
-                    input = Input.OPEN;
+                    String extension = getExtension();
+                    String suffix = "";
+                    if (extension != null && !extension.isEmpty())
+                    {
+                        suffix = "."+extension.toLowerCase();
+                    }
+                    try
+                    {
+                        File file = File.createTempFile("tmp", suffix);
+                        Path tempPath = file.toPath();
+                        try (FileOutputStream fos = new FileOutputStream(file))
+                        {
+                            fos.write(bytes);
+                        }
+                        catch (IOException ex)
+                        {
+                            JOptionPane.showMessageDialog(BytesDialog.this, ex.getLocalizedMessage());
+                        }
+                        ExternalEditor ee = new ExternalEditor(BytesDialog.this, tempPath);
+                        if (ee.input())
+                        {
+                            long length = file.length();
+                            if (length > 1000000)
+                            {
+                                JOptionPane.showMessageDialog(BytesDialog.this, file, "File is too big", JOptionPane.ERROR_MESSAGE);
+                            }
+                            else
+                            {
+                                bytes = new byte[(int)length];
+                                try (FileInputStream fis = new FileInputStream(file))
+                                {
+                                    fis.read(bytes);
+                                }
+                                catch (IOException ex)
+                                {
+                                    JOptionPane.showMessageDialog(BytesDialog.this, ex.getLocalizedMessage());
+                                }
+                            }
+                        }
+                        try
+                        {
+                            Files.delete(tempPath);
+                        }
+                        catch (IOException ex)
+                        {
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        JOptionPane.showMessageDialog(BytesDialog.this, ex.getLocalizedMessage());
+                    }
                     accepted = true;
                     setVisible(false);
                 }
@@ -126,7 +268,11 @@ public class BytesDialog extends CancelDialog
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                input = Input.REMOVE;
+                int confirm = JOptionPane.showConfirmDialog(BytesDialog.this, "Removing blob", "Continue?", JOptionPane.OK_CANCEL_OPTION);
+                if (JOptionPane.YES_OPTION == confirm)
+                {
+                    bytes = null;
+                }
                 accepted = true;
                 setVisible(false);
             }
@@ -134,18 +280,40 @@ public class BytesDialog extends CancelDialog
         removeButton.addActionListener(removeAction);
         buttonPanel.add(removeButton);
         
-        setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
+        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
     }
 
     public String getExtension()
     {
         return (String) combobox.getSelectedItem();
     }
-    
-    public boolean input(MagicResult magic)
+
+    public byte[] getBytes()
     {
-        this.magic = magic;
-        if (magic == null || magic.getExtensions().length == 0)
+        return bytes;
+    }
+
+    public void setBytes(byte[] bytes)
+    {
+        this.bytes = bytes;
+        guess = magic.guess(bytes);
+    }
+
+    public String getContentDescription()
+    {
+        if (guess != null)
+        {
+            return guess.getDescription();
+        }
+        else
+        {
+            return "Unknown";
+        }
+    }
+    
+    public boolean input()
+    {
+        if (guess == null || guess.getExtensions().length == 0)
         {
             label.setText(
                     "Blob propertys value type is "+
@@ -154,27 +322,27 @@ public class BytesDialog extends CancelDialog
         }
         else
         {
-            String[] extensions = magic.getExtensions();
+            String[] extensions = guess.getExtensions();
             if (extensions.length == 1)
             {
                 label.setText(
                         "Blob propertys value type is "+
-                        magic.getDescription()+
+                        guess.getDescription()+
                         ".");
             }
             else
             {
                 label.setText(
                         "Blob propertys value type is "+
-                        magic.getDescription()+
+                        guess.getDescription()+
                         ".Choose the extension before trying to open.");
             }
         }
 
         combobox.removeAllItems();
-        if (magic != null)
+        if (guess != null)
         {
-            for (String ext : magic.getExtensions())
+            for (String ext : guess.getExtensions())
             {
                 combobox.addItem(ext);
             }
@@ -183,7 +351,6 @@ public class BytesDialog extends CancelDialog
         {
             combobox.setSelectedIndex(0);
         }
-        input = Input.CANCEL;
         return super.input();
     }
 

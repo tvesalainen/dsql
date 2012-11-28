@@ -48,11 +48,6 @@ public class InputDialog extends OkCancelDialog
         table.add(label, value, type);
     }
 
-    public void setFrame(JFrame frame)
-    {
-        table.setFrame(frame);
-    }
-
     public Object get(int row)
     {
         return table.get(row);
@@ -73,9 +68,10 @@ public class InputDialog extends OkCancelDialog
     private void init()
     {
         table = new InputTable();
+        table.setOwner(this);
         add(table, BorderLayout.CENTER);
         setMinimumSize(new Dimension(800, 0));
-        setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
+        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
     }
 
 }

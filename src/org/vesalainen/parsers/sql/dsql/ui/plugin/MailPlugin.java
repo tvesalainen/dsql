@@ -17,12 +17,11 @@
 package org.vesalainen.parsers.sql.dsql.ui.plugin;
 
 import com.google.appengine.api.datastore.Email;
-import com.google.appengine.api.mail.MailService.Attachment;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
 import javax.mail.Address;
 import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
@@ -32,6 +31,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import org.vesalainen.parser.util.InputReader;
@@ -45,6 +45,11 @@ import org.vesalainen.regex.Regex;
 import org.vesalainen.regex.Replacer;
 
 /**
+ * <p>
+ * Note! Blogs and ShortBlogs are included as attachments. Link to the attachment
+ * is added to message. However Google Appengine doesn't care about Content-ID
+ * attachment header and changes ContentType multipart/related to multipart/mixed.
+ * 
  * @author Timo Vesalainen
  */
 public class MailPlugin extends AbstractMessagePlugin
@@ -111,16 +116,16 @@ public class MailPlugin extends AbstractMessagePlugin
                     Address[] allRecipients = message.getAllRecipients();
                     if (allRecipients != null && allRecipients.length > 0)
                     {
-                        Multipart mp = new MimeMultipart();
-                        message.setContent(mp);
+                        Multipart multiPart = new MimeMultipart("related");
                         MimeBodyPart htmlPart = new MimeBodyPart();
-                        mp.addBodyPart(htmlPart);
-                        replacer.set(row, mp);
+                        multiPart.addBodyPart(htmlPart);
+                        replacer.set(row, multiPart);
                         String rs = dollarTag.replace(subject, 256, replacer);
                         String rb = dollarTag.replace(body, 4096, replacer);
                         message.setFrom(new InternetAddress(from));
                         message.setSubject(rs);
                         htmlPart.setContent(rb, "text/html");
+                        message.setContent(multiPart);
                         engine.send(message);
                     }
                 }
@@ -186,21 +191,24 @@ public class MailPlugin extends AbstractMessagePlugin
                             String mimeType = Magic.getMimeType(ext);
                             MimeBodyPart attachment = new MimeBodyPart();
                             attachment.setFileName(tag + "." + ext);
-                            attachment.setContent(bytes, mimeType);
+                            DataSource src = new ByteArrayDataSource (bytes, mimeType); 
+                            attachment.setDataHandler(new DataHandler(src));
+                            String cid = tag + "." + ext;
+                            attachment.setHeader("Content-ID","&#60;"+cid+"&#62;");
                             multiPart.addBodyPart(attachment);
                             if (mimeType.startsWith("image"))
                             {
-                                writer.write("<div><br></div><div><img src=\""+attachment.getContentID()+"\"><br></div>");
+                                writer.write("<div><br></div><div><img src=\"cid:"+cid+"\"><br></div>");
                             }
                             else
                             {
-                                writer.write("<div><br></div><div><a href=\""+attachment.getContentID()+"\"><br></div>");
+                                writer.write("<div><br></div><div><a href=\"cid:"+cid+"\"><br></div>");
                             }
                             
                         }
                         catch (MessagingException ex)
                         {
-                            Logger.getLogger(MailPlugin.class.getName()).log(Level.SEVERE, null, ex);
+                            throw new IOException(ex);
                         }
                     }
                     return;

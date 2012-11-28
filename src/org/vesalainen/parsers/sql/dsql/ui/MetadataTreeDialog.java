@@ -41,7 +41,7 @@ public class MetadataTreeDialog extends JDialog implements KeyListener
         JScrollPane scrollPane = new JScrollPane(tree);
         add(scrollPane);
         tree.addKeyListener(this);
-        setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
+        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         pack();
     }
 

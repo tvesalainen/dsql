@@ -27,28 +27,18 @@ import com.google.appengine.api.datastore.Rating;
 import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.Text;
 import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Vector;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
@@ -64,9 +54,8 @@ public class DSJTable extends JTable
 {
     private static final Magic magic = Magic.getInstance();
     private static final DSQLParser parser = DSQLParser.getInstance();
-    private static File currentDirectory;
     
-    private JFrame frame;
+    private Window owner;
     
     public DSJTable(Object[][] rowData, Object[] columnNames)
     {
@@ -109,9 +98,9 @@ public class DSJTable extends JTable
         init();
     }
 
-    public void setFrame(JFrame frame)
+    public void setOwner(Window owner)
     {
-        this.frame = frame;
+        this.owner = owner;
     }
 
     private void init()
@@ -184,9 +173,8 @@ public class DSJTable extends JTable
             if (value != null)
             {
                 ShortBlob blob = (ShortBlob) value;
-                bytes = blob.getBytes();
-                guess = magic.guess(bytes);
-                button.setText(guess.getDescription());
+                dialog.setBytes(blob.getBytes());
+                button.setText(dialog.getContentDescription());
             }
             else
             {
@@ -198,6 +186,7 @@ public class DSJTable extends JTable
         @Override
         public Object getCellEditorValue()
         {
+            byte[] bytes = dialog.getBytes();
             if (bytes != null)
             {
                 return new ShortBlob(bytes);
@@ -213,8 +202,7 @@ public class DSJTable extends JTable
     {
         protected static final String EDIT = "edit";
         protected JButton button = new JButton();
-        protected BytesDialog dialog = new BytesDialog(frame);
-        protected byte[] bytes;
+        protected BytesDialog dialog = new BytesDialog(owner);
         protected MagicResult guess;
         protected String columnName;
         
@@ -231,9 +219,8 @@ public class DSJTable extends JTable
             if (value != null)
             {
                 Blob blob = (Blob) value;
-                bytes = blob.getBytes();
-                guess = magic.guess(bytes);
-                button.setText(guess.getDescription());
+                dialog.setBytes(blob.getBytes());
+                button.setText(dialog.getContentDescription());
             }
             else
             {
@@ -245,6 +232,7 @@ public class DSJTable extends JTable
         @Override
         public Object getCellEditorValue()
         {
+            byte[] bytes = dialog.getBytes();
             if (bytes != null)
             {
                 return new Blob(bytes);
@@ -260,165 +248,9 @@ public class DSJTable extends JTable
         {
             if (EDIT.equals(e.getActionCommand()))
             {
-                if (dialog.input(guess))
+                if (dialog.input())
                 {
-                    switch (dialog.getInput())
-                    {
-                        case LOAD:
-                        {
-                            JFileChooser fc = new JFileChooser();
-                            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                            if (guess != null && guess.getExtensions().length == 0)
-                            {
-                                String[] extensions = guess.getExtensions();
-                                FileFilter ff = new FileNameExtensionFilter(guess.getDescription(), guess.getExtensions());
-                                fc.setFileFilter(ff);
-                            }
-                            if (currentDirectory != null)
-                            {
-                                fc.setCurrentDirectory(currentDirectory);
-                            }
-                            if (fc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION)
-                            {
-                                File file = fc.getSelectedFile();
-                                long length = file.length();
-                                if (length > 1000000)
-                                {
-                                    JOptionPane.showMessageDialog(frame, file, "File is too big", JOptionPane.ERROR_MESSAGE);
-                                }
-                                else
-                                {
-                                    bytes = new byte[(int)length];
-                                    try (FileInputStream fis = new FileInputStream(file))
-                                    {
-                                        fis.read(bytes);
-                                        currentDirectory = file.getParentFile();
-                                    }
-                                    catch (IOException ex)
-                                    {
-                                        JOptionPane.showMessageDialog(frame, ex.getLocalizedMessage());
-                                    }
-                                }
-                            }
-                        }
-                            break;
-                        case STORE:
-                        {
-                            JFileChooser fc = new JFileChooser();
-                            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                            String extension = dialog.getExtension();
-                            if (extension != null && !extension.isEmpty())
-                            {
-                                FileFilter ff = new FileNameExtensionFilter(guess.getDescription(), extension);
-                                fc.setFileFilter(ff);
-                            }
-                            if (currentDirectory != null)
-                            {
-                                fc.setCurrentDirectory(currentDirectory);
-                            }
-                            String suffix = "";
-                            if (extension != null && !extension.isEmpty())
-                            {
-                                suffix = "."+extension.toLowerCase();
-                            }
-                            fc.setSelectedFile(new File(columnName+suffix));
-                            if (fc.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION)
-                            {
-                                File file = fc.getSelectedFile();
-                                if (file != null)
-                                {
-                                    if (file.getName().indexOf('.') == -1)
-                                    {
-                                        file = new File(file.getPath() + suffix);
-                                    }
-                                    currentDirectory = file.getParentFile();
-                                    if (file.exists())
-                                    {
-                                        int confirm = JOptionPane.showConfirmDialog(frame, file, "File exists! Overwrite?", JOptionPane.OK_CANCEL_OPTION);
-                                        if (JOptionPane.YES_OPTION == confirm)
-                                        {
-                                            return;
-                                        }
-                                    }
-                                    try (FileOutputStream fos = new FileOutputStream(file))
-                                    {
-                                        fos.write(bytes);
-                                    }
-                                    catch (IOException ex)
-                                    {
-                                        JOptionPane.showMessageDialog(frame, ex.getLocalizedMessage());
-                                    }
-                                }
-                            }
-                        }
-                            break;
-                        case OPEN:
-                        {
-                            String extension = dialog.getExtension();
-                            String suffix = "";
-                            if (extension != null && !extension.isEmpty())
-                            {
-                                suffix = "."+extension.toLowerCase();
-                            }
-                            try
-                            {
-                                File file = File.createTempFile("tmp", suffix);
-                                Path tempPath = file.toPath();
-                                try (FileOutputStream fos = new FileOutputStream(file))
-                                {
-                                    fos.write(bytes);
-                                }
-                                catch (IOException ex)
-                                {
-                                    JOptionPane.showMessageDialog(frame, ex.getLocalizedMessage());
-                                }
-                                ExternalEditor ee = new ExternalEditor(frame, tempPath);
-                                if (ee.input())
-                                {
-                                    long length = file.length();
-                                    if (length > 1000000)
-                                    {
-                                        JOptionPane.showMessageDialog(frame, file, "File is too big", JOptionPane.ERROR_MESSAGE);
-                                    }
-                                    else
-                                    {
-                                        bytes = new byte[(int)length];
-                                        try (FileInputStream fis = new FileInputStream(file))
-                                        {
-                                            fis.read(bytes);
-                                        }
-                                        catch (IOException ex)
-                                        {
-                                            JOptionPane.showMessageDialog(frame, ex.getLocalizedMessage());
-                                        }
-                                    }
-                                }
-                                try
-                                {
-                                    Files.delete(tempPath);
-                                }
-                                catch (IOException ex)
-                                {
-                                }
-                            }
-                            catch (IOException ex)
-                            {
-                                JOptionPane.showMessageDialog(frame, ex.getLocalizedMessage());
-                            }
-                        }
-                            break;
-                        case REMOVE:
-                            int confirm = JOptionPane.showConfirmDialog(frame, "Removing blob", "Continue?", JOptionPane.OK_CANCEL_OPTION);
-                            if (JOptionPane.YES_OPTION == confirm)
-                            {
-                                bytes = null;
-                            }
-                            break;
-                        case CANCEL:
-                            break;
-                    }
-                    guess = magic.guess(bytes);
-                    button.setText(guess.getDescription());
+                    button.setText(dialog.getContentDescription());
                 }
                 fireEditingStopped();
             }
@@ -539,7 +371,7 @@ public class DSJTable extends JTable
     {
         private static final String EDIT = "edit";
         private JButton button = new JButton();
-        private TextDialog dialog = new TextDialog(frame);
+        private TextDialog dialog = new TextDialog(owner);
 
         public TextCellEditor()
         {
