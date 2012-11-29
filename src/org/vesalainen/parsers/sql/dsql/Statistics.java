@@ -59,26 +59,29 @@ public class Statistics
                 map.clear();
                 Query q0 = new Query("__Stat_Total__");
                 Entity total = datastore.prepare(q0).asSingleEntity();
-                Date timestamp = (Date) total.getProperty("timestamp");
-                nextUpdate = timestamp.getTime() + DAY;
-                Query q1 = new Query("__Stat_PropertyName_Kind__");
-                q1.addFilter("timestamp", Query.FilterOperator.EQUAL, timestamp);
-                PreparedQuery p1 = datastore.prepare(q1);
-                for (Entity prop : p1.asIterable())
+                if (total != null)
                 {
-                    String kind = (String) prop.getProperty("kind_name");
-                    if (!kind.startsWith("_"))
+                    Date timestamp = (Date) total.getProperty("timestamp");
+                    nextUpdate = timestamp.getTime() + DAY;
+                    Query q1 = new Query("__Stat_PropertyName_Kind__");
+                    q1.addFilter("timestamp", Query.FilterOperator.EQUAL, timestamp);
+                    PreparedQuery p1 = datastore.prepare(q1);
+                    for (Entity prop : p1.asIterable())
                     {
-                        String property = (String) prop.getProperty("property_name");
-                        long count = (long) prop.getProperty("count");
-                        long indexCount = (long) prop.getProperty("builtin_index_count");
-                        KindEntry kindEntry = (KindEntry) map.get(kind.toUpperCase());
-                        if  (kindEntry == null)
+                        String kind = (String) prop.getProperty("kind_name");
+                        if (!kind.startsWith("_"))
                         {
-                            kindEntry = new KindEntry(kind);
-                            map.put(kind.toUpperCase(), kindEntry);
+                            String property = (String) prop.getProperty("property_name");
+                            long count = (long) prop.getProperty("count");
+                            long indexCount = (long) prop.getProperty("builtin_index_count");
+                            KindEntry kindEntry = (KindEntry) map.get(kind.toUpperCase());
+                            if  (kindEntry == null)
+                            {
+                                kindEntry = new KindEntry(kind);
+                                map.put(kind.toUpperCase(), kindEntry);
+                            }
+                            kindEntry.addProperty(property, count, indexCount > 0);
                         }
-                        kindEntry.addProperty(property, count, indexCount > 0);
                     }
                 }
             }

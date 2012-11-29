@@ -19,6 +19,7 @@ package org.vesalainen.parsers.sql.dsql;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.RawValue;
 import com.google.appengine.api.mail.MailService.Message;
@@ -324,6 +325,24 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     public void send(MimeMessage message) throws IOException
     {
         proxy.send(message);
+    }
+
+    @Override
+    public Entity get(Key key) throws EntityNotFoundException
+    {
+        return proxy.get(key);
+    }
+
+    @Override
+    public void update(Entity row)
+    {
+        proxy.update(row);
+    }
+
+    @Override
+    public void delete(Entity row)
+    {
+        proxy.delete(row);
     }
 
 }

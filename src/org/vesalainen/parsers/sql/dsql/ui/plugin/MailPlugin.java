@@ -18,6 +18,8 @@ package org.vesalainen.parsers.sql.dsql.ui.plugin;
 
 import com.google.appengine.api.datastore.Email;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.Writer;
 import javax.activation.DataHandler;

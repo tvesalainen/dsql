@@ -17,13 +17,11 @@
 
 package org.vesalainen.parsers.sql.dsql.ui;
 
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Text;
 import org.vesalainen.parsers.sql.dsql.ui.action.MetadataTreeAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.RedoAction;
-import org.vesalainen.parsers.sql.dsql.ui.action.OpenStatementAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.UndoAction;
-import org.vesalainen.parsers.sql.dsql.ui.action.SaveStatementAction;
-import org.vesalainen.parsers.sql.dsql.ui.action.SaveAsStatementAction;
-import org.vesalainen.parsers.sql.dsql.ui.action.RemoveStatementAction;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -36,6 +34,9 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,30 +52,28 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
-import javax.swing.table.TableCellEditor;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
-import org.vesalainen.parsers.sql.Engine;
-import org.vesalainen.parsers.sql.Statement;
-import org.vesalainen.parsers.sql.UpdateableFetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.ui.action.DSqlParseAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.ExecuteAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.FetchResultHandler;
+import org.vesalainen.parsers.sql.dsql.ui.action.PersistenceHandler;
 import org.vesalainen.parsers.sql.dsql.ui.action.SelectForUpdateAction;
 import org.vesalainen.parsers.sql.dsql.ui.plugin.MailPlugin;
 
 /**
  * @author Timo Vesalainen
  */
-public class WorkBench extends WindowAdapter
+public class WorkBench extends WindowAdapter implements VetoableChangeListener
 {
     static final String TITLE = "Datastore Query 1.0";
+    static final String SqlProperty = WorkBench.class.getName()+".sql";
     final static Cursor busyCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
     final static Cursor defaultCursor = Cursor.getDefaultCursor();
-    Engine engine;
-    JFrame frame;
+    private DSQLEngine engine;
+    private JFrame frame;
     private JMenuBar menuBar;
     private final JScrollPane upperPane;
     private final JScrollPane resultPane;
@@ -92,6 +91,7 @@ public class WorkBench extends WindowAdapter
     private final JMenu actionMenu;
     private final FetchResultHandler fetchResultHandler;
     private final ExecuteAction executeAction;
+    private final PersistenceHandler persistenceHandler;
     
     public WorkBench(final DSQLEngine engine, String storedStatementsKind)
     {
@@ -120,10 +120,12 @@ public class WorkBench extends WindowAdapter
 
         JMenu fileMenu = new JMenu("File");
         menuBar.add(fileMenu);
-        fileMenu.add(new OpenStatementAction("Open Statement", this, storedStatementsKind));
-        fileMenu.add(new SaveStatementAction("Save Statement", this, storedStatementsKind));
-        fileMenu.add(new SaveAsStatementAction("Save As Statement", this, storedStatementsKind));
-        fileMenu.add(new RemoveStatementAction("Remove Statement", this, storedStatementsKind));
+        persistenceHandler = new PersistenceHandler(this, storedStatementsKind);
+        persistenceHandler.addVetoableChangeListener(this);
+        for (Action action : persistenceHandler.getActions())
+        {
+            fileMenu.add(action);
+        }
         
         JMenu editMenu = new JMenu("Edit");
         menuBar.add(editMenu);
@@ -208,8 +210,55 @@ public class WorkBench extends WindowAdapter
         actionMenu.add(action);
         plugin.setFrame(frame);
         fetchResultHandler.addPropertyChangeListener(plugin);
+        persistenceHandler.addVetoableChangeListener(plugin);
     }
     
+    @Override
+    public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException
+    {
+        Entity entity = (Entity) evt.getNewValue();
+        String name = "";
+        switch (evt.getPropertyName())
+        {
+            case PersistenceHandler.OPEN:
+                if (entity != null)
+                {
+                    // Open
+                    Text sql = (Text) entity.getProperty(SqlProperty);
+                    if (sql != null)
+                    {
+                        sqlPane.setText(sql.getValue());
+                    }
+                    else
+                    {
+                        sqlPane.setText(null);
+                    }
+                    name = entity.getKey().getName();
+                }
+                else
+                {
+                    // New
+                    sqlPane.setText(null);
+                }
+                break;
+            case PersistenceHandler.SAVE:
+                if (entity != null)
+                {
+                    // Save
+                    Text sql = new Text(sqlPane.getText());
+                    entity.setUnindexedProperty(SqlProperty, sql);
+                    name = entity.getKey().getName();
+                }
+                else
+                {
+                    // Remove
+                    sqlPane.setText(null);
+                }
+                break;
+        }
+        frame.setTitle(name+" - "+TITLE);
+    }
+
     public JTextPane getActiveTextPane()
     {
         return sqlPane;
@@ -245,29 +294,7 @@ public class WorkBench extends WindowAdapter
         System.exit(0);
     }
     
-    public String getOpenStatement()
-    {
-        String title = frame.getTitle();
-        if (TITLE.equals(title))
-        {
-            return null;
-        }
-        else
-        {
-            return title.substring(0, title.length()-TITLE.length()-3);
-        }
-    }
-    public void setOpenStatement(String name, String sql)
-    {
-        frame.setTitle(name+" - "+TITLE);
-        sqlPane.setText(sql);
-    }
-    public void setOpenStatement(String name)
-    {
-        frame.setTitle(name+" - "+TITLE);
-    }
-
-    public Engine getEngine()
+    public DSQLEngine getEngine()
     {
         return engine;
     }

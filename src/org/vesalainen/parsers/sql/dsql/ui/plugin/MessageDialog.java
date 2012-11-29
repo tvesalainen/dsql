@@ -63,6 +63,21 @@ public class MessageDialog extends TextDialog
         return subjectField.getText();
     }
     
+    public String getBody()
+    {
+        return textPane.getText();
+    }
+    
+    public void setSubject(String subject)
+    {
+        subjectField.setText(subject);
+    }
+    
+    public void setBody(String body)
+    {
+        textPane.setText(body);
+    }
+    
     private void init()
     {
         textPane.setContentType("text/html");

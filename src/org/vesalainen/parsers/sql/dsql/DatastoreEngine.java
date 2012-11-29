@@ -19,6 +19,7 @@ package org.vesalainen.parsers.sql.dsql;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.Index.IndexState;
@@ -542,6 +543,24 @@ public class DatastoreEngine  implements DSProxyInterface
         {
             throw new IOException(ex);
         }
+    }
+
+    @Override
+    public Entity get(Key key) throws EntityNotFoundException
+    {
+        return datastore.get(key);
+    }
+
+    @Override
+    public void update(Entity row)
+    {
+        datastore.put(row);
+    }
+
+    @Override
+    public void delete(Entity row)
+    {
+        datastore.delete(row.getKey());
     }
 
 }

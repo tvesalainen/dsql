@@ -17,6 +17,7 @@
 package org.vesalainen.parsers.sql.dsql;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.mail.MailService.Message;
 import java.io.IOException;
@@ -40,8 +41,6 @@ public interface DSProxyInterface
 
     void commitTransaction();
 
-    void delete(Collection<Entity> rows);
-
     void insert(InsertStatement insertStatement);
             
     void exit();
@@ -52,7 +51,11 @@ public interface DSProxyInterface
 
     void rollbackTransaction();
 
+    Entity get(Key key) throws EntityNotFoundException;
     void update(Collection<Entity> rows);
+    void update(Entity row);
+    void delete(Entity row);
+    void delete(Collection<Entity> rows);
 
     Statistics getStatistics();
     
@@ -72,4 +75,5 @@ public interface DSProxyInterface
     void send(Message message) throws IOException;
     Session getSession();
     void send(MimeMessage message) throws IOException;
+    
 }

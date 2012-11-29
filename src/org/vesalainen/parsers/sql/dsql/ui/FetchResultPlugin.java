@@ -18,6 +18,7 @@ package org.vesalainen.parsers.sql.dsql.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.VetoableChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 
@@ -25,7 +26,7 @@ import javax.swing.JFrame;
  *
  * @author Timo Vesalainen
  */
-public abstract class FetchResultPlugin extends AbstractAction implements PropertyChangeListener
+public abstract class FetchResultPlugin extends AbstractAction implements PropertyChangeListener, VetoableChangeListener
 {
     private JFrame frame;
 

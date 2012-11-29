@@ -17,17 +17,25 @@
 
 package org.vesalainen.parsers.sql.dsql.ui.plugin;
 
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Text;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultPlugin;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
+import org.vesalainen.parsers.sql.dsql.ui.action.PersistenceHandler;
 
 /**
  * @author Timo Vesalainen
  */
 public abstract class AbstractMessagePlugin extends FetchResultPlugin
 {
+    public static final String SubjectProperty = AbstractMessagePlugin.class.getName()+".subject";
+    public static final String BodyProperty = AbstractMessagePlugin.class.getName()+".body";
+    
     protected Action sendAction;
     protected MessageDialog dialog;
     protected JFrame owner;
@@ -37,6 +45,7 @@ public abstract class AbstractMessagePlugin extends FetchResultPlugin
     {
         super(name);
         this.sendAction = sendAction;
+        dialog = createMessageDialog(owner, sendAction);
     }
     
     @Override
@@ -44,10 +53,6 @@ public abstract class AbstractMessagePlugin extends FetchResultPlugin
     {
         this.owner = owner;
         this.model = model;
-        if (dialog == null)
-        {
-            dialog = createMessageDialog(owner, sendAction);
-        }
         setEnabled(true);
     }
 
@@ -67,4 +72,53 @@ public abstract class AbstractMessagePlugin extends FetchResultPlugin
     {
         return new MessageDialog(owner, sendAction);
     }
+
+    @Override
+    public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException
+    {
+        Entity entity = (Entity) evt.getNewValue();
+        switch (evt.getPropertyName())
+        {
+            case PersistenceHandler.OPEN:
+                if (entity != null)
+                {
+                    // Open
+                    dialog.setSubject((String) entity.getProperty(SubjectProperty));
+                    Text body = (Text) entity.getProperty(BodyProperty);
+                    if (body != null)
+                    {
+                        dialog.setBody(body.getValue());
+                    }
+                    else
+                    {
+                        dialog.setBody(null);
+                    }
+                }
+                else
+                {
+                    // New
+                    dialog.setSubject(null);
+                    dialog.setBody(null);
+                }
+                break;
+            case PersistenceHandler.SAVE:
+                if (entity != null)
+                {
+                    // Save
+                    String subject = dialog.getSubject();
+                    entity.setUnindexedProperty(SubjectProperty, subject);
+                    String body = dialog.getBody();
+                    Text sql = new Text(body);
+                    entity.setUnindexedProperty(BodyProperty, sql);
+                }
+                else
+                {
+                    // Remove
+                    dialog.setSubject(null);
+                    dialog.setBody(null);
+                }
+                break;
+        }
+    }
+    
 }
