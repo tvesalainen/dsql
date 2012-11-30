@@ -60,6 +60,7 @@ import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.ui.action.AboutAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.DSqlParseAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.ExecuteAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.ExportCVSAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.FetchResultHandler;
 import org.vesalainen.parsers.sql.dsql.ui.action.OpenSQLFileAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.PersistenceHandler;
@@ -100,6 +101,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
     private final JButton printButton;
     private final JMenu helpMenu;
     private String title;
+    private final ExportCVSAction exportCVSAction;
     
     public WorkBench(Properties properties) throws IOException, InterruptedException
     {
@@ -136,9 +138,11 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
 
         persistenceHandler = new PersistenceHandler(this, storedStatementsKind);
         
-        OpenSQLFileAction openFileStatementAction = new OpenSQLFileAction(persistenceHandler);
+        OpenSQLFileAction openFileStatementAction = new OpenSQLFileAction(this, persistenceHandler);
         fileMenu.add(openFileStatementAction);
-        fileMenu.add(new SaveSQLFileAction());
+        SaveSQLFileAction saveSQLFileAction = new SaveSQLFileAction(this);
+        fileMenu.add(saveSQLFileAction);
+        persistenceHandler.addVetoableChangeListener(saveSQLFileAction);
         
         fileMenu.addSeparator();
         persistenceHandler.addVetoableChangeListener(this);
@@ -146,7 +150,8 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         {
             fileMenu.add(action);
         }
-        
+        fileMenu.addSeparator();
+
         JMenu editMenu = new JMenu(I18n.get("EDIT"));
         menuBar.add(editMenu);
         editMenu.add(new UndoAction(I18n.get("UNDO"), undoManager)).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
@@ -162,6 +167,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         
         InsertPropertiesHandler insertPropertiesHandler = new InsertPropertiesHandler(sqlPane);
         MetadataTreeAction insertPropertiesAction = new MetadataTreeAction(
+                this,
                 I18n.get("INSERT PROPERTIES"), 
                 I18n.get("INSERT PROPERTIES AT THE CURSOR POSITION"),
                 engine.getStatistics(), 
@@ -171,6 +177,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
 
         GenerateSelectHandler generateSelectHandler = new GenerateSelectHandler(sqlPane);
         MetadataTreeAction generateSelectAction = new MetadataTreeAction(
+                this,
                 I18n.get("GENERATE SELECT"), 
                 I18n.get("GENERATE A SELECT STATEMENT"),
                 engine.getStatistics(), 
@@ -232,6 +239,11 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         menuBar.add(helpMenu);
         
         helpMenu.add(new AboutAction());
+        
+        exportCVSAction = new ExportCVSAction();
+        fetchResultHandler.addPropertyChangeListener(exportCVSAction);
+        persistenceHandler.addVetoableChangeListener(exportCVSAction);
+        fileMenu.add(exportCVSAction);
         
         frame.pack();
         frame.setLocationByPlatform(true);

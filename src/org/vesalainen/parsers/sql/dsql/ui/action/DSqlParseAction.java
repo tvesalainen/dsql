@@ -19,18 +19,16 @@ package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JTextPane;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.StyledEditorKit.ForegroundAction;
-import javax.swing.text.TextAction;
 import org.vesalainen.parser.util.InputReader;
 import org.vesalainen.parser.util.OffsetLocatorException;
 import org.vesalainen.parsers.sql.Engine;
@@ -43,7 +41,7 @@ import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 /**
  * @author Timo Vesalainen
  */
-public class DSqlParseAction extends TextAction implements DocumentListener, SQLLocator, ErrorReporter, UndoableEditListener
+public class DSqlParseAction extends AbstractAction implements DocumentListener, SQLLocator, ErrorReporter, UndoableEditListener
 {
     public static final String PropertyName = "statement";
     private final Timer timer;

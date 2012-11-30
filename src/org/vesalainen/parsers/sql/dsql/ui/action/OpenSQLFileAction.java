@@ -19,42 +19,40 @@ package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.beans.VetoableChangeSupport;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.TextAction;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
+import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
 /**
  * @author Timo Vesalainen
  */
-public class OpenSQLFileAction extends TextAction 
+public class OpenSQLFileAction extends AbstractAction 
 {
+    private WorkBench workBench;
     private static File currentDirectory;
     private PersistenceHandler persistenceHandler;
 
-    public OpenSQLFileAction(PersistenceHandler persistenceHandler)
+    public OpenSQLFileAction(WorkBench workBench, PersistenceHandler persistenceHandler)
     {
         super(I18n.get("OPEN FILE"));
         putValue(Action.SHORT_DESCRIPTION, I18n.get("OPEN FILE TOOLTIP"));
+        this.workBench = workBench;
         this.persistenceHandler = persistenceHandler;
     }
 
     @Override
     public void actionPerformed(ActionEvent e)
     {
-        JTextComponent text = getTextComponent(e);
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         FileFilter ff = new FileNameExtensionFilter(I18n.get("SQL FILE"), "sql");
@@ -74,7 +72,7 @@ public class OpenSQLFileAction extends TextAction
                 try
                 {
                     persistenceHandler.fireVetoableChange(PersistenceHandler.OPEN, null, null);
-                    text.setText(sql);
+                    workBench.getActiveTextPane().setText(sql);
                 }
                 catch (PropertyVetoException ex)
                 {

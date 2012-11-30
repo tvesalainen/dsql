@@ -18,51 +18,55 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Text;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.JTextComponent;
+import org.vesalainen.parsers.sql.dsql.GObjectHelper;
+import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
-import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
 /**
  * @author Timo Vesalainen
  */
-public class SaveSQLFileAction extends AbstractAction implements VetoableChangeListener
+public class ExportCVSAction extends AbstractAction implements PropertyChangeListener, VetoableChangeListener
 {
-    private WorkBench workBench;
-    private static File currentDirectory;
-    private String name;
+    private FetchResultTableModel model;
+    private File currentDirectory;
+    private String name = "file";
 
-    public SaveSQLFileAction(WorkBench workBench)
+    public ExportCVSAction()
     {
-        super(I18n.get("SAVE FILE"));
-        putValue(Action.SHORT_DESCRIPTION, I18n.get("SAVE FILE TOOLTIP"));
-        this.workBench = workBench;
+        super(I18n.get("EXPORT CVS"));
+        putValue(Action.SHORT_DESCRIPTION, I18n.get("EXPORT CVS TOOLTIP"));
+        setEnabled(false);
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e)
     {
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        FileFilter ff = new FileNameExtensionFilter(I18n.get("SQL FILE"), "sql");
+        FileFilter ff = new FileNameExtensionFilter(I18n.get("CSV FILE"), "csv");
         fc.setFileFilter(ff);
         if (currentDirectory != null)
         {
             fc.setCurrentDirectory(currentDirectory);
         }
-        fc.setSelectedFile(new File(name+".sql"));
+        fc.setSelectedFile(new File(name+".csv"));
         if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
         {
             File file = fc.getSelectedFile();
@@ -70,7 +74,7 @@ public class SaveSQLFileAction extends AbstractAction implements VetoableChangeL
             {
                 if (file.getName().indexOf('.') == -1)
                 {
-                    file = new File(file.getPath() + ".sql");
+                    file = new File(file.getPath() + ".csv");
                 }
                 currentDirectory = file.getParentFile();
                 if (file.exists())
@@ -81,9 +85,37 @@ public class SaveSQLFileAction extends AbstractAction implements VetoableChangeL
                         return;
                     }
                 }
-                try (FileWriter fos = new FileWriter(file))
+                try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file))))
                 {
-                    fos.write(workBench.getActiveTextPane().getText());
+                    for (int col=0;col<model.getColumnCount();col++)
+                    {
+                        if (col > 0)
+                        {
+                            pw.print(',');
+                        }
+                        pw.print('"');
+                        pw.print(model.getColumnName(col));
+                        pw.print('"');
+                    }
+                    pw.println();
+                    for (int row=0;row<model.getRowCount();row++)
+                    {
+                        for (int col=0;col<model.getColumnCount();col++)
+                        {
+                            if (col > 0)
+                            {
+                                pw.print(',');
+                            }
+                            Object valueAt = model.getValueAt(row, col);
+                            pw.print('"');
+                            if (valueAt != null)
+                            {
+                                pw.print(GObjectHelper.getString(valueAt));
+                            }
+                            pw.print('"');
+                        }
+                        pw.println();
+                    }
                 }
                 catch (IOException ex)
                 {
@@ -91,7 +123,31 @@ public class SaveSQLFileAction extends AbstractAction implements VetoableChangeL
                 }
             }
         }
-   }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt)
+    {
+        if (FetchResultHandler.ModelPropertyName.equals(evt.getPropertyName()))
+        {
+            model = (FetchResultTableModel) evt.getNewValue();
+            if (model != null)
+            {
+                if (model.getRowCount() > 0)
+                {
+                    setEnabled(true);
+                }
+                else
+                {
+                    setEnabled(false);
+                }
+            }
+            else
+            {
+                setEnabled(false);
+            }
+        }
+    }
 
     @Override
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException

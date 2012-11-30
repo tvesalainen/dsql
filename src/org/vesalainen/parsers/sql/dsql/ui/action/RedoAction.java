@@ -18,13 +18,13 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
-import javax.swing.text.TextAction;
+import javax.swing.AbstractAction;
 import javax.swing.undo.UndoManager;
 
 /**
  * @author Timo Vesalainen
  */
-public class RedoAction extends TextAction
+public class RedoAction extends AbstractAction
 {
     private UndoManager manager;
     public RedoAction(String name, UndoManager manager)

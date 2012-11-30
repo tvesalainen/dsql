@@ -107,7 +107,15 @@ public class GObjectHelper
                             }
                             else
                             {
-                                throw new IllegalArgumentException(ob+" is not String datastore type");
+                                if (ob instanceof Rating)
+                                {
+                                    Rating gob = (Rating) ob;
+                                    return String.valueOf(gob.getRating());
+                                }
+                                else
+                                {
+                                    return ob.toString();
+                                }
                             }
                         }
                     }

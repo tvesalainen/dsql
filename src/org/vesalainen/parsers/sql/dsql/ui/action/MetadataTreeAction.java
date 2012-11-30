@@ -18,28 +18,30 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JFrame;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.TextAction;
 import org.vesalainen.parsers.sql.dsql.Statistics;
 import org.vesalainen.parsers.sql.dsql.ui.MetadataHandler;
 import org.vesalainen.parsers.sql.dsql.ui.MetadataTreeDialog;
+import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
 /**
  * @author Timo Vesalainen
  */
-public class MetadataTreeAction extends TextAction
+public class MetadataTreeAction extends AbstractAction
 {
     private static MetadataTreeDialog tree;
     
+    private WorkBench workBench;
     private Statistics statistics;
     private MetadataHandler handler;
     
-    public MetadataTreeAction(String name, String tooltip, Statistics statistics, MetadataHandler handler)
+    public MetadataTreeAction(WorkBench workBench, String name, String tooltip, Statistics statistics, MetadataHandler handler)
     {
         super(name);
         putValue(Action.SHORT_DESCRIPTION, tooltip);
+        this.workBench = workBench;
         this.statistics = statistics;
         this.handler = handler;
     }
@@ -47,12 +49,11 @@ public class MetadataTreeAction extends TextAction
     @Override
     public void actionPerformed(ActionEvent e)
     {
-        JTextComponent focusedComponent = getFocusedComponent();
         if (tree == null)
         {
             tree = new MetadataTreeDialog(statistics);
         }
-        tree.setLocationRelativeTo(focusedComponent);
+        tree.setLocationRelativeTo(workBench.getActiveTextPane());
         tree.doIt(handler);
     }
 
