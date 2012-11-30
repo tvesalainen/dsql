@@ -25,11 +25,11 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFrame;
-import javax.swing.event.SwingPropertyChangeSupport;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.Placeholder;
 import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 import org.vesalainen.parsers.sql.dsql.ui.InputDialog;
 
 /**
@@ -43,8 +43,8 @@ public class ExecuteAction extends AbstractAction implements PropertyChangeListe
     
     public ExecuteAction(JFrame frame)
     {
-        super("Execute");
-        putValue(Action.SHORT_DESCRIPTION, "Execute the statement");
+        super(I18n.get("EXECUTE"));
+        putValue(Action.SHORT_DESCRIPTION, I18n.get("EXECUTE THE STATEMENT"));
         this.frame = frame;
         setEnabled(false);
     }
@@ -70,11 +70,11 @@ public class ExecuteAction extends AbstractAction implements PropertyChangeListe
                 setEnabled(true);
                 if (statement instanceof SelectStatement)
                 {
-                    putValue(NAME, "Select");
+                    putValue(NAME, I18n.get("SELECT"));
                 }
                 else
                 {
-                    putValue(NAME, "Execute");
+                    putValue(NAME, I18n.get("EXECUTE"));
                 }
             }
             else
@@ -90,7 +90,7 @@ public class ExecuteAction extends AbstractAction implements PropertyChangeListe
         if (!placeholderMap.isEmpty())
         {
             
-            InputDialog inputDialog = new InputDialog(frame, "Enter Placeholder Values");
+            InputDialog inputDialog = new InputDialog(frame, I18n.get("ENTER PLACEHOLDER VALUES"));
             for (Map.Entry<String,Placeholder> entry : placeholderMap.entrySet())
             {
                 Placeholder ph = entry.getValue();

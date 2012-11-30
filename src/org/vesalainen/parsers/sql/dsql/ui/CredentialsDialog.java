@@ -59,7 +59,7 @@ public class CredentialsDialog extends OkCancelDialog
     public CredentialsDialog(File propertiesFile) throws IOException
     {
         this.propertiesFile = propertiesFile;
-        setTitle("Login");
+        setTitle(I18n.get("LOGIN"));
         properties = new Properties();
         try (FileInputStream pFile = new FileInputStream(propertiesFile);)
         {
@@ -67,12 +67,12 @@ public class CredentialsDialog extends OkCancelDialog
         }
         String[] servers = properties.getProperty(REMOTESERVER, "").split(",");
         serverField = new JComboBox(servers);
-        serverField.setToolTipText("Remote server URL");
+        serverField.setToolTipText(I18n.get("REMOTE SERVER URL"));
         serverField.setEditable(true);
         emailField = new JTextField(properties.getProperty(REMOTEUSER), 30);
-        emailField.setToolTipText("Remote server username (= email address)");
+        emailField.setToolTipText(I18n.get("REMOTE SERVER USERNAME (= EMAIL ADDRESS)"));
         passwordField = new JPasswordField(properties.getProperty(REMOTEPASSWORD), 30);
-        passwordField.setToolTipText("Remote server password");
+        passwordField.setToolTipText(I18n.get("REMOTE SERVER PASSWORD"));
         
         saveButton = new JButton(new SaveAction());
         buttonPanel.add(saveButton);
@@ -80,13 +80,13 @@ public class CredentialsDialog extends OkCancelDialog
         JPanel panel = new JPanel(new SpringLayout());
         add(panel, BorderLayout.CENTER);
         
-        panel.add(new JLabel("Server", JLabel.TRAILING));
+        panel.add(new JLabel(I18n.get("SERVER"), JLabel.TRAILING));
         panel.add(serverField);
         
-        panel.add(new JLabel("Email", JLabel.TRAILING));
+        panel.add(new JLabel(I18n.get("EMAIL"), JLabel.TRAILING));
         panel.add(emailField);
         
-        panel.add(new JLabel("Password", JLabel.TRAILING));
+        panel.add(new JLabel(I18n.get("PASSWORD"), JLabel.TRAILING));
         panel.add(passwordField);
         
         SpringUtilities.makeCompactGrid(panel,
@@ -131,8 +131,8 @@ public class CredentialsDialog extends OkCancelDialog
 
         public SaveAction()
         {
-            super("Save");
-            putValue(Action.SHORT_DESCRIPTION, "Save the credentials to properties file");
+            super(I18n.get("SAVE"));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("SAVE THE CREDENTIALS TO PROPERTIES FILE"));
         }
 
         @Override

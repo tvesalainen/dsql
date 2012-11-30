@@ -22,13 +22,12 @@ import java.awt.print.PrinterException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 
 /**
  * @author Timo Vesalainen
@@ -39,8 +38,8 @@ public class PrintAction extends AbstractAction implements PropertyChangeListene
 
     public PrintAction()
     {
-        super("Print");
-        putValue(Action.SHORT_DESCRIPTION, "Print the results");
+        super(I18n.get("PRINT"));
+        putValue(Action.SHORT_DESCRIPTION, I18n.get("PRINT THE RESULTS"));
         setEnabled(false);
         this.table = table;
     }
@@ -50,12 +49,12 @@ public class PrintAction extends AbstractAction implements PropertyChangeListene
     {
         try
         {
-            MessageFormat header = new MessageFormat("Page {0,number,integer}");
+            MessageFormat header = new MessageFormat(I18n.get("PAGE {0,NUMBER,INTEGER}"));
             table.print(JTable.PrintMode.FIT_WIDTH, header, null);
         }
         catch (PrinterException ex)
         {
-            JOptionPane.showMessageDialog(null, ex.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, ex.getLocalizedMessage(), I18n.get("ERROR"), JOptionPane.ERROR_MESSAGE);
         }
     }
 

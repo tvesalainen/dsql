@@ -59,7 +59,7 @@ public class BytesDialog extends CancelDialog
     public BytesDialog(Window owner)
     {
         super(owner);
-        setTitle("Blob Editor");
+        setTitle(I18n.get("BLOB EDITOR"));
         init();
     }
 
@@ -76,8 +76,8 @@ public class BytesDialog extends CancelDialog
         add(combobox, BorderLayout.CENTER);
         combobox.setEditable(true);
         
-        loadButton = new JButton("Load");
-        loadButton.setToolTipText("Load binary properties value from a file. Enter extension to filter file types");
+        loadButton = new JButton(I18n.get("LOAD"));
+        loadButton.setToolTipText(I18n.get("LOAD BINARY PROPERTIES VALUE FROM A FILE. ENTER EXTENSION TO FILTER FILE TYPES"));
         ActionListener loadAction = new ActionListener()
         {
 
@@ -111,7 +111,7 @@ public class BytesDialog extends CancelDialog
                     long length = file.length();
                     if (length > 1000000)
                     {
-                        JOptionPane.showMessageDialog(BytesDialog.this, file, "File is too big", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(BytesDialog.this, file, I18n.get("FILE IS TOO BIG"), JOptionPane.ERROR_MESSAGE);
                     }
                     else
                     {
@@ -134,8 +134,8 @@ public class BytesDialog extends CancelDialog
         loadButton.addActionListener(loadAction);
         buttonPanel.add(loadButton);
         
-        storeButton = new JButton("Store");
-        storeButton.setToolTipText("Store properties value to a file");
+        storeButton = new JButton(I18n.get("STORE"));
+        storeButton.setToolTipText(I18n.get("STORE PROPERTIES VALUE TO A FILE"));
         ActionListener storeAction = new ActionListener()
         {
 
@@ -172,7 +172,7 @@ public class BytesDialog extends CancelDialog
                         currentDirectory = file.getParentFile();
                         if (file.exists())
                         {
-                            int confirm = JOptionPane.showConfirmDialog(BytesDialog.this, file, "File exists! Overwrite?", JOptionPane.OK_CANCEL_OPTION);
+                            int confirm = JOptionPane.showConfirmDialog(BytesDialog.this, file, I18n.get("FILE EXISTS! OVERWRITE?"), JOptionPane.OK_CANCEL_OPTION);
                             if (JOptionPane.YES_OPTION == confirm)
                             {
                                 return;
@@ -197,8 +197,8 @@ public class BytesDialog extends CancelDialog
         
         if (openSupported())
         {
-            openButton = new JButton("Open");
-            openButton.setToolTipText("BytesDialog Open Tooltip");
+            openButton = new JButton(I18n.get("OPEN"));
+            openButton.setToolTipText(I18n.get("BYTESDIALOG OPEN TOOLTIP"));
             ActionListener openAction = new ActionListener()
             {
 
@@ -229,7 +229,7 @@ public class BytesDialog extends CancelDialog
                             long length = file.length();
                             if (length > 1000000)
                             {
-                                JOptionPane.showMessageDialog(BytesDialog.this, file, "File is too big", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(BytesDialog.this, file, I18n.get("FILE IS TOO BIG"), JOptionPane.ERROR_MESSAGE);
                             }
                             else
                             {
@@ -264,15 +264,15 @@ public class BytesDialog extends CancelDialog
             buttonPanel.add(openButton);
         }
         
-        removeButton = new JButton("Remove");
-        removeButton.setToolTipText("Remove the properties content.");
+        removeButton = new JButton(I18n.get("REMOVE"));
+        removeButton.setToolTipText(I18n.get("REMOVE THE PROPERTIES CONTENT."));
         ActionListener removeAction = new ActionListener()
         {
 
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                int confirm = JOptionPane.showConfirmDialog(BytesDialog.this, "Removing blob", "Continue?", JOptionPane.OK_CANCEL_OPTION);
+                int confirm = JOptionPane.showConfirmDialog(BytesDialog.this, I18n.get("REMOVING BLOB"), I18n.get("CONTINUE?"), JOptionPane.OK_CANCEL_OPTION);
                 if (JOptionPane.YES_OPTION == confirm)
                 {
                     bytes = null;
@@ -311,7 +311,7 @@ public class BytesDialog extends CancelDialog
         }
         else
         {
-            return "Unknown";
+            return I18n.get("UNKNOWN");
         }
     }
     
@@ -319,7 +319,7 @@ public class BytesDialog extends CancelDialog
     {
         if (guess == null || guess.getExtensions().length == 0)
         {
-            label.setText("Blob propertys value type is unknown. Enter file extension if known.");
+            label.setText(I18n.get("BLOB PROPERTYS VALUE TYPE IS UNKNOWN. ENTER FILE EXTENSION IF KNOWN."));
         }
         else
         {
@@ -327,15 +327,15 @@ public class BytesDialog extends CancelDialog
             if (extensions.length == 1)
             {
                 label.setText(
-                        "Blob propertys value type is "+
+                        I18n.get("BLOB PROPERTYS VALUE TYPE IS ")+
                         guess.getDescription()+
                         ".");
             }
             else
             {
                 label.setText(
-                        "Blob propertys value type is "+guess.getDescription()+". "+
-                        "Choose the extension before trying to open.");
+                        I18n.get("BLOB PROPERTYS VALUE TYPE IS ")+guess.getDescription()+". "+
+                        I18n.get("CHOOSE THE EXTENSION BEFORE TRYING TO OPEN."));
             }
         }
 

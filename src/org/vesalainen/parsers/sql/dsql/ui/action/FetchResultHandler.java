@@ -29,6 +29,7 @@ import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.UpdateableFetchResult;
 import org.vesalainen.parsers.sql.dsql.ui.DSJTable;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 
 /**
  * @author Timo Vesalainen
@@ -139,7 +140,7 @@ public class FetchResultHandler implements PropertyChangeListener
 
         public DeleteRowAction()
         {
-            super("Delete Row");
+            super(I18n.get("DELETE ROW"));
             setEnabled(false);
         }
 
@@ -160,7 +161,7 @@ public class FetchResultHandler implements PropertyChangeListener
 
         public CommitAction()
         {
-            super("Commit");
+            super(I18n.get("COMMIT"));
             setEnabled(false);
         }
         
@@ -182,7 +183,7 @@ public class FetchResultHandler implements PropertyChangeListener
 
         public RollbackAction()
         {
-            super("Rollback");
+            super(I18n.get("ROLLBACK"));
             setEnabled(false);
         }
 

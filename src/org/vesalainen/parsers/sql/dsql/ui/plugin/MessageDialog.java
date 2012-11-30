@@ -32,6 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 import org.vesalainen.parsers.sql.dsql.ui.TextDialog;
 
 /**
@@ -85,7 +86,7 @@ public class MessageDialog extends TextDialog
         JPanel subjectPanel = new JPanel();
         subjectPanel.setLayout(new FlowLayout());
         add(subjectPanel, BorderLayout.NORTH);
-        JLabel subjectLabel = new JLabel("Subject");
+        JLabel subjectLabel = new JLabel(I18n.get("SUBJECT"));
         subjectPanel.add(subjectLabel);
         subjectField = new JTextField(60);
         subjectPanel.add(subjectField);
@@ -93,7 +94,7 @@ public class MessageDialog extends TextDialog
         menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
-        JMenu fileMenu = new JMenu("Edit");
+        JMenu fileMenu = new JMenu(I18n.get("EDIT"));
         menuBar.add(fileMenu);
         
         fileMenu.add(sendAction).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_DOWN_MASK));

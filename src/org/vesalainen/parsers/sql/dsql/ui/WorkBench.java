@@ -71,7 +71,7 @@ import org.vesalainen.parsers.sql.dsql.ui.plugin.MailPlugin;
  */
 public class WorkBench extends WindowAdapter implements VetoableChangeListener
 {
-    static final String TITLE = "Datastore Query 1.0";
+    static final String TITLE = I18n.get("DATASTORE QUERY 1.0");
     static final String SqlProperty = WorkBench.class.getName()+".sql";
     final static Cursor busyCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
     final static Cursor defaultCursor = Cursor.getDefaultCursor();
@@ -129,7 +129,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
 
-        JMenu fileMenu = new JMenu("File");
+        JMenu fileMenu = new JMenu(I18n.get("FILE"));
         menuBar.add(fileMenu);
         persistenceHandler = new PersistenceHandler(this, storedStatementsKind);
         persistenceHandler.addVetoableChangeListener(this);
@@ -138,23 +138,23 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
             fileMenu.add(action);
         }
         
-        JMenu editMenu = new JMenu("Edit");
+        JMenu editMenu = new JMenu(I18n.get("EDIT"));
         menuBar.add(editMenu);
-        editMenu.add(new UndoAction("Undo", undoManager)).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
-        editMenu.add(new RedoAction("Redo", undoManager)).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
+        editMenu.add(new UndoAction(I18n.get("UNDO"), undoManager)).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+        editMenu.add(new RedoAction(I18n.get("REDO"), undoManager)).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
         editMenu.add(actions.get(DefaultEditorKit.cutAction));
         editMenu.add(actions.get(DefaultEditorKit.copyAction));
         editMenu.add(actions.get(DefaultEditorKit.pasteAction));
         
         upperPane = new JScrollPane(sqlPane);
         
-        sourceMenu = new JMenu("Source");
+        sourceMenu = new JMenu(I18n.get("SOURCE"));
         menuBar.add(sourceMenu);
         
         InsertPropertiesHandler insertPropertiesHandler = new InsertPropertiesHandler(sqlPane);
         MetadataTreeAction insertPropertiesAction = new MetadataTreeAction(
-                "Insert Properties", 
-                "Insert properties at the cursor position",
+                I18n.get("INSERT PROPERTIES"), 
+                I18n.get("INSERT PROPERTIES AT THE CURSOR POSITION"),
                 engine.getStatistics(), 
                 insertPropertiesHandler
                 );
@@ -162,8 +162,8 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
 
         GenerateSelectHandler generateSelectHandler = new GenerateSelectHandler(sqlPane);
         MetadataTreeAction generateSelectAction = new MetadataTreeAction(
-                "Generate Select", 
-                "Generate a select statement",
+                I18n.get("GENERATE SELECT"), 
+                I18n.get("GENERATE A SELECT STATEMENT"),
                 engine.getStatistics(), 
                 generateSelectHandler
                 );
@@ -181,7 +181,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         buttonPanel.setLayout(new FlowLayout());
         contentPane.add(buttonPanel, BorderLayout.SOUTH);
         
-        actionMenu = new JMenu("Actions");
+        actionMenu = new JMenu(I18n.get("ACTIONS"));
         menuBar.add(actionMenu);
         
         executeAction = new ExecuteAction(frame);
@@ -219,7 +219,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
 
         frame.setContentPane(contentPane);
 
-        helpMenu = new JMenu("Help");
+        helpMenu = new JMenu(I18n.get("HELP"));
         menuBar.add(helpMenu);
         
         helpMenu.add(new AboutAction());

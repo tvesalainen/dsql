@@ -130,7 +130,7 @@ public class OkCancelDialog extends CancelDialog
     private void init()
     {
         // buttons
-        okButton = new JButton("Ok");
+        okButton = new JButton(I18n.get("OK"));
         ActionListener okAction = new ActionListener()
         {
 

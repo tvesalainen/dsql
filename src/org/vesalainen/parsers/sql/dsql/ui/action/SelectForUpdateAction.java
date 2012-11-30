@@ -24,6 +24,7 @@ import javax.swing.JFrame;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 
 /**
  * @author Timo Vesalainen
@@ -34,8 +35,8 @@ public class SelectForUpdateAction extends ExecuteAction
     public SelectForUpdateAction(JFrame frame)
     {
         super(frame);
-        putValue(NAME, "Select for Update");
-        putValue(Action.SHORT_DESCRIPTION, "Execute the select statement for updating. Fetched properties values can be updated and stored back to datastore");
+        putValue(NAME, I18n.get("SELECT FOR UPDATE"));
+        putValue(Action.SHORT_DESCRIPTION, I18n.get("EXECUTE THE SELECT STATEMENT FOR UPDATING. FETCHED PROPERTIES VALUES CAN BE UPDATED AND STORED BACK TO DATASTORE"));
     }
 
     @Override

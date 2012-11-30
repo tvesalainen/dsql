@@ -42,6 +42,7 @@ import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.DSQLParser;
 import org.vesalainen.parsers.sql.dsql.GObjectHelper;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 import org.vesalainen.regex.Regex;
 import org.vesalainen.regex.Replacer;
 
@@ -58,7 +59,7 @@ public class MailPlugin extends AbstractMessagePlugin
 
     public MailPlugin(DSQLEngine engine)
     {
-        super("Mail", new SendAction(engine));
+        super(I18n.get("MAIL"), new SendAction(engine));
     }
 
     @Override
@@ -87,8 +88,8 @@ public class MailPlugin extends AbstractMessagePlugin
 
         public SendAction(DSQLEngine engine)
         {
-            super("Send");
-            putValue(Action.SHORT_DESCRIPTION, "Send the message to email addresses in result table");
+            super(I18n.get("SEND"));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("SEND THE MESSAGE TO EMAIL ADDRESSES IN RESULT TABLE"));
             this.from = engine.getEmail();
             this.engine = engine;
             this.dollarTag = DSQLParser.getInstance().dollarTag;

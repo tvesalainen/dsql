@@ -97,7 +97,7 @@ public class InputTable extends DSJTable
                 case 1:
                     return true;
                 default:
-                    throw new IllegalArgumentException(columnIndex+" out of range");
+                    throw new IllegalArgumentException(columnIndex+I18n.get(" OUT OF RANGE"));
             }
         }
 
@@ -111,7 +111,7 @@ public class InputTable extends DSJTable
                     row.value = aValue;
                     break;
                 default:
-                    throw new IllegalArgumentException(columnIndex+" out of range");
+                    throw new IllegalArgumentException(columnIndex+I18n.get(" OUT OF RANGE"));
             }
         }
 
@@ -126,7 +126,7 @@ public class InputTable extends DSJTable
                 case 1:
                     return row.value;
                 default:
-                    throw new IllegalArgumentException(columnIndex+" out of range");
+                    throw new IllegalArgumentException(columnIndex+I18n.get(" OUT OF RANGE"));
             }
         }
     }

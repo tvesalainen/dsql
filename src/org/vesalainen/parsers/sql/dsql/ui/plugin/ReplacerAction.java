@@ -27,6 +27,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import org.vesalainen.parsers.sql.ColumnReference;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 import org.vesalainen.parsers.sql.dsql.ui.ListDialog;
 
 /**
@@ -40,10 +41,10 @@ public class ReplacerAction extends TextAction
     
     public ReplacerAction(Frame owner)
     {
-        super("Replace");
+        super(I18n.get("REPLACE"));
         this.owner = owner;
         this.model = model;
-        putValue(Action.SHORT_DESCRIPTION, "Add a property reference. References will be replaced with actual values, when sending the mail");
+        putValue(Action.SHORT_DESCRIPTION, I18n.get("ADD A PROPERTY REFERENCE. REFERENCES WILL BE REPLACED WITH ACTUAL VALUES, WHEN SENDING THE MAIL"));
     }
 
     public void setFetchResult(FetchResultTableModel model)

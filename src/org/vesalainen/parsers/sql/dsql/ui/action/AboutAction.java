@@ -23,6 +23,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JTextArea;
 import org.vesalainen.parsers.sql.dsql.ui.CancelDialog;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 
 /**
  * @author Timo Vesalainen
@@ -32,8 +33,8 @@ public class AboutAction extends AbstractAction
     private AboutDialog dialog;
     public AboutAction()
     {
-        super("About");
-        putValue(Action.SHORT_DESCRIPTION, "About Datastore Structured Query Language");
+        super(I18n.get("ABOUT"));
+        putValue(Action.SHORT_DESCRIPTION, I18n.get("ABOUT DATASTORE STRUCTURED QUERY LANGUAGE"));
     }
 
     @Override
@@ -51,7 +52,7 @@ public class AboutAction extends AbstractAction
 
         public AboutDialog()
         {
-            cancelButton.setText("Close");
+            cancelButton.setText(I18n.get("CLOSE"));
             
             JTextArea label = new JTextArea();
             label.setText(

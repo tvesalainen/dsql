@@ -77,10 +77,10 @@ public class ExternalEditor extends OkCancelDialog implements WindowFocusListene
         label.setEditable(false);
         label.setRows(3);
         add(label, BorderLayout.NORTH);
-        label.setText("Trying to open blob content in external application.");
+        label.setText(I18n.get("TRYING TO OPEN BLOB CONTENT IN EXTERNAL APPLICATION."));
         
-        okButton.setText("Save");
-        okButton.setToolTipText("Saves the externally modified contents to property");
+        okButton.setText(I18n.get("SAVE"));
+        okButton.setToolTipText(I18n.get("SAVES THE EXTERNALLY MODIFIED CONTENTS TO PROPERTY"));
         setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         addWindowFocusListener(this);
     }
@@ -91,8 +91,8 @@ public class ExternalEditor extends OkCancelDialog implements WindowFocusListene
         if (lastModified < file.lastModified())
         {
             label.setText(
-                    "Trying to open blob content in external application. "+
-                    "Press Save to update modified content to datastore"
+                    I18n.get("TRYING TO OPEN BLOB CONTENT IN EXTERNAL APPLICATION. ")+
+                    I18n.get("PRESS SAVE TO UPDATE MODIFIED CONTENT TO DATASTORE")
                     );
             okButton.setEnabled(true);
         }

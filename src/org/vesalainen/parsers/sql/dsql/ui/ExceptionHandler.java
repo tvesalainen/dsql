@@ -40,9 +40,9 @@ public class ExceptionHandler extends EventQueue
             String message = thr.getMessage();
             if (message == null || message.isEmpty())
             {
-                message = "Fatal: "+thr.getClass();
+                message = I18n.get("FATAL: ")+thr.getClass();
             }
-            JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, message, I18n.get("ERROR"), JOptionPane.ERROR_MESSAGE);
         }
     }
 

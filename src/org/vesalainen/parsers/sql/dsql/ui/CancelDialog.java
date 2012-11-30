@@ -141,8 +141,8 @@ public class CancelDialog extends JDialog implements MouseListener
         buttonPanel.setLayout(new FlowLayout());
         add(buttonPanel, BorderLayout.SOUTH);
         // buttons
-        cancelButton = new JButton("Cancel");
-        cancelButton.setToolTipText("Cancel the action");
+        cancelButton = new JButton(I18n.get("CANCEL"));
+        cancelButton.setToolTipText(I18n.get("CANCEL THE ACTION"));
         ActionListener cancelAction = new ActionListener()
         {
 

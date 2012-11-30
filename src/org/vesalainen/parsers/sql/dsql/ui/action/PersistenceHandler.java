@@ -21,7 +21,6 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
@@ -34,6 +33,7 @@ import javax.swing.JOptionPane;
 import javax.swing.text.TextAction;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 import org.vesalainen.parsers.sql.dsql.ui.ListDialog;
 import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
@@ -94,10 +94,10 @@ public class PersistenceHandler
         {
             int confirm = JOptionPane.showConfirmDialog(
                     workBench.getFrame(), 
-                    "Create "
+                    I18n.get("CREATE ")
                     +storedStatementsKind+
-                    " kind for saved statements? (if kind is not ok, change kind name in properties)", 
-                    "Connected datastore doesn't have store for saved statements", 
+                    I18n.get(" KIND FOR SAVED STATEMENTS? (IF KIND IS NOT OK, CHANGE KIND NAME IN PROPERTIES)"), 
+                    I18n.get("CONNECTED DATASTORE DOESN'T HAVE STORE FOR SAVED STATEMENTS"), 
                     JOptionPane.OK_CANCEL_OPTION
                     );
             return JOptionPane.YES_OPTION == confirm;
@@ -122,11 +122,11 @@ public class PersistenceHandler
             }
             catch (PropertyVetoException ex)
             {
-                JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), "Refuced", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUCED"), JOptionPane.ERROR_MESSAGE);
             }
             catch (EntityNotFoundException ex)
             {
-                JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), "Not found", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("NOT FOUND"), JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -143,7 +143,7 @@ public class PersistenceHandler
             }
             catch (PropertyVetoException ex)
             {
-                JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), "Refuced", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUCED"), JOptionPane.ERROR_MESSAGE);
             }
         }
         else
@@ -155,7 +155,7 @@ public class PersistenceHandler
     {
         if (confirmInstall())
         {
-            String name = JOptionPane.showInputDialog(workBench.getFrame(), "Enter name for statement", "");
+            String name = JOptionPane.showInputDialog(workBench.getFrame(), I18n.get("ENTER NAME FOR STATEMENT"), "");
             if (name != null)
             {
                 try
@@ -169,7 +169,7 @@ public class PersistenceHandler
                 }
                 catch (PropertyVetoException ex)
                 {
-                    JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), "Refuced", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUCED"), JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -181,7 +181,7 @@ public class PersistenceHandler
             int confirm = JOptionPane.showConfirmDialog(
                     workBench.getFrame(), 
                     oldEntity.getKey().getName(), 
-                    "Confirm Remove?",
+                    I18n.get("CONFIRM REMOVE?"),
                     JOptionPane.OK_CANCEL_OPTION
                     );
             if (JOptionPane.YES_OPTION != confirm)
@@ -195,7 +195,7 @@ public class PersistenceHandler
                 }
                 catch (PropertyVetoException ex)
                 {
-                    JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), "Refuced", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUCED"), JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -248,8 +248,8 @@ public class PersistenceHandler
     {
         public NewStatementAction()
         {
-            super("New");
-            putValue(Action.SHORT_DESCRIPTION, "Clears the statement editor.");
+            super(I18n.get("NEW"));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("CLEARS THE STATEMENT EDITOR."));
         }
 
         @Override
@@ -262,8 +262,8 @@ public class PersistenceHandler
     {
         public OpenStatementAction()
         {
-            super("Open");
-            putValue(Action.SHORT_DESCRIPTION, "Opens a saved statement");
+            super(I18n.get("OPEN"));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("OPENS A SAVED STATEMENT"));
         }
 
         @Override
@@ -276,8 +276,8 @@ public class PersistenceHandler
     {
         public SaveStatementAction()
         {
-            super("Save");
-            putValue(Action.SHORT_DESCRIPTION, "Saves the statement and plugins data. Plugins are mail etc.");
+            super(I18n.get("SAVE"));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("SAVES THE STATEMENT AND PLUGINS DATA. PLUGINS ARE MAIL ETC."));
         }
 
         @Override
@@ -290,8 +290,8 @@ public class PersistenceHandler
     {
         public SaveAsStatementAction()
         {
-            super("SaveAs");
-            putValue(Action.SHORT_DESCRIPTION, "Saves the statement and plugins data with another name. Plugins are mail etc.");
+            super(I18n.get("SAVEAS"));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("SAVES THE STATEMENT AND PLUGINS DATA WITH ANOTHER NAME. PLUGINS ARE MAIL ETC."));
         }
 
         @Override
@@ -304,8 +304,8 @@ public class PersistenceHandler
     {
         public RemoveStatementAction()
         {
-            super("Remove");
-            putValue(Action.SHORT_DESCRIPTION, "Removes the current statement and all it's plugin data from storage. Plugins are mail etc.");
+            super(I18n.get("REMOVE"));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("REMOVES THE CURRENT STATEMENT AND ALL IT'S PLUGIN DATA FROM STORAGE. PLUGINS ARE MAIL ETC."));
         }
 
         @Override
