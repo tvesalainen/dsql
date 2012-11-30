@@ -21,6 +21,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.event.SwingPropertyChangeSupport;
@@ -141,6 +142,7 @@ public class FetchResultHandler implements PropertyChangeListener
         public DeleteRowAction()
         {
             super(I18n.get("DELETE ROW"));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("DELETE ROW TOOLTIP"));
             setEnabled(false);
         }
 
@@ -162,6 +164,7 @@ public class FetchResultHandler implements PropertyChangeListener
         public CommitAction()
         {
             super(I18n.get("COMMIT"));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("COMMIT TOOLTIP"));
             setEnabled(false);
         }
         
@@ -184,6 +187,7 @@ public class FetchResultHandler implements PropertyChangeListener
         public RollbackAction()
         {
             super(I18n.get("ROLLBACK"));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("ROLLBACK TOOLTIP"));
             setEnabled(false);
         }
 

@@ -61,8 +61,10 @@ import org.vesalainen.parsers.sql.dsql.ui.action.AboutAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.DSqlParseAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.ExecuteAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.FetchResultHandler;
+import org.vesalainen.parsers.sql.dsql.ui.action.OpenSQLFileAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.PersistenceHandler;
 import org.vesalainen.parsers.sql.dsql.ui.action.PrintAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.SaveSQLFileAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.SelectForUpdateAction;
 import org.vesalainen.parsers.sql.dsql.ui.plugin.MailPlugin;
 
@@ -131,7 +133,14 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
 
         JMenu fileMenu = new JMenu(I18n.get("FILE"));
         menuBar.add(fileMenu);
+
         persistenceHandler = new PersistenceHandler(this, storedStatementsKind);
+        
+        OpenSQLFileAction openFileStatementAction = new OpenSQLFileAction(persistenceHandler);
+        fileMenu.add(openFileStatementAction);
+        fileMenu.add(new SaveSQLFileAction());
+        
+        fileMenu.addSeparator();
         persistenceHandler.addVetoableChangeListener(this);
         for (Action action : persistenceHandler.getActions())
         {

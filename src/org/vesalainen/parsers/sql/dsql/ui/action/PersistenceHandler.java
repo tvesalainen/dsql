@@ -24,15 +24,22 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.TextAction;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
+import org.vesalainen.parsers.sql.dsql.ui.BytesDialog;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
 import org.vesalainen.parsers.sql.dsql.ui.ListDialog;
 import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
@@ -243,7 +250,6 @@ public class PersistenceHandler
     {
         changeSupport.fireVetoableChange(propertyName, oldValue, newValue);
     }
-
     public class NewStatementAction extends TextAction
     {
         public NewStatementAction()
