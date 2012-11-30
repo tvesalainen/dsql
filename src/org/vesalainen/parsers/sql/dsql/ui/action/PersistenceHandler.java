@@ -84,11 +84,11 @@ public class PersistenceHandler
     {
         return actions;
     }
-    private boolean confirmInstalled()
+    private boolean confirmInstall()
     {
         if (statements == null)
         {
-            statements = engine.execute("select key, sql from "+storedStatementsKind);
+            statements = engine.execute("select key from "+storedStatementsKind);
         }
         if (statements.getRowCount() == 0)
         {
@@ -153,7 +153,7 @@ public class PersistenceHandler
     }
     private void saveAs()
     {
-        if (confirmInstalled())
+        if (confirmInstall())
         {
             String name = JOptionPane.showInputDialog(workBench.getFrame(), "Enter name for statement", "");
             if (name != null)
@@ -249,6 +249,7 @@ public class PersistenceHandler
         public NewStatementAction()
         {
             super("New");
+            putValue(Action.SHORT_DESCRIPTION, "Clears the statement editor.");
         }
 
         @Override
@@ -262,6 +263,7 @@ public class PersistenceHandler
         public OpenStatementAction()
         {
             super("Open");
+            putValue(Action.SHORT_DESCRIPTION, "Opens a saved statement");
         }
 
         @Override
@@ -275,6 +277,7 @@ public class PersistenceHandler
         public SaveStatementAction()
         {
             super("Save");
+            putValue(Action.SHORT_DESCRIPTION, "Saves the statement and plugins data. Plugins are mail etc.");
         }
 
         @Override
@@ -288,6 +291,7 @@ public class PersistenceHandler
         public SaveAsStatementAction()
         {
             super("SaveAs");
+            putValue(Action.SHORT_DESCRIPTION, "Saves the statement and plugins data with another name. Plugins are mail etc.");
         }
 
         @Override
@@ -301,6 +305,7 @@ public class PersistenceHandler
         public RemoveStatementAction()
         {
             super("Remove");
+            putValue(Action.SHORT_DESCRIPTION, "Removes the current statement and all it's plugin data from storage. Plugins are mail etc.");
         }
 
         @Override

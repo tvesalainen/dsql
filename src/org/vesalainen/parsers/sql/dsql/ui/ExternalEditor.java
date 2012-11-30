@@ -19,14 +19,12 @@ package org.vesalainen.parsers.sql.dsql.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import javax.swing.JLabel;
 import javax.swing.JTextArea;
 
 /**
@@ -82,8 +80,8 @@ public class ExternalEditor extends OkCancelDialog implements WindowFocusListene
         label.setText("Trying to open blob content in external application.");
         
         okButton.setText("Save");
+        okButton.setToolTipText("Saves the externally modified contents to property");
         setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-        //setAlwaysOnTop(true);
         addWindowFocusListener(this);
     }
 

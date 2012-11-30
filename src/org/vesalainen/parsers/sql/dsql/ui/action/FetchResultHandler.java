@@ -35,7 +35,8 @@ import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
  */
 public class FetchResultHandler implements PropertyChangeListener
 {
-    public static final String PropertyName = "fetchResultModel";
+    public static final String TablePropertyName = "fetchResultTable";
+    public static final String ModelPropertyName = "fetchResultModel";
     
     protected SwingPropertyChangeSupport changeSupport;
     
@@ -98,12 +99,13 @@ public class FetchResultHandler implements PropertyChangeListener
                     table = new DSJTable(tableModel);
                     table.setOwner(frame);
                     scrollPane.setViewportView(table);
+                    firePropertyChange(TablePropertyName, null, table);
                 }
                 else
                 {
                     tableModel.updateData(fetchResult);
                 }
-                firePropertyChange(PropertyName, null, tableModel);
+                firePropertyChange(ModelPropertyName, null, tableModel);
             }
             else
             {
@@ -111,7 +113,7 @@ public class FetchResultHandler implements PropertyChangeListener
                 {
                     tableModel.clear();
                 }
-                firePropertyChange(PropertyName, null, null);
+                firePropertyChange(ModelPropertyName, null, null);
                 setButtonsEnabled(false);
             }
         }

@@ -37,7 +37,8 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-import java.io.FileInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -56,10 +57,12 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
+import org.vesalainen.parsers.sql.dsql.ui.action.AboutAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.DSqlParseAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.ExecuteAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.FetchResultHandler;
 import org.vesalainen.parsers.sql.dsql.ui.action.PersistenceHandler;
+import org.vesalainen.parsers.sql.dsql.ui.action.PrintAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.SelectForUpdateAction;
 import org.vesalainen.parsers.sql.dsql.ui.plugin.MailPlugin;
 
@@ -92,12 +95,20 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
     private final FetchResultHandler fetchResultHandler;
     private final ExecuteAction executeAction;
     private final PersistenceHandler persistenceHandler;
+    private final JButton printButton;
+    private final JMenu helpMenu;
+    private String title;
     
-    public WorkBench(final DSQLEngine engine, String storedStatementsKind)
+    public WorkBench(Properties properties) throws IOException, InterruptedException
     {
-        this.storedStatementsKind = storedStatementsKind;
-        this.engine = engine;
-        frame = new JFrame(TITLE);
+        this.storedStatementsKind = properties.getProperty("stored-statements-kind", "DSQLStatements");
+        engine = DSQLEngine.getProxyInstance(
+                properties.getProperty("remoteserver"), 
+                properties.getProperty("remoteuser"), 
+                properties.getProperty("remotepassword")
+                    );
+        title = TITLE+" - "+properties.getProperty("remoteserver");
+        frame = new JFrame(title);
         frame.addWindowListener(this);
         Toolkit.getDefaultToolkit().getSystemEventQueue().push(new ExceptionHandler());
 
@@ -141,11 +152,21 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         menuBar.add(sourceMenu);
         
         InsertPropertiesHandler insertPropertiesHandler = new InsertPropertiesHandler(sqlPane);
-        MetadataTreeAction insertPropertiesAction = new MetadataTreeAction("Insert Properties", engine.getStatistics(), insertPropertiesHandler);
+        MetadataTreeAction insertPropertiesAction = new MetadataTreeAction(
+                "Insert Properties", 
+                "Insert properties at the cursor position",
+                engine.getStatistics(), 
+                insertPropertiesHandler
+                );
         sourceMenu.add(insertPropertiesAction).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK));
 
         GenerateSelectHandler generateSelectHandler = new GenerateSelectHandler(sqlPane);
-        MetadataTreeAction generateSelectAction = new MetadataTreeAction("Generate Select", engine.getStatistics(), generateSelectHandler);
+        MetadataTreeAction generateSelectAction = new MetadataTreeAction(
+                "Generate Select", 
+                "Generate a select statement",
+                engine.getStatistics(), 
+                generateSelectHandler
+                );
         sourceMenu.add(generateSelectAction).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.ALT_DOWN_MASK));
 
         resultPane = new JScrollPane();
@@ -190,13 +211,25 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         rollbackButton = new JButton(fetchResultHandler.getRollbackAction());
         buttonPanel.add(rollbackButton);
         actionMenu.add(rollbackButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
+        
+        PrintAction printAction = new PrintAction();
+        fetchResultHandler.addPropertyChangeListener(printAction);
+        printButton = new JButton(printAction);
+        buttonPanel.add(printButton);
 
         frame.setContentPane(contentPane);
+
+        helpMenu = new JMenu("Help");
+        menuBar.add(helpMenu);
+        
+        helpMenu.add(new AboutAction());
         
         frame.pack();
         frame.setLocationByPlatform(true);
         frame.setVisible(true);
         frame.setSize(800, 580);
+        
+        addFetchResultPlugin(new MailPlugin(engine));
     }
     /**
      * Adds a FetchResultHandler.
@@ -256,7 +289,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
                 }
                 break;
         }
-        frame.setTitle(name+" - "+TITLE);
+        frame.setTitle(name+" - "+title);
     }
 
     public JTextPane getActiveTextPane()
@@ -316,21 +349,11 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
                 System.err.println("usage: java ... <properties file>");
                 System.exit(-1);
             }
-            final Properties properties = new Properties();
-            try (FileInputStream pFile = new FileInputStream(args[0]);)
-            {
-                properties.load(pFile);
-            }
-            CredentialsDialog dia = new CredentialsDialog(
-                    properties.getProperty("remoteserver"), 
-                    properties.getProperty("remoteuser"), 
-                    properties.getProperty("remotepassword")
-                    );
+            File file = new File(args[0]);
+            CredentialsDialog dia = new CredentialsDialog(file);
             if (dia.input())
             {
-                DSQLEngine engine = DSQLEngine.getProxyInstance(dia.getServer(), dia.getEmail(), new String(dia.getPassword()));
-                WorkBench workBench = new WorkBench(engine, properties.getProperty("stored-statements-kind", "DSQLStatements"));
-                workBench.addFetchResultPlugin(new MailPlugin(engine));
+                WorkBench workBench = new WorkBench(dia.getProperties());
             }
             else
             {

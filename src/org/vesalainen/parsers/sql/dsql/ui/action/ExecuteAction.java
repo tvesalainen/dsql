@@ -23,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.event.SwingPropertyChangeSupport;
 import org.vesalainen.parsers.sql.FetchResult;
@@ -43,6 +44,7 @@ public class ExecuteAction extends AbstractAction implements PropertyChangeListe
     public ExecuteAction(JFrame frame)
     {
         super("Execute");
+        putValue(Action.SHORT_DESCRIPTION, "Execute the statement");
         this.frame = frame;
         setEnabled(false);
     }

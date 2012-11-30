@@ -77,6 +77,7 @@ public class BytesDialog extends CancelDialog
         combobox.setEditable(true);
         
         loadButton = new JButton("Load");
+        loadButton.setToolTipText("Load binary properties value from a file. Enter extension to filter file types");
         ActionListener loadAction = new ActionListener()
         {
 
@@ -134,6 +135,7 @@ public class BytesDialog extends CancelDialog
         buttonPanel.add(loadButton);
         
         storeButton = new JButton("Store");
+        storeButton.setToolTipText("Store properties value to a file");
         ActionListener storeAction = new ActionListener()
         {
 
@@ -196,6 +198,11 @@ public class BytesDialog extends CancelDialog
         if (openSupported())
         {
             openButton = new JButton("Open");
+            openButton.setToolTipText(
+                    "Open the properies content to an external application. "+
+                    "It is important that the extension be correct. If there are several "+
+                    " choises choose the right one, or enter."
+                    );
             ActionListener openAction = new ActionListener()
             {
 
@@ -262,6 +269,7 @@ public class BytesDialog extends CancelDialog
         }
         
         removeButton = new JButton("Remove");
+        removeButton.setToolTipText("Remove the properties content.");
         ActionListener removeAction = new ActionListener()
         {
 
@@ -356,6 +364,7 @@ public class BytesDialog extends CancelDialog
 
     private boolean openSupported()
     {
+        // TODO Linux
         return System.getProperty("os.name", "").toLowerCase().startsWith("windows");
     }
 }

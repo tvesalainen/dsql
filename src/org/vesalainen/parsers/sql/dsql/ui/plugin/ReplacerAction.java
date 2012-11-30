@@ -43,7 +43,7 @@ public class ReplacerAction extends TextAction
         super("Replace");
         this.owner = owner;
         this.model = model;
-        putValue(Action.SHORT_DESCRIPTION, "Replace Tooltip Text");
+        putValue(Action.SHORT_DESCRIPTION, "Add a property reference. References will be replaced with actual values, when sending the mail");
     }
 
     public void setFetchResult(FetchResultTableModel model)

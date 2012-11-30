@@ -19,9 +19,8 @@ package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import javax.swing.Action;
 import javax.swing.JFrame;
-import javax.swing.event.SwingPropertyChangeSupport;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
@@ -36,6 +35,7 @@ public class SelectForUpdateAction extends ExecuteAction
     {
         super(frame);
         putValue(NAME, "Select for Update");
+        putValue(Action.SHORT_DESCRIPTION, "Execute the select statement for updating. Fetched properties values can be updated and stored back to datastore");
     }
 
     @Override

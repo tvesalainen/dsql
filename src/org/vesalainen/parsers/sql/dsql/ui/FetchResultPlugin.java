@@ -21,6 +21,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
+import org.vesalainen.parsers.sql.dsql.ui.action.FetchResultHandler;
 
 /**
  *
@@ -51,27 +52,30 @@ public abstract class FetchResultPlugin extends AbstractAction implements Proper
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
-        FetchResultTableModel model = (FetchResultTableModel) evt.getNewValue();
-        if (model != null)
+        if (FetchResultHandler.ModelPropertyName.equals(evt.getPropertyName()))
         {
-            boolean handles = false;
-            for (int col = 0;col < model.getColumnCount();col++)
+            FetchResultTableModel model = (FetchResultTableModel) evt.getNewValue();
+            if (model != null)
             {
-                if (accept(model.getColumnClass(col)))
+                boolean handles = false;
+                for (int col = 0;col < model.getColumnCount();col++)
                 {
-                    handles = true;
-                    handle(frame, model);
-                    break;
+                    if (accept(model.getColumnClass(col)))
+                    {
+                        handles = true;
+                        handle(frame, model);
+                        break;
+                    }
+                }
+                if (!handles)
+                {
+                    disable();
                 }
             }
-            if (!handles)
+            else
             {
                 disable();
             }
-        }
-        else
-        {
-            disable();
         }
     }
 

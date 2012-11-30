@@ -18,6 +18,7 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
+import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
@@ -35,9 +36,10 @@ public class MetadataTreeAction extends TextAction
     private Statistics statistics;
     private MetadataHandler handler;
     
-    public MetadataTreeAction(String name, Statistics statistics, MetadataHandler handler)
+    public MetadataTreeAction(String name, String tooltip, Statistics statistics, MetadataHandler handler)
     {
         super(name);
+        putValue(Action.SHORT_DESCRIPTION, tooltip);
         this.statistics = statistics;
         this.handler = handler;
     }

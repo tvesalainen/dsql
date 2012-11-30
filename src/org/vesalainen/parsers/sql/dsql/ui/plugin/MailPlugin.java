@@ -18,8 +18,6 @@ package org.vesalainen.parsers.sql.dsql.ui.plugin;
 
 import com.google.appengine.api.datastore.Email;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.Writer;
 import javax.activation.DataHandler;
@@ -35,6 +33,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFrame;
 import org.vesalainen.parser.util.InputReader;
 import org.vesalainen.parsers.magic.Magic;
@@ -89,6 +88,7 @@ public class MailPlugin extends AbstractMessagePlugin
         public SendAction(DSQLEngine engine)
         {
             super("Send");
+            putValue(Action.SHORT_DESCRIPTION, "Send the message to email addresses in result table");
             this.from = engine.getEmail();
             this.engine = engine;
             this.dollarTag = DSQLParser.getInstance().dollarTag;
