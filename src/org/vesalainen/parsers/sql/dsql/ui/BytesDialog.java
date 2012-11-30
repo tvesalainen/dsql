@@ -198,11 +198,7 @@ public class BytesDialog extends CancelDialog
         if (openSupported())
         {
             openButton = new JButton("Open");
-            openButton.setToolTipText(
-                    "Open the properies content to an external application. "+
-                    "It is important that the extension be correct. If there are several "+
-                    " choises choose the right one, or enter."
-                    );
+            openButton.setToolTipText("BytesDialog Open Tooltip");
             ActionListener openAction = new ActionListener()
             {
 
@@ -323,10 +319,7 @@ public class BytesDialog extends CancelDialog
     {
         if (guess == null || guess.getExtensions().length == 0)
         {
-            label.setText(
-                    "Blob propertys value type is "+
-                    "unknown "+
-                    ". Enter file extension if known.");
+            label.setText("Blob propertys value type is unknown. Enter file extension if known.");
         }
         else
         {
@@ -341,9 +334,8 @@ public class BytesDialog extends CancelDialog
             else
             {
                 label.setText(
-                        "Blob propertys value type is "+
-                        guess.getDescription()+
-                        ".Choose the extension before trying to open.");
+                        "Blob propertys value type is "+guess.getDescription()+". "+
+                        "Choose the extension before trying to open.");
             }
         }
 
