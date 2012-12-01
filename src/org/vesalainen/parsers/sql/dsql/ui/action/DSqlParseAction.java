@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
@@ -35,7 +36,9 @@ import org.vesalainen.parsers.sql.Engine;
 import org.vesalainen.parsers.sql.ErrorReporter;
 import org.vesalainen.parsers.sql.ErrorReporter.Level;
 import org.vesalainen.parsers.sql.SQLLocator;
+import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
 /**
@@ -56,12 +59,14 @@ public class DSqlParseAction extends AbstractAction implements DocumentListener,
     private final ForegroundAction orangeAction;
     private Level errorLevel;
     private InputReader reader;
+    private boolean readonly;
     
-    public DSqlParseAction(WorkBench workBench, UndoableEditListener listener)
+    public DSqlParseAction(WorkBench workBench, UndoableEditListener listener, boolean readonly)
     {
         super(null);
         this.workBench = workBench;
         this.listener = listener;
+        this.readonly = readonly;
         timer = new Timer(500, this);
         timer.stop();
         timer.setRepeats(false);
@@ -101,6 +106,14 @@ public class DSqlParseAction extends AbstractAction implements DocumentListener,
                     Engine engine = workBench.getEngine();
                     engine.check(reader, this);
                     Statement statement = engine.prepare(sql);
+                    if (readonly)
+                    {
+                        if (!(statement instanceof SelectStatement))
+                        {
+                            JOptionPane.showMessageDialog(workBench.getFrame(), I18n.get("IN READONLY MODE"), I18n.get("REFUCED"), JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                    }
                     statement.check(engine, this);
                     if (errorLevel != Level.Fatal)
                     {

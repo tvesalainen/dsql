@@ -28,7 +28,7 @@ import org.vesalainen.parsers.sql.dsql.Statistics;
 /**
  * @author Timo Vesalainen
  */
-public class MetadataTreeDialog extends JDialog implements KeyListener
+public class MetadataTreeDialog extends BaseDialog
 {
     private Statistics statistics;
     private MetadataHandler handler;
@@ -53,11 +53,6 @@ public class MetadataTreeDialog extends JDialog implements KeyListener
     }
     
     @Override
-    public void keyTyped(KeyEvent e)
-    {
-    }
-
-    @Override
     public void keyPressed(KeyEvent e)
     {
         switch (e.getKeyCode())
@@ -67,15 +62,8 @@ public class MetadataTreeDialog extends JDialog implements KeyListener
                 handler.selected(statistics, paths);
                 setVisible(false);
                 break;
-            case KeyEvent.VK_ESCAPE:
-                setVisible(false);
-                break;
         }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e)
-    {
+        super.keyPressed(e);
     }
 
 }

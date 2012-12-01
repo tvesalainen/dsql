@@ -27,6 +27,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,10 +40,15 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -78,6 +84,14 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
     static final String SqlProperty = WorkBench.class.getName()+".sql";
     final static Cursor busyCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
     final static Cursor defaultCursor = Cursor.getDefaultCursor();
+    public static final List<Image> icons = new ArrayList<>();
+    static
+    {
+        icons.add(new ImageIcon(WorkBench.class.getResource("images/dsql16.png")).getImage());
+        icons.add(new ImageIcon(WorkBench.class.getResource("images/dsql32.png")).getImage());
+        icons.add(new ImageIcon(WorkBench.class.getResource("images/dsql48.png")).getImage());
+        icons.add(new ImageIcon(WorkBench.class.getResource("images/dsql64.png")).getImage());
+    }
     private DSQLEngine engine;
     private JFrame frame;
     private JMenuBar menuBar;
@@ -85,27 +99,35 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
     private final JScrollPane resultPane;
     private final JSplitPane splitPane;
     final JTextPane sqlPane;
-    private final JButton executeButton;
-    private final JButton selectAndUpdateButton;
+    private JButton executeButton;
+    private JButton selectAndUpdateButton;
     final String storedStatementsKind;
-    private final JButton commitButton;
-    private final JButton rollbackButton;
-    private final JButton deleteRowButton;
-    private final DSqlParseAction parseAction;
-    private final JPanel buttonPanel;
-    private final JMenu sourceMenu;
-    private final JMenu actionMenu;
-    private final FetchResultHandler fetchResultHandler;
-    private final ExecuteAction executeAction;
-    private final PersistenceHandler persistenceHandler;
-    private final JButton printButton;
-    private final JMenu helpMenu;
+    private JButton commitButton;
+    private JButton rollbackButton;
+    private JButton deleteRowButton;
+    private DSqlParseAction parseAction;
+    private JPanel buttonPanel;
+    private JMenu sourceMenu;
+    private JMenu actionMenu;
+    private FetchResultHandler fetchResultHandler;
+    private ExecuteAction executeAction;
+    private PersistenceHandler persistenceHandler;
+    private JButton printButton;
+    private JMenu helpMenu;
     private String title;
-    private final ExportCVSAction exportCVSAction;
+    private ExportCVSAction exportCVSAction;
+    private boolean embed;
+    private boolean readonly;
     
     public WorkBench(Properties properties) throws IOException, InterruptedException
     {
+        this(properties, false, true);
+    }
+    public WorkBench(Properties properties, boolean embed, boolean readonly) throws IOException, InterruptedException
+    {
         this.storedStatementsKind = properties.getProperty("stored-statements-kind", "DSQLStatements");
+        this.embed = embed;
+        this.readonly = readonly;
         engine = DSQLEngine.getProxyInstance(
                 properties.getProperty("remoteserver"), 
                 properties.getProperty("remoteuser"), 
@@ -115,6 +137,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         frame = new JFrame(title);
         frame.addWindowListener(this);
         Toolkit.getDefaultToolkit().getSystemEventQueue().push(new ExceptionHandler());
+        frame.setIconImages(icons);
 
         sqlPane = new JTextPane();
         sqlPane.getDocument().putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
@@ -126,7 +149,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         }
         Document document = sqlPane.getDocument();
         UndoManager undoManager = new UndoManager();
-        parseAction = new DSqlParseAction(this, undoManager);
+        parseAction = new DSqlParseAction(this, undoManager, readonly);
         document.addDocumentListener(parseAction);
         document.addUndoableEditListener(parseAction);
         
@@ -208,9 +231,12 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         
         SelectForUpdateAction selectForUpdateAction = new SelectForUpdateAction(frame);
         parseAction.addPropertyChangeListener(selectForUpdateAction);
-        selectAndUpdateButton = new JButton(selectForUpdateAction);
-        buttonPanel.add(selectAndUpdateButton);
-        actionMenu.add(selectAndUpdateButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));;;
+        if (!readonly)
+        {
+            selectAndUpdateButton = new JButton(selectForUpdateAction);
+            buttonPanel.add(selectAndUpdateButton);
+            actionMenu.add(selectAndUpdateButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));;;
+        }
         
         fetchResultHandler = new FetchResultHandler(frame, resultPane);
         executeAction.addPropertyChangeListener(fetchResultHandler);
@@ -345,7 +371,10 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
     public void windowClosing(WindowEvent e)
     {
         engine.exit();
-        System.exit(0);
+        if (!embed)
+        {
+            System.exit(0);
+        }
     }
     
     public DSQLEngine getEngine()

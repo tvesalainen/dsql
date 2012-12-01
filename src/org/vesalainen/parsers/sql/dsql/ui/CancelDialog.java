@@ -34,7 +34,7 @@ import javax.swing.JPanel;
 /**
  * @author Timo Vesalainen
  */
-public class CancelDialog extends JDialog implements MouseListener
+public class CancelDialog extends BaseDialog
 {
     protected boolean accepted;
     protected JPanel buttonPanel;
@@ -164,31 +164,6 @@ public class CancelDialog extends JDialog implements MouseListener
         accepted = false;
         setVisible(true);
         return accepted;
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e)
-    {
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e)
-    {
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e)
-    {
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e)
-    {
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e)
-    {
     }
 
 }
