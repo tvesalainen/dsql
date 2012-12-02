@@ -163,7 +163,10 @@ public class PersistenceHandler
                     oldEntity = newEntity;
                     Key key = engine.createKey(storedStatementsKind, name);
                     newEntity = new Entity(key);
-                    newEntity.setPropertiesFrom(oldEntity);
+                    if (oldEntity != null)
+                    {
+                        newEntity.setPropertiesFrom(oldEntity);
+                    }
                     fireVetoableChange(SAVE, oldEntity, newEntity);
                     engine.update(newEntity);
                 }

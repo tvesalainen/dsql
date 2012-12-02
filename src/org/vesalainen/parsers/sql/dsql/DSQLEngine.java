@@ -16,12 +16,19 @@
  */
 package org.vesalainen.parsers.sql.dsql;
 
+import com.google.appengine.api.datastore.Category;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Link;
+import com.google.appengine.api.datastore.PhoneNumber;
+import com.google.appengine.api.datastore.PostalAddress;
+import com.google.appengine.api.datastore.Rating;
 import com.google.appengine.api.datastore.RawValue;
+import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.mail.MailService.Message;
 import com.google.appengine.tools.remoteapi.RemoteApiInstaller;
 import com.google.appengine.tools.remoteapi.RemoteApiOptions;
@@ -32,14 +39,15 @@ import java.util.Date;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import org.vesalainen.parsers.sql.ColumnMetadata;
+import org.vesalainen.parsers.sql.ColumnReference;
 import org.vesalainen.parsers.sql.Engine;
 import org.vesalainen.parsers.sql.Table;
 import org.vesalainen.parsers.sql.InsertStatement;
-import org.vesalainen.parsers.sql.ObjectComparator;
 import org.vesalainen.parsers.sql.SQLConverter;
 import org.vesalainen.parsers.sql.TableContext;
 import org.vesalainen.parsers.sql.TableContextComparator;
 import org.vesalainen.parsers.sql.TableMetadata;
+import org.vesalainen.parsers.sql.ToFunction;
 import org.vesalainen.parsers.sql.Updateable;
 
 /**
@@ -178,7 +186,7 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     }
 
     @Override
-    public Updateable<Entity, Object> getUpdateable(Entity entity, String property)
+    public Updateable<Entity, Object> getUpdateable(Entity entity, String property, Object value)
     {
         assert entity.hasProperty(property) && !(entity.getProperty(property) instanceof RawValue);
         boolean indexed = false;
@@ -186,6 +194,27 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
         if (cm != null)
         {
             indexed = cm.isIndexed();
+        }
+        if (value != null)
+        {
+            if (!value.equals(entity.getProperty(property)))
+            {
+                if (value.getClass().isInstance(entity.getProperty(property)))
+                {
+                    if (indexed)
+                    {
+                        entity.setProperty(property, value);
+                    }
+                    else
+                    {
+                        entity.setUnindexedProperty(property, value);
+                    }
+                }
+                else
+                {
+                    throw new IllegalArgumentException("updating through function attempts to change propertys "+property+" type");
+                }
+            }
         }
         return new UpdateableImpl(entity, property, indexed);
     }
@@ -343,6 +372,44 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     public void delete(Entity row)
     {
         proxy.delete(row);
+    }
+
+    @Override
+    public ColumnReference createFunction(ColumnReference inner, String funcName, String... args)
+    {
+        switch (funcName.toLowerCase())
+        {
+            case "toemail":
+                check(funcName, args.length, 0, 0);
+                return new ToFunction(inner, Email.class);
+            case "tolink":
+                check(funcName, args.length, 0, 0);
+                return new ToFunction(inner, Link.class);
+            case "tophonenumber":
+                check(funcName, args.length, 0, 0);
+                return new ToFunction(inner, PhoneNumber.class);
+            case "totext":
+                check(funcName, args.length, 0, 0);
+                return new ToFunction(inner, Text.class);
+            case "topostaladdress":
+                check(funcName, args.length, 0, 0);
+                return new ToFunction(inner, PostalAddress.class);
+            case "tocategory":
+                check(funcName, args.length, 0, 0);
+                return new ToFunction(inner, Category.class);
+            case "torating":
+                check(funcName, args.length, 0, 0);
+                return new ToFunction(inner, Rating.class);
+            default:
+                try
+                {
+                    return super.createFunction(inner, funcName, args);
+                }
+                catch (IllegalArgumentException ex)
+                {
+                    throw new IllegalArgumentException("expected toemail tophonenumber got"+funcName, ex);
+                }
+        }
     }
 
 }
