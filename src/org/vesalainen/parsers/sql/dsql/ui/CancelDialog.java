@@ -29,6 +29,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 
 /**
@@ -39,6 +40,7 @@ public class CancelDialog extends BaseDialog
     protected boolean accepted;
     protected JPanel buttonPanel;
     protected JButton cancelButton;
+    protected JMenuBar menuBar;
 
     public CancelDialog(Window owner, String title, ModalityType modalityType, GraphicsConfiguration gc)
     {
@@ -137,6 +139,9 @@ public class CancelDialog extends BaseDialog
 
     private void init()
     {
+        menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+
         buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
         add(buttonPanel, BorderLayout.SOUTH);

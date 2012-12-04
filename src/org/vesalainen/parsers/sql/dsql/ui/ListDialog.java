@@ -22,8 +22,8 @@ import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Collection;
-import javax.swing.DefaultListModel;
+import java.util.List;
+import javax.swing.AbstractListModel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 
@@ -32,23 +32,19 @@ import javax.swing.JScrollPane;
  */
 public class ListDialog<T> extends OkCancelDialog implements MouseListener
 {
-    private JList list;
-    private DefaultListModel model;
-
-    public ListDialog(Frame owner, Collection<T> list)
+    protected JList<T> list;
+    protected Model model;
+    public ListDialog(Frame owner, List<T> list)
     {
         super(owner);
         init();
+        model = new Model();
         refresh(list);
     }
 
-    public void refresh(Collection<T> list)
+    public void refresh(List<T> data)
     {
-        model.clear();
-        for (T t : list)
-        {
-            model.addElement(t);
-        }
+        model.data = data;
     }
     public T getSelected()
     {
@@ -57,7 +53,6 @@ public class ListDialog<T> extends OkCancelDialog implements MouseListener
     
     private void init()
     {
-        model = new DefaultListModel();
         list = new JList(model);
         list.addMouseListener(this);
         JScrollPane scrollPane = new JScrollPane(list);
@@ -73,6 +68,43 @@ public class ListDialog<T> extends OkCancelDialog implements MouseListener
         {
             accepted = true;
             setVisible(false);
+        }
+    }
+    public void removeElementAt(int index)
+    {
+        model.removeElementAt(index);
+    }
+
+    public void insertElementAt(int index, T elem)
+    {
+        model.insertElementAt(index, elem);
+    }
+
+    private class Model<T> extends AbstractListModel<T>
+    {
+        private List<T> data;
+        @Override
+        public int getSize()
+        {
+            return data.size();
+        }
+
+        @Override
+        public T getElementAt(int index)
+        {
+            return data.get(index);
+        }
+
+        public void removeElementAt(int index)
+        {
+            data.remove(index);
+            fireContentsChanged(this, index, data.size());
+        }
+        
+        public void insertElementAt(int index, T elem)
+        {
+            data.add(index, elem);
+            fireContentsChanged(this, index, data.size());
         }
     }
 
