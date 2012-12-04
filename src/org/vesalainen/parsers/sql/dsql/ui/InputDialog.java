@@ -55,6 +55,7 @@ public class InputDialog extends OkCancelDialog
     @Override
     public boolean input()
     {
+        table.getColumnModel().getColumn(0).setPreferredWidth(100);
         boolean result = super.input();
         TableCellEditor cellEditor = table.getCellEditor();
         if (cellEditor != null)
@@ -69,7 +70,7 @@ public class InputDialog extends OkCancelDialog
         table = new InputTable();
         table.setOwner(this);
         add(table, BorderLayout.CENTER);
-        setMinimumSize(new Dimension(800, 0));
+        setMinimumSize(new Dimension(500, 0));
         setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
     }
 

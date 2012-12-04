@@ -27,7 +27,7 @@ import org.vesalainen.parsers.sql.dsql.ui.action.FetchResultHandler;
  *
  * @author Timo Vesalainen
  */
-public abstract class FetchResultPlugin extends AbstractAction implements PropertyChangeListener, VetoableChangeListener
+public abstract class FetchResultPlugin<T> extends AbstractAction implements PropertyChangeListener, VetoableChangeListener
 {
     private JFrame frame;
 
@@ -41,13 +41,20 @@ public abstract class FetchResultPlugin extends AbstractAction implements Proper
      * Return true if plugin can handle type
      * @return 
      */
-    public abstract boolean accept(Class<?> type);
+    public abstract boolean accept(Object target);
     /**
      * Handle
      * @param result FetchResult that contains at least one column with requested type
      */
     public abstract void handle(JFrame owner, FetchResultTableModel model);
     public abstract void disable();
+    /**
+     * Returns the String representation of T. Eg. Email address.
+     * @param t
+     * @return 
+     */
+    public abstract String getString(T t);
+    
 
     @Override
     public void propertyChange(PropertyChangeEvent evt)
