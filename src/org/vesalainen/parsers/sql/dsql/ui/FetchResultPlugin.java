@@ -65,13 +65,16 @@ public abstract class FetchResultPlugin<T> extends AbstractAction implements Pro
             if (model != null)
             {
                 boolean handles = false;
-                for (int col = 0;col < model.getColumnCount();col++)
+                for (int row = 0;row < model.getRowCount();row++)
                 {
-                    if (accept(model.getColumnClass(col)))
+                    for (int col = 0;col < model.getColumnCount();col++)
                     {
-                        handles = true;
-                        handle(frame, model);
-                        break;
+                        if (accept(model.getValueAt(row, col)))
+                        {
+                            handles = true;
+                            handle(frame, model);
+                            break;
+                        }
                     }
                 }
                 if (!handles)

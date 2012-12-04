@@ -85,10 +85,14 @@ public abstract class AbstractEditableListDialog<T> extends ListDialog<T>
         public void actionPerformed(ActionEvent e)
         {
             int index = list.getSelectedIndex();
+            String value = JOptionPane.showInputDialog(rootPane, I18n.get("ENTER VALUE"));
             if (index != -1)
             {
-                String value = JOptionPane.showInputDialog(rootPane, I18n.get("ENTER VALUE"));
                 insertElementAt(index, create(value));
+            }
+            else
+            {
+                insertElement(create(value));
             }
         }
         

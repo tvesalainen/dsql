@@ -17,31 +17,19 @@
 
 package org.vesalainen.parsers.sql.dsql.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
 
 /**
  * @author Timo Vesalainen
  */
 public class CancelDialog extends BaseDialog
 {
-    protected boolean accepted;
-    protected JPanel buttonPanel;
-    protected JButton cancelButton;
-    protected JMenuBar menuBar;
-
     public CancelDialog(Window owner, String title, ModalityType modalityType, GraphicsConfiguration gc)
     {
         super(owner, title, modalityType, gc);
@@ -139,12 +127,6 @@ public class CancelDialog extends BaseDialog
 
     private void init()
     {
-        menuBar = new JMenuBar();
-        setJMenuBar(menuBar);
-
-        buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout());
-        add(buttonPanel, BorderLayout.SOUTH);
         // buttons
         cancelButton = new JButton(I18n.get("CANCEL"));
         cancelButton.setToolTipText(I18n.get("CANCEL THE ACTION"));

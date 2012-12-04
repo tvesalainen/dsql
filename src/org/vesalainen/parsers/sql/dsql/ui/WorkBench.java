@@ -121,7 +121,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
     
     public WorkBench(Properties properties) throws IOException, InterruptedException
     {
-        this(properties, false, true);
+        this(properties, false, false);
     }
     public WorkBench(Properties properties, boolean embed, boolean readonly) throws IOException, InterruptedException
     {

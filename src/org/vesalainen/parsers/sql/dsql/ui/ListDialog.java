@@ -37,8 +37,8 @@ public class ListDialog<T> extends OkCancelDialog implements MouseListener
     public ListDialog(Frame owner, List<T> list)
     {
         super(owner);
-        init();
         model = new Model();
+        init();
         refresh(list);
     }
 
@@ -75,6 +75,11 @@ public class ListDialog<T> extends OkCancelDialog implements MouseListener
         model.removeElementAt(index);
     }
 
+    public void insertElement(T elem)
+    {
+        model.insertElement(elem);
+    }
+
     public void insertElementAt(int index, T elem)
     {
         model.insertElementAt(index, elem);
@@ -101,6 +106,11 @@ public class ListDialog<T> extends OkCancelDialog implements MouseListener
             fireContentsChanged(this, index, data.size());
         }
         
+        public void insertElement(T elem)
+        {
+            data.add(elem);
+            fireContentsChanged(this, data.size()-1, data.size());
+        }
         public void insertElementAt(int index, T elem)
         {
             data.add(index, elem);

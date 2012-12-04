@@ -17,7 +17,9 @@
 
 package org.vesalainen.parsers.sql.dsql.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.Window;
@@ -25,7 +27,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
 import javax.swing.tree.TreePath;
 
 /**
@@ -33,6 +38,10 @@ import javax.swing.tree.TreePath;
  */
 public class BaseDialog extends JDialog  implements MouseListener, KeyListener
 {
+    protected boolean accepted;
+    protected JPanel buttonPanel;
+    protected JButton cancelButton;
+    protected JMenuBar menuBar;
 
     public BaseDialog()
     {
@@ -132,6 +141,12 @@ public class BaseDialog extends JDialog  implements MouseListener, KeyListener
     private void init()
     {
         setIconImages(WorkBench.icons);
+        menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+
+        buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout());
+        add(buttonPanel, BorderLayout.SOUTH);
     }
     @Override
     public void mouseClicked(MouseEvent e)

@@ -44,7 +44,6 @@ public class MessageDialog extends TextDialog
     private ReplacerAction action;
     private JButton tagButton;
     private JTextField subjectField;
-    private JMenuBar menuBar;
 
     public MessageDialog(JFrame owner, Action sendAction)
     {
@@ -91,9 +90,6 @@ public class MessageDialog extends TextDialog
         subjectField = new JTextField(60);
         subjectPanel.add(subjectField);
         
-        menuBar = new JMenuBar();
-        setJMenuBar(menuBar);
-
         JMenu fileMenu = new JMenu(I18n.get("EDIT"));
         menuBar.add(fileMenu);
         

@@ -22,38 +22,60 @@ import com.google.appengine.api.datastore.Text;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.io.Writer;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.util.ByteArrayDataSource;
 import javax.swing.Action;
 import javax.swing.JFrame;
+import org.vesalainen.parser.util.InputReader;
+import org.vesalainen.parsers.magic.Magic;
+import org.vesalainen.parsers.sql.dsql.GObjectHelper;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultPlugin;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
 import org.vesalainen.parsers.sql.dsql.ui.action.PersistenceHandler;
+import org.vesalainen.regex.Replacer;
 
 /**
  * @author Timo Vesalainen
  */
-public abstract class AbstractMessagePlugin extends FetchResultPlugin
+public abstract class AbstractMessagePlugin<T> extends FetchResultPlugin<T>
 {
     public static final String SubjectProperty = AbstractMessagePlugin.class.getName()+".subject";
     public static final String BodyProperty = AbstractMessagePlugin.class.getName()+".body";
     
-    protected Action sendAction;
+    protected AbstractSendAction sendAction;
     protected MessageDialog dialog;
     protected JFrame owner;
     protected FetchResultTableModel model;
+    private Class<T> acceptType;
 
-    public AbstractMessagePlugin(String name, Action sendAction)
+    public AbstractMessagePlugin(String name, AbstractSendAction sendAction, Class<T> acceptType)
     {
         super(name);
         this.sendAction = sendAction;
+        this.acceptType = acceptType;
         dialog = createMessageDialog(owner, sendAction);
+        sendAction.setPlugin(this);
+        sendAction.setDialog(dialog);
     }
-    
+
+    @Override
+    public boolean accept(Object target)
+    {
+        return acceptType.isInstance(target);
+    }
     @Override
     public void handle(JFrame owner, FetchResultTableModel model)
     {
         this.owner = owner;
         this.model = model;
         setEnabled(true);
+        sendAction.setModel(model);
     }
 
     @Override
@@ -120,5 +142,4 @@ public abstract class AbstractMessagePlugin extends FetchResultPlugin
                 break;
         }
     }
-    
 }
