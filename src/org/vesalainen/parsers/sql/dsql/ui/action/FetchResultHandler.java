@@ -115,6 +115,13 @@ public class FetchResultHandler implements PropertyChangeListener
                 {
                     tableModel.clear();
                 }
+                if (    fetchResult != null &&
+                        (fetchResult instanceof UpdateableFetchResult)
+                        )
+                {
+                    UpdateableFetchResult ufr = (UpdateableFetchResult) fetchResult;
+                    ufr.rollback();
+                }
                 firePropertyChange(ModelPropertyName, null, null);
                 setButtonsEnabled(false);
             }

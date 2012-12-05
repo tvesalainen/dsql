@@ -50,7 +50,7 @@ public class PersistenceHandler
     private DSQLEngine engine;
     private String storedStatementsKind;
     private FetchResult statements;
-    private static ListDialog<String> dialog;
+    private static StatementDialog dialog;
     private Entity oldEntity;
     private Entity newEntity;
     private Action[] actions;
@@ -59,6 +59,8 @@ public class PersistenceHandler
     private Action saveAction;
     private Action saveAsAction;
     private Action removeAction;
+    private AutoAction executeAction;
+    private List<AutoAction> autoActions = new ArrayList<>();;
 
     public PersistenceHandler(WorkBench workBench, String storedStatementsKind)
     {
@@ -78,6 +80,16 @@ public class PersistenceHandler
             saveAsAction,
             removeAction
         };
+    }
+
+    public void setExecuteAction(AutoAction executeAction)
+    {
+        this.executeAction = executeAction;
+    }
+
+    public void addAutoAction(AutoAction autoAction)
+    {
+        autoActions.add(autoAction);
     }
     
     public Action[] getActions()
@@ -106,27 +118,19 @@ public class PersistenceHandler
     }
     protected void open()
     {
-        if (dialog == null)
+        dialog = new StatementDialog(workBench.getFrame(), storedStatementsKind, engine, executeAction, autoActions);
+        Entity ne = dialog.inputEntity();
+        if (ne != null)
         {
-            dialog = new ListDialog(workBench.getFrame(), getStatements());
-        }
-        if (dialog.input())
-        {
-            String selected = dialog.getSelected();
-            Key key = engine.createKey(storedStatementsKind, selected);
             try
             {
-                newEntity = engine.get(key);
+                newEntity = ne;
                 fireVetoableChange(OPEN, oldEntity, newEntity);
                 oldEntity = newEntity;
             }
             catch (PropertyVetoException ex)
             {
                 JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUCED"), JOptionPane.ERROR_MESSAGE);
-            }
-            catch (EntityNotFoundException ex)
-            {
-                JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("NOT FOUND"), JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -216,22 +220,6 @@ public class PersistenceHandler
             Logger.getLogger(PersistenceHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    private void refresh()
-    {
-        dialog = new ListDialog(workBench.getFrame(), getStatements());
-    }
-    private List<String> getStatements()
-    {
-        List<String> list = new ArrayList<>();
-        FetchResult results = workBench.getEngine().execute("select "+Entity.KEY_RESERVED_PROPERTY+" from "+storedStatementsKind);
-        for (int row = 0;row < results.getRowCount();row++)
-        {
-            Key key = (Key) results.getValueAt(row, 0);
-            list.add(key.getName());
-        }
-        return list;
-    }
-
     public void addVetoableChangeListener(VetoableChangeListener listener)
     {
         changeSupport.addVetoableChangeListener(listener);

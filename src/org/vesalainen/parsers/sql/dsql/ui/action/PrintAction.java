@@ -32,7 +32,7 @@ import org.vesalainen.parsers.sql.dsql.ui.I18n;
 /**
  * @author Timo Vesalainen
  */
-public class PrintAction extends AbstractAction implements PropertyChangeListener
+public class PrintAction extends AbstractAutoAction implements PropertyChangeListener
 {
     private JTable table;
 

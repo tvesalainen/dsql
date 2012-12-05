@@ -43,7 +43,6 @@ public class MessageDialog extends TextDialog
     private Action sendAction;
     private ReplacerAction action;
     private JButton tagButton;
-    private JTextField subjectField;
 
     public MessageDialog(JFrame owner, Action sendAction)
     {
@@ -58,19 +57,9 @@ public class MessageDialog extends TextDialog
         return super.input();
     }
 
-    public String getSubject()
-    {
-        return subjectField.getText();
-    }
-    
     public String getBody()
     {
         return textPane.getText();
-    }
-    
-    public void setSubject(String subject)
-    {
-        subjectField.setText(subject);
     }
     
     public void setBody(String body)
@@ -81,15 +70,6 @@ public class MessageDialog extends TextDialog
     private void init()
     {
         textPane.setContentType("text/html");
-        // Subject
-        JPanel subjectPanel = new JPanel();
-        subjectPanel.setLayout(new FlowLayout());
-        add(subjectPanel, BorderLayout.NORTH);
-        JLabel subjectLabel = new JLabel(I18n.get("SUBJECT"));
-        subjectPanel.add(subjectLabel);
-        subjectField = new JTextField(60);
-        subjectPanel.add(subjectField);
-        
         JMenu fileMenu = new JMenu(I18n.get("EDIT"));
         menuBar.add(fileMenu);
         

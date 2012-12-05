@@ -40,14 +40,12 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -227,7 +225,8 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         parseAction.addPropertyChangeListener(executeAction);
         executeButton = new JButton(executeAction);
         buttonPanel.add(executeButton);
-        actionMenu.add(executeButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK));;
+        actionMenu.add(executeButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK));
+        persistenceHandler.setExecuteAction(executeAction);
         
         SelectForUpdateAction selectForUpdateAction = new SelectForUpdateAction(frame);
         parseAction.addPropertyChangeListener(selectForUpdateAction);
@@ -235,7 +234,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         {
             selectAndUpdateButton = new JButton(selectForUpdateAction);
             buttonPanel.add(selectAndUpdateButton);
-            actionMenu.add(selectAndUpdateButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));;;
+            actionMenu.add(selectAndUpdateButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));
         }
         
         fetchResultHandler = new FetchResultHandler(frame, resultPane);
@@ -291,6 +290,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         plugin.setFrame(frame);
         fetchResultHandler.addPropertyChangeListener(plugin);
         persistenceHandler.addVetoableChangeListener(plugin);
+        persistenceHandler.addAutoAction(plugin);
     }
     
     @Override

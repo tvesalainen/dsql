@@ -81,6 +81,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     {
         addGoogleType(Long.class);
         addGoogleType(Double.class);
+        addGoogleType(Boolean.class);
         addGoogleType(Date.class);
         addGoogleType(Category.class);
         addGoogleType(Email.class);
@@ -188,7 +189,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
             @ParserContext(ParserConstants.INPUTREADER) InputReader reader
             )
     {
-        Class<?> type = googleTypeMap.get(typeName);
+        Class<?> type = googleTypeMap.get(typeName.toLowerCase());
         if (type == null)
         {
             reader.throwSyntaxErrorException("Key", typeName);
@@ -244,13 +245,13 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         list.add(0, string);
         try
         {
-            Class<?> type = googleTypeMap.get(typeName);
+            Class<?> type = googleTypeMap.get(typeName.toLowerCase());
             Object obj = GObjectHelper.valueOf(type, list.toArray(new String[list.size()]));
             return new LiteralImpl<>(obj);
         }
         catch (Exception ex)
         {
-            reader.throwSyntaxErrorException("Category, Email, Link, PhoneNumber, Text, User", typeName);
+            reader.throwSyntaxErrorException("Long, Double, Boolean, Category, Email, Link, PhoneNumber, Text, User", typeName);
         }
         return null;
     }
@@ -263,7 +264,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     {
         try
         {
-            Class<?> type = googleTypeMap.get(typeName);
+            Class<?> type = googleTypeMap.get(typeName.toLowerCase());
             Constructor constructor = type.getConstructor(int.class);
             Object newInstance = constructor.newInstance(number.intValue());
             return new LiteralImpl<>(newInstance);
@@ -282,7 +283,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
             @ParserContext(ParserConstants.INPUTREADER) InputReader reader
             )
     {
-        Class<?> type = googleTypeMap.get(typeName);
+        Class<?> type = googleTypeMap.get(typeName.toLowerCase());
         if (!GeoPt.class.equals(type))
         {
             reader.throwSyntaxErrorException("GeoPt", typeName);

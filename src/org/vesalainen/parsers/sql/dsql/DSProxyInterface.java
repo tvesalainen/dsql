@@ -22,6 +22,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.mail.MailService.Message;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import org.vesalainen.parsers.sql.InsertStatement;
@@ -52,6 +53,7 @@ public interface DSProxyInterface
     void rollbackTransaction();
 
     Entity get(Key key) throws EntityNotFoundException;
+    List<Entity> getAll(String kind);
     void update(Collection<Entity> rows);
     void update(Entity row);
     void delete(Entity row);

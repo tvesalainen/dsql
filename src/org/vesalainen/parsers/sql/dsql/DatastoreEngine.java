@@ -234,7 +234,15 @@ public class DatastoreEngine  implements DSProxyInterface
         {
             if (!Entity.KEY_RESERVED_PROPERTY.equals(entry.getKey()))
             {
-                entity.setUnindexedProperty(entry.getKey(), entry.getValue().getValue());
+                ColumnMetadata cm = statistics.getProperty(kind, entry.getKey());
+                if (cm != null && !cm.isIndexed())
+                {
+                    entity.setUnindexedProperty(entry.getKey(), entry.getValue().getValue());
+                }
+                else
+                {
+                    entity.setProperty(entry.getKey(), entry.getValue().getValue());
+                }
             }
         }
         datastore.put(entity);
@@ -549,6 +557,14 @@ public class DatastoreEngine  implements DSProxyInterface
     public Entity get(Key key) throws EntityNotFoundException
     {
         return datastore.get(key);
+    }
+
+    @Override
+    public List<Entity> getAll(String kind)
+    {
+        Query query = new Query(kind);
+        PreparedQuery prepared = datastore.prepare(query);
+        return prepared.asList(FetchOptions.Builder.withChunkSize(CHUNKSIZE));
     }
 
     @Override

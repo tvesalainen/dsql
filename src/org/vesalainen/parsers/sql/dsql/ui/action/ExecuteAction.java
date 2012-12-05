@@ -35,7 +35,7 @@ import org.vesalainen.parsers.sql.dsql.ui.InputDialog;
 /**
  * @author Timo Vesalainen
  */
-public class ExecuteAction extends AbstractAction implements PropertyChangeListener
+public class ExecuteAction extends AbstractAutoAction implements PropertyChangeListener
 {
     public static final String PropertyName = "fetchResult";
     protected JFrame frame;

@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import org.vesalainen.parsers.sql.ColumnMetadata;
@@ -407,9 +408,15 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
                 }
                 catch (IllegalArgumentException ex)
                 {
-                    throw new IllegalArgumentException("expected toemail tophonenumber got"+funcName, ex);
+                    throw new IllegalArgumentException("expected toemail tophonenumber got "+funcName, ex);
                 }
         }
+    }
+
+    @Override
+    public List<Entity> getAll(String kind)
+    {
+        return proxy.getAll(kind);
     }
 
 }

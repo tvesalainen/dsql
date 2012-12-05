@@ -105,7 +105,6 @@ public abstract class AbstractMessagePlugin<T> extends FetchResultPlugin<T>
                 if (entity != null)
                 {
                     // Open
-                    dialog.setSubject((String) entity.getProperty(SubjectProperty));
                     Text body = (Text) entity.getProperty(BodyProperty);
                     if (body != null)
                     {
@@ -119,7 +118,6 @@ public abstract class AbstractMessagePlugin<T> extends FetchResultPlugin<T>
                 else
                 {
                     // New
-                    dialog.setSubject(null);
                     dialog.setBody(null);
                 }
                 break;
@@ -127,8 +125,6 @@ public abstract class AbstractMessagePlugin<T> extends FetchResultPlugin<T>
                 if (entity != null)
                 {
                     // Save
-                    String subject = dialog.getSubject();
-                    entity.setUnindexedProperty(SubjectProperty, subject);
                     String body = dialog.getBody();
                     Text sql = new Text(body);
                     entity.setUnindexedProperty(BodyProperty, sql);
@@ -136,7 +132,6 @@ public abstract class AbstractMessagePlugin<T> extends FetchResultPlugin<T>
                 else
                 {
                     // Remove
-                    dialog.setSubject(null);
                     dialog.setBody(null);
                 }
                 break;

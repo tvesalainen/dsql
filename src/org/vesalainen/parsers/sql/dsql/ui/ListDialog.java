@@ -17,6 +17,7 @@
 
 package org.vesalainen.parsers.sql.dsql.ui;
 
+import com.google.appengine.api.datastore.Key;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -26,11 +27,13 @@ import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * @author Timo Vesalainen
  */
-public class ListDialog<T> extends OkCancelDialog implements MouseListener
+public class ListDialog<T> extends OkCancelDialog implements MouseListener, ListSelectionListener
 {
     protected JList<T> list;
     protected Model model;
@@ -51,10 +54,16 @@ public class ListDialog<T> extends OkCancelDialog implements MouseListener
         return (T) list.getSelectedValue();
     }
     
+    public int getSelectedIndex()
+    {
+        return list.getSelectedIndex();
+    }
+    
     private void init()
     {
         list = new JList(model);
         list.addMouseListener(this);
+        list.addListSelectionListener(this);
         JScrollPane scrollPane = new JScrollPane(list);
         add(scrollPane, BorderLayout.CENTER);
         
@@ -85,9 +94,29 @@ public class ListDialog<T> extends OkCancelDialog implements MouseListener
         model.insertElementAt(index, elem);
     }
 
-    private class Model<T> extends AbstractListModel<T>
+    @Override
+    public void valueChanged(ListSelectionEvent e)
+    {
+    }
+
+    protected class Model<T> extends AbstractListModel<T>
     {
         private List<T> data;
+
+        public void clear()
+        {
+            int size = data.size();
+            data.clear();
+            fireContentsChanged(this, 0, size);
+        }
+
+        public boolean add(T e)
+        {
+            boolean b = data.add(e);
+            fireContentsChanged(this, data.size()-1, data.size());
+            return b;
+        }
+        
         @Override
         public int getSize()
         {

@@ -17,10 +17,16 @@
 package org.vesalainen.parsers.sql.dsql.ui.plugin;
 
 import com.google.appengine.api.datastore.Email;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Text;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import javax.swing.Action;
 import javax.swing.JFrame;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
+import org.vesalainen.parsers.sql.dsql.ui.action.PersistenceHandler;
 
 /**
  * <p>
@@ -51,6 +57,61 @@ public class MailPlugin extends AbstractMessagePlugin<Email>
     public String getString(Email t)
     {
         return t.getEmail();
+    }
+
+    @Override
+    protected MessageDialog createMessageDialog(JFrame owner, Action sendAction)
+    {
+        return new MailDialog(owner, sendAction);
+    }
+
+    @Override
+    public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException
+    {
+        super.vetoableChange(evt);
+        MailDialog mdialog = (MailDialog) dialog;
+        Entity entity = (Entity) evt.getNewValue();
+        switch (evt.getPropertyName())
+        {
+            case PersistenceHandler.OPEN:
+                if (entity != null)
+                {
+                    // Open
+                    mdialog.setSubject((String) entity.getProperty(SubjectProperty));
+                }
+                else
+                {
+                    // New
+                    mdialog.setSubject(null);
+                }
+                break;
+            case PersistenceHandler.SAVE:
+                if (entity != null)
+                {
+                    // Save
+                    String subject = mdialog.getSubject();
+                    if (subject != null && !subject.isEmpty())
+                    {
+                        entity.setUnindexedProperty(SubjectProperty, subject);
+                    }
+                    else
+                    {
+                        entity.removeProperty(SubjectProperty);
+                    }
+                }
+                else
+                {
+                    // Remove
+                    mdialog.setSubject(null);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public boolean activate(Entity data)
+    {
+        return data.hasProperty(SubjectProperty);
     }
 
 }

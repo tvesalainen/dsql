@@ -16,18 +16,19 @@
  */
 package org.vesalainen.parsers.sql.dsql.ui;
 
+import com.google.appengine.api.datastore.Entity;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
-import javax.swing.AbstractAction;
 import javax.swing.JFrame;
+import org.vesalainen.parsers.sql.dsql.ui.action.AbstractAutoAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.FetchResultHandler;
 
 /**
  *
  * @author Timo Vesalainen
  */
-public abstract class FetchResultPlugin<T> extends AbstractAction implements PropertyChangeListener, VetoableChangeListener
+public abstract class FetchResultPlugin<T> extends AbstractAutoAction implements PropertyChangeListener, VetoableChangeListener
 {
     private JFrame frame;
 
@@ -54,6 +55,8 @@ public abstract class FetchResultPlugin<T> extends AbstractAction implements Pro
      * @return 
      */
     public abstract String getString(T t);
+    
+    public abstract boolean activate(Entity data);
     
 
     @Override
@@ -93,6 +96,6 @@ public abstract class FetchResultPlugin<T> extends AbstractAction implements Pro
     {
         this.frame = frame;
     }
-    
+
     
 }

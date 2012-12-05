@@ -53,7 +53,8 @@ public class SendEmailAction extends AbstractSendAction
     @Override
     protected void sendTo(int row, String recipient)
     {
-        String subject = dialog.getSubject();
+        MailDialog mdialog = (MailDialog) dialog;
+        String subject = mdialog.getSubject();
         String body = dialog.getText();
         try
         {
