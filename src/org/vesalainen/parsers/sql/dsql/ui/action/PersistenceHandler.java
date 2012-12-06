@@ -21,6 +21,8 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
@@ -31,6 +33,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
@@ -51,8 +54,7 @@ public class PersistenceHandler
     private String storedStatementsKind;
     private FetchResult statements;
     private static StatementDialog dialog;
-    private Entity oldEntity;
-    private Entity newEntity;
+    private Entity entity;
     private Action[] actions;
     private Action newAction;
     private Action opentAction;
@@ -106,9 +108,7 @@ public class PersistenceHandler
         {
             int confirm = JOptionPane.showConfirmDialog(
                     workBench.getFrame(), 
-                    I18n.get("CREATE ")
-                    +storedStatementsKind+
-                    I18n.get(" KIND FOR SAVED STATEMENTS? (IF KIND IS NOT OK, CHANGE KIND NAME IN PROPERTIES)"), 
+                    String.format(I18n.get("CREATESTOREDSTATEMENTSKIND"), storedStatementsKind),
                     I18n.get("CONNECTED DATASTORE DOESN'T HAVE STORE FOR SAVED STATEMENTS"), 
                     JOptionPane.OK_CANCEL_OPTION
                     );
@@ -124,9 +124,8 @@ public class PersistenceHandler
         {
             try
             {
-                newEntity = ne;
-                fireVetoableChange(OPEN, oldEntity, newEntity);
-                oldEntity = newEntity;
+                entity = ne;
+                fireVetoableChange(OPEN, null, entity);
             }
             catch (PropertyVetoException ex)
             {
@@ -137,13 +136,12 @@ public class PersistenceHandler
 
     private void save()
     {
-        if (newEntity != null)
+        if (entity != null)
         {
             try
             {
-                fireVetoableChange(SAVE, oldEntity, newEntity);
-                engine.update(newEntity);
-                oldEntity = newEntity;
+                fireVetoableChange(SAVE, null, entity);
+                engine.update(entity);
             }
             catch (PropertyVetoException ex)
             {
@@ -164,15 +162,15 @@ public class PersistenceHandler
             {
                 try
                 {
-                    oldEntity = newEntity;
                     Key key = engine.createKey(storedStatementsKind, name);
-                    newEntity = new Entity(key);
-                    if (oldEntity != null)
+                    Entity ne = new Entity(key);
+                    if (entity != null)
                     {
-                        newEntity.setPropertiesFrom(oldEntity);
+                        ne.setPropertiesFrom(entity);
                     }
-                    fireVetoableChange(SAVE, oldEntity, newEntity);
-                    engine.update(newEntity);
+                    entity = ne;
+                    fireVetoableChange(SAVE, null, entity);
+                    engine.update(entity);
                 }
                 catch (PropertyVetoException ex)
                 {
@@ -183,11 +181,11 @@ public class PersistenceHandler
     }
     private void remove()
     {
-        if (oldEntity != null)
+        if (entity != null)
         {
             int confirm = JOptionPane.showConfirmDialog(
                     workBench.getFrame(), 
-                    oldEntity.getKey().getName(), 
+                    entity.getKey().getName(), 
                     I18n.get("CONFIRM REMOVE?"),
                     JOptionPane.OK_CANCEL_OPTION
                     );
@@ -195,10 +193,9 @@ public class PersistenceHandler
             {
                 try
                 {
-                    fireVetoableChange(SAVE, oldEntity, null);
-                    engine.delete(oldEntity);
-                    newEntity = null;
-                    oldEntity = null;
+                    fireVetoableChange(SAVE, null, null);
+                    engine.delete(entity);
+                    entity = null;
                 }
                 catch (PropertyVetoException ex)
                 {
@@ -211,9 +208,8 @@ public class PersistenceHandler
     {
         try
         {
-            fireVetoableChange(OPEN, oldEntity, null);
-            newEntity = null;
-            oldEntity = null;
+            fireVetoableChange(OPEN, null, null);
+            entity = null;
         }
         catch (PropertyVetoException ex)
         {
@@ -254,6 +250,7 @@ public class PersistenceHandler
         {
             super(I18n.get("OPEN"));
             putValue(Action.SHORT_DESCRIPTION, I18n.get("OPENS A SAVED STATEMENT"));
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK));
         }
 
         @Override
@@ -268,6 +265,7 @@ public class PersistenceHandler
         {
             super(I18n.get("SAVE"));
             putValue(Action.SHORT_DESCRIPTION, I18n.get("SAVES THE STATEMENT AND PLUGINS DATA. PLUGINS ARE MAIL ETC."));
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
         }
 
         @Override

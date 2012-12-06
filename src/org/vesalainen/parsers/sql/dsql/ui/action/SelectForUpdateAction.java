@@ -18,9 +18,12 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import javax.swing.Action;
 import javax.swing.JFrame;
+import javax.swing.KeyStroke;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
@@ -37,6 +40,7 @@ public class SelectForUpdateAction extends ExecuteAction
         super(frame);
         putValue(NAME, I18n.get("SELECT FOR UPDATE"));
         putValue(Action.SHORT_DESCRIPTION, I18n.get("EXECUTE THE SELECT STATEMENT FOR UPDATING. FETCHED PROPERTIES VALUES CAN BE UPDATED AND STORED BACK TO DATASTORE"));
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));
     }
 
     @Override

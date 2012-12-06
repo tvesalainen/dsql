@@ -27,11 +27,18 @@ import com.google.appengine.api.datastore.Rating;
 import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.Text;
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.util.Locale;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
 import javax.swing.JSpinner;
@@ -41,6 +48,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.vesalainen.parsers.magic.Magic;
@@ -52,6 +61,7 @@ import org.vesalainen.parsers.sql.dsql.DSQLParser;
  */
 public class DSJTable extends JTable
 {
+    private static final Pattern NUMERIC = Pattern.compile("[0-9\\,\\.\\- ]+");
     private static final Magic magic = Magic.getInstance();
     private static final DSQLParser parser = DSQLParser.getInstance();
     
@@ -128,6 +138,64 @@ public class DSJTable extends JTable
         setDefaultRenderer(Text.class, new TextTableCellRenderer());
         setDefaultRenderer(Email.class, new EmailTableCellRenderer());
         setDefaultRenderer(Category.class, new CategoryTableCellRenderer());
+    }
+
+    @Override
+    public void print(Graphics g)
+    {
+        int totalColumnWidth = columnModel.getTotalColumnWidth();
+        Graphics2D gg = (Graphics2D) g;
+        FontRenderContext fontRenderContext = gg.getFontRenderContext();
+        for (int col=0;col<columnModel.getColumnCount();col++)
+        {
+            TableColumn column = columnModel.getColumn(col);
+            int max = 0;
+            boolean numeric = true;
+            for (int row=0;row<getRowCount();row++)
+            {
+                Object value = dataModel.getValueAt(row, col);
+                String str = value != null ? value.toString() : "";
+                Matcher matcher = NUMERIC.matcher(str);
+                if (!matcher.matches())
+                {
+                    numeric = false;
+                }
+                TableCellRenderer cellRenderer = getCellRenderer(row, col);
+                Component component = cellRenderer.getTableCellRendererComponent(this, value, false, false, row, col);
+                Font font = component.getFont();
+                Rectangle2D stringBounds = font.getStringBounds(str, fontRenderContext);
+                max = Math.max(max, (int)(1.5*stringBounds.getWidth()));
+            }
+            if (numeric)
+            {
+                column.setMaxWidth(max);
+            }
+            else
+            {
+                column.setMinWidth(0);
+                column.setMaxWidth(max);
+            }
+        }
+        int left = totalColumnWidth - columnModel.getTotalColumnWidth();
+        int hiddenTotal = 0;
+        for (int col=0;col<columnModel.getColumnCount();col++)
+        {
+            TableColumn column = columnModel.getColumn(col);
+            hiddenTotal += column.getMaxWidth()-column.getWidth();
+        }
+        float ratio = (float)left/(float)hiddenTotal;
+        for (int col=0;col<columnModel.getColumnCount();col++)
+        {
+            TableColumn column = columnModel.getColumn(col);
+            int hidden = column.getMaxWidth()-column.getWidth();
+            if (hidden > 0)
+            {
+                column.setMinWidth(column.getWidth()+(int)(ratio*(float)hidden));
+            }
+        }
+        totalColumnWidth = columnModel.getTotalColumnWidth();
+        revalidate();
+        super.paint(g);
     }
 
     public class GeoPtCellEditor extends AbstractCellEditor implements TableCellEditor

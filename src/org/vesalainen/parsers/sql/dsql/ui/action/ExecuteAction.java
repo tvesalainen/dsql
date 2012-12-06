@@ -18,6 +18,8 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedHashMap;
@@ -25,6 +27,7 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFrame;
+import javax.swing.KeyStroke;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.Placeholder;
 import org.vesalainen.parsers.sql.SelectStatement;
@@ -46,6 +49,7 @@ public class ExecuteAction extends AbstractAutoAction implements PropertyChangeL
         super(I18n.get("EXECUTE"));
         putValue(Action.SHORT_DESCRIPTION, I18n.get("EXECUTE THE STATEMENT"));
         this.frame = frame;
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK));
         setEnabled(false);
     }
 

@@ -327,14 +327,14 @@ public class BytesDialog extends CancelDialog
             if (extensions.length == 1)
             {
                 label.setText(
-                        I18n.get("BLOB PROPERTYS VALUE TYPE IS ")+
-                        guess.getDescription()+
-                        ".");
+                        String.format(
+                        I18n.get("BLOB PROPERTYS VALUE TYPE IS "), guess.getDescription()));
             }
             else
             {
                 label.setText(
-                        I18n.get("BLOB PROPERTYS VALUE TYPE IS ")+guess.getDescription()+". "+
+                        String.format(
+                        I18n.get("BLOB PROPERTYS VALUE TYPE IS "), guess.getDescription())+
                         I18n.get("CHOOSE THE EXTENSION BEFORE TRYING TO OPEN."));
             }
         }

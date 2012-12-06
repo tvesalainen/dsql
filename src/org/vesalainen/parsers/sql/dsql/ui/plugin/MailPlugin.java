@@ -19,10 +19,13 @@ package org.vesalainen.parsers.sql.dsql.ui.plugin;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import javax.swing.Action;
 import javax.swing.JFrame;
+import javax.swing.KeyStroke;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
@@ -42,6 +45,7 @@ public class MailPlugin extends AbstractMessagePlugin<Email>
     public MailPlugin(DSQLEngine engine)
     {
         super(I18n.get("MAIL"), new SendEmailAction(engine), Email.class);
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.ALT_DOWN_MASK));
     }
 
     @Override

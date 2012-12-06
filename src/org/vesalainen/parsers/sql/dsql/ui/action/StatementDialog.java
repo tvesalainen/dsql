@@ -44,7 +44,13 @@ public class StatementDialog extends ListDialog<String>
     private List<Entity> entityList;
     private Map<AutoAction,JButton> map = new HashMap<>();
     
-    public StatementDialog(Frame owner, String storedStatementsKind, DSQLEngine engine, AutoAction executeAction, List<AutoAction> autoActions)
+    public StatementDialog(
+            Frame owner, 
+            String storedStatementsKind, 
+            DSQLEngine engine, 
+            AutoAction executeAction, 
+            List<AutoAction> autoActions
+            )
     {
         super(owner, new ArrayList<String>());
         this.executeAction = executeAction;
@@ -79,12 +85,19 @@ public class StatementDialog extends ListDialog<String>
     public void valueChanged(ListSelectionEvent e)
     {
         int selected = getSelectedIndex();
-        for (AutoAction aa : autoActions)
+        if (selected != -1)
         {
-            if (aa instanceof FetchResultPlugin)
+            for (AutoAction aa : autoActions)
             {
-                FetchResultPlugin plugin = (FetchResultPlugin) aa;
-                map.get(aa).setEnabled(plugin.activate(entityList.get(selected)));
+                if (aa instanceof FetchResultPlugin)
+                {
+                    FetchResultPlugin plugin = (FetchResultPlugin) aa;
+                    map.get(aa).setEnabled(plugin.activate(entityList.get(selected)));
+                }
+                else
+                {
+                    map.get(aa).setEnabled(true);
+                }
             }
         }
     }

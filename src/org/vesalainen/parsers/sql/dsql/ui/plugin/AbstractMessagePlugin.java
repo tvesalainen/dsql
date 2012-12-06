@@ -22,23 +22,11 @@ import com.google.appengine.api.datastore.Text;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.io.Writer;
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.util.ByteArrayDataSource;
 import javax.swing.Action;
 import javax.swing.JFrame;
-import org.vesalainen.parser.util.InputReader;
-import org.vesalainen.parsers.magic.Magic;
-import org.vesalainen.parsers.sql.dsql.GObjectHelper;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultPlugin;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
 import org.vesalainen.parsers.sql.dsql.ui.action.PersistenceHandler;
-import org.vesalainen.regex.Replacer;
 
 /**
  * @author Timo Vesalainen
@@ -74,8 +62,8 @@ public abstract class AbstractMessagePlugin<T> extends FetchResultPlugin<T>
     {
         this.owner = owner;
         this.model = model;
-        setEnabled(true);
         sendAction.setModel(model);
+        setEnabled(true);
     }
 
     @Override

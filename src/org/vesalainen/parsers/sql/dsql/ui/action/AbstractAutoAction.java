@@ -50,6 +50,7 @@ public abstract class AbstractAutoAction extends AbstractAction implements AutoA
         if (enabled && auto)
         {
             actionPerformed(new ActionEvent(this, 0, AUTO));
+            auto = false;
         }
     }
 

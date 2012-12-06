@@ -56,6 +56,7 @@ public class InputDialog extends OkCancelDialog
     public boolean input()
     {
         table.getColumnModel().getColumn(0).setPreferredWidth(100);
+        table.editCellAt(0, 1);
         boolean result = super.input();
         TableCellEditor cellEditor = table.getCellEditor();
         if (cellEditor != null)

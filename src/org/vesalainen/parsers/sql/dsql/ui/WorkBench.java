@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -116,6 +117,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
     private ExportCVSAction exportCVSAction;
     private boolean embed;
     private boolean readonly;
+    private String savedSql;
     
     public WorkBench(Properties properties) throws IOException, InterruptedException
     {
@@ -175,8 +177,8 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
 
         JMenu editMenu = new JMenu(I18n.get("EDIT"));
         menuBar.add(editMenu);
-        editMenu.add(new UndoAction(I18n.get("UNDO"), undoManager)).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
-        editMenu.add(new RedoAction(I18n.get("REDO"), undoManager)).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
+        editMenu.add(new UndoAction(I18n.get("UNDO"), undoManager));
+        editMenu.add(new RedoAction(I18n.get("REDO"), undoManager));
         editMenu.add(actions.get(DefaultEditorKit.cutAction));
         editMenu.add(actions.get(DefaultEditorKit.copyAction));
         editMenu.add(actions.get(DefaultEditorKit.pasteAction));
@@ -225,7 +227,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         parseAction.addPropertyChangeListener(executeAction);
         executeButton = new JButton(executeAction);
         buttonPanel.add(executeButton);
-        actionMenu.add(executeButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK));
+        actionMenu.add(executeButton.getAction());
         persistenceHandler.setExecuteAction(executeAction);
         
         SelectForUpdateAction selectForUpdateAction = new SelectForUpdateAction(frame);
@@ -234,7 +236,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         {
             selectAndUpdateButton = new JButton(selectForUpdateAction);
             buttonPanel.add(selectAndUpdateButton);
-            actionMenu.add(selectAndUpdateButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));
+            actionMenu.add(selectAndUpdateButton.getAction());
         }
         
         fetchResultHandler = new FetchResultHandler(frame, resultPane);
@@ -243,20 +245,21 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
                 
         deleteRowButton = new JButton(fetchResultHandler.getDeleteRowAction());
         buttonPanel.add(deleteRowButton);
-        actionMenu.add(deleteRowButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK));
+        actionMenu.add(deleteRowButton.getAction());
 
         commitButton = new JButton(fetchResultHandler.getCommitAction());
         buttonPanel.add(commitButton);
-        actionMenu.add(commitButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK));
+        actionMenu.add(commitButton.getAction());
 
         rollbackButton = new JButton(fetchResultHandler.getRollbackAction());
         buttonPanel.add(rollbackButton);
-        actionMenu.add(rollbackButton.getAction()).setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
+        actionMenu.add(rollbackButton.getAction());
         
         PrintAction printAction = new PrintAction();
         fetchResultHandler.addPropertyChangeListener(printAction);
         printButton = new JButton(printAction);
         buttonPanel.add(printButton);
+        persistenceHandler.addAutoAction(printAction);
 
         frame.setContentPane(contentPane);
 
@@ -301,44 +304,50 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         switch (evt.getPropertyName())
         {
             case PersistenceHandler.OPEN:
+                String sql = null;
                 if (entity != null)
                 {
                     // Open
-                    Text sql = (Text) entity.getProperty(SqlProperty);
-                    if (sql != null)
+                    Text text = (Text) entity.getProperty(SqlProperty);
+                    if (text != null)
                     {
-                        sqlPane.setText(sql.getValue());
-                    }
-                    else
-                    {
-                        sqlPane.setText(null);
+                        sql = text.getValue();
                     }
                     name = entity.getKey().getName();
                 }
-                else
-                {
-                    // New
-                    sqlPane.setText(null);
-                }
+                setSql(sql, evt);
                 break;
             case PersistenceHandler.SAVE:
                 if (entity != null)
                 {
                     // Save
-                    Text sql = new Text(sqlPane.getText());
-                    entity.setUnindexedProperty(SqlProperty, sql);
+                    Text text = new Text(sqlPane.getText());
+                    entity.setUnindexedProperty(SqlProperty, text);
                     name = entity.getKey().getName();
                 }
                 else
                 {
                     // Remove
-                    sqlPane.setText(null);
+                    setSql(null, evt);
                 }
                 break;
         }
         frame.setTitle(name+" - "+title);
     }
 
+    private void setSql(String sql, PropertyChangeEvent evt) throws PropertyVetoException
+    {
+        if (savedSql != null && !savedSql.equals(sqlPane.getText()))
+        {
+            int confirm = JOptionPane.showConfirmDialog(frame, I18n.get("CONFIRMSQLOVERWRITE") );
+            if (confirm != JOptionPane.YES_OPTION)
+            {
+                throw new PropertyVetoException(I18n.get("REFUCED"), evt);
+            }
+        }
+        sqlPane.setText(sql);
+        savedSql = sql;
+    }
     public JTextPane getActiveTextPane()
     {
         return sqlPane;

@@ -17,6 +17,8 @@
 
 package org.vesalainen.parsers.sql.dsql.ui.plugin;
 
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.Writer;
 import javax.activation.DataHandler;
@@ -30,6 +32,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
 
@@ -48,6 +51,7 @@ public class SendEmailAction extends AbstractSendAction
         putValue(Action.SHORT_DESCRIPTION, I18n.get("SEND THE MESSAGE TO EMAIL ADDRESSES IN RESULT TABLE"));
         this.from = engine.getEmail();
         this.engine = engine;
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_DOWN_MASK));
     }
 
     @Override

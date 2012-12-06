@@ -18,8 +18,11 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import org.vesalainen.parsers.sql.dsql.Statistics;
 import org.vesalainen.parsers.sql.dsql.ui.MetadataHandler;

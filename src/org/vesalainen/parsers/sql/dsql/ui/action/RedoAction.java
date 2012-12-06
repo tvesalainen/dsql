@@ -18,7 +18,10 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
 import javax.swing.undo.UndoManager;
 
 /**
@@ -31,6 +34,7 @@ public class RedoAction extends AbstractAction
     {
         super(name);
         this.manager = manager;
+        this.putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
     }
 
     @Override
