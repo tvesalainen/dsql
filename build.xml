@@ -85,7 +85,18 @@
             />
     </target>
     <target name="-post-jar">
-        <copy file="${dist.jar}" tofile="../vesalainen-docs/web/dsql/dsql.jar"/>
+        <taskdef
+            name="runtimejar"
+            classname="org.vesalainen.parser.ant.RuntimeJar"
+            classpath="${run.classpath}"
+            />
+        <runtimejar 
+            include="org.vesalainen" 
+            classpath="${javac.classpath}"
+            mainjar="${dist.jar}"
+            targetjar="../vesalainen-docs/web/dsql/dsql.jar"
+            mainclass="org.vesalainen.parsers.sql.dsql.ui.WorkBench"
+        />
     </target>
     <target name="-javadoc-browse">
         <move todir="../vesalainen-docs/web/dsql/javadoc">

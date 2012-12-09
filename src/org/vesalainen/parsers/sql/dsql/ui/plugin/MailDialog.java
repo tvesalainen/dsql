@@ -51,6 +51,7 @@ public class MailDialog extends MessageDialog
 
     private void init()
     {
+        textPane.setContentType("text/html");
         // Subject
         JPanel subjectPanel = new JPanel();
         subjectPanel.setLayout(new FlowLayout());

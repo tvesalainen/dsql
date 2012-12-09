@@ -17,19 +17,13 @@
 
 package org.vesalainen.parsers.sql.dsql.ui.plugin;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
@@ -69,7 +63,6 @@ public class MessageDialog extends TextDialog
     
     private void init()
     {
-        textPane.setContentType("text/html");
         JMenu fileMenu = new JMenu(I18n.get("EDIT"));
         menuBar.add(fileMenu);
         

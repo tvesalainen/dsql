@@ -55,7 +55,7 @@ public class SendEmailAction extends AbstractSendAction
     }
 
     @Override
-    protected void sendTo(int row, String recipient)
+    protected void sendTo(String recipient) throws IOException
     {
         MailDialog mdialog = (MailDialog) dialog;
         String subject = mdialog.getSubject();

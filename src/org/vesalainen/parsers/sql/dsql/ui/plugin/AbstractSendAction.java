@@ -98,7 +98,14 @@ public abstract class AbstractSendAction<T> extends AbstractAction
                 {
                     row = -1;
                 }
-                sendTo(row, recipient);
+                try
+                {
+                    sendTo(recipient);
+                }
+                catch (IOException ex)
+                {
+                    throw new IllegalArgumentException(ex);
+                }
             }
         }
                 
@@ -132,7 +139,7 @@ public abstract class AbstractSendAction<T> extends AbstractAction
     {
     }
 
-    protected abstract void sendTo(int row, String recipient);
+    protected abstract void sendTo(String recipient) throws IOException;
 
     private class ReplacerImpl implements Replacer 
     {

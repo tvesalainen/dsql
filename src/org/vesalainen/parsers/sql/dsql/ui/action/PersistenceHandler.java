@@ -116,9 +116,16 @@ public class PersistenceHandler
         }
         return true;
     }
-    protected void open()
+    public void open(boolean embed)
     {
-        dialog = new StatementDialog(workBench.getFrame(), storedStatementsKind, engine, executeAction, autoActions);
+        dialog = new StatementDialog(
+                workBench.getFrame(), 
+                storedStatementsKind, 
+                engine, 
+                executeAction, 
+                autoActions
+                );
+        dialog.setEmbed(embed);
         Entity ne = dialog.inputEntity();
         if (ne != null)
         {
@@ -134,7 +141,7 @@ public class PersistenceHandler
         }
     }
 
-    private void save()
+    public void save()
     {
         if (entity != null)
         {
@@ -153,7 +160,7 @@ public class PersistenceHandler
             saveAs();
         }
     }
-    private void saveAs()
+    public void saveAs()
     {
         if (confirmInstall())
         {
@@ -256,7 +263,7 @@ public class PersistenceHandler
         @Override
         public void actionPerformed(ActionEvent e)
         {
-            open();
+            open(false);
         }
     }
     public class SaveStatementAction extends AbstractAction

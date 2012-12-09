@@ -136,7 +136,10 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         title = TITLE+" - "+properties.getProperty("remoteserver");
         frame = new JFrame(title);
         frame.addWindowListener(this);
-        Toolkit.getDefaultToolkit().getSystemEventQueue().push(new ExceptionHandler());
+        if (!embed)
+        {
+            Toolkit.getDefaultToolkit().getSystemEventQueue().push(new ExceptionHandler());
+        }
         frame.setIconImages(icons);
 
         sqlPane = new JTextPane();
@@ -275,10 +278,24 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         
         frame.pack();
         frame.setLocationByPlatform(true);
-        frame.setVisible(true);
+        frame.setVisible(!embed);
         frame.setSize(800, 580);
         
         addFetchResultPlugin(new MailPlugin(engine));
+    }
+    
+    public void setVisible(boolean visible)
+    {
+        frame.setVisible(visible);
+    }
+    
+    public void open()
+    {
+        persistenceHandler.open(true);
+    }
+    public void close()
+    {
+        engine.exit();
     }
     /**
      * Adds a FetchResultHandler.
@@ -379,9 +396,9 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
     @Override
     public void windowClosing(WindowEvent e)
     {
-        engine.exit();
         if (!embed)
         {
+            engine.exit();
             System.exit(0);
         }
     }

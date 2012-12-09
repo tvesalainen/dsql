@@ -61,6 +61,10 @@ public class StatementDialog extends ListDialog<String>
         refresh();
     }
 
+    public void setEmbed(boolean embed)
+    {
+        okButton.setEnabled(!embed);
+    }
     private void refresh()
     {
         model.clear();
