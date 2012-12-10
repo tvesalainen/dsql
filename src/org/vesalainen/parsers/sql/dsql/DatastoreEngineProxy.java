@@ -27,9 +27,9 @@ public class DatastoreEngineProxy extends DatastoreProxy<DSProxyInterface>
 {
     private DSProxyInterface engine;
     
-    public DatastoreEngineProxy(String server, String user, String password) throws InterruptedException
+    public DatastoreEngineProxy(String server, String namespace, String user, String password) throws InterruptedException
     {
-        super(server, user, password, DSProxyInterface.class);
+        super(server, namespace, user, password, DSProxyInterface.class);
     }
 
     @Override

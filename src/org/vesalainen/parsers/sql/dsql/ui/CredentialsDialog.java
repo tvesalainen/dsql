@@ -46,11 +46,13 @@ import javax.swing.SpringLayout;
 public class CredentialsDialog extends OkCancelDialog
 {
     public static final String REMOTESERVER = "remoteserver";
+    public static final String REMOTENAMESPACE = "remotenamespace";
     public static final String REMOTEUSER = "remoteuser";
     public static final String REMOTEPASSWORD = "remotepassword";
     
     private File propertiesFile;
     private final JComboBox serverField;
+    private final JTextField namespaceField;
     private final JTextField emailField;
     private final JPasswordField passwordField;
     private final JButton saveButton;
@@ -69,6 +71,7 @@ public class CredentialsDialog extends OkCancelDialog
         serverField = new JComboBox(servers);
         serverField.setToolTipText(I18n.get("REMOTE SERVER URL"));
         serverField.setEditable(true);
+        namespaceField = new JTextField(properties.getProperty(REMOTENAMESPACE), 30);
         emailField = new JTextField(properties.getProperty(REMOTEUSER), 30);
         emailField.setToolTipText(I18n.get("REMOTE SERVER USERNAME (= EMAIL ADDRESS)"));
         passwordField = new JPasswordField(properties.getProperty(REMOTEPASSWORD), 30);
@@ -83,6 +86,9 @@ public class CredentialsDialog extends OkCancelDialog
         panel.add(new JLabel(I18n.get("SERVER"), JLabel.TRAILING));
         panel.add(serverField);
         
+        panel.add(new JLabel(I18n.get("NAMESPACE"), JLabel.TRAILING));
+        panel.add(namespaceField);
+        
         panel.add(new JLabel(I18n.get("EMAIL"), JLabel.TRAILING));
         panel.add(emailField);
         
@@ -90,7 +96,7 @@ public class CredentialsDialog extends OkCancelDialog
         panel.add(passwordField);
         
         SpringUtilities.makeCompactGrid(panel,
-                3, 2, //rows, cols
+                4, 2, //rows, cols
                 6, 6, //initX, initY
                 6, 6);       //xPad, yPad    
         setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
@@ -102,6 +108,9 @@ public class CredentialsDialog extends OkCancelDialog
         if (super.input())
         {
             properties.setProperty(REMOTESERVER, (String) serverField.getSelectedItem());
+            properties.setProperty(REMOTENAMESPACE, namespaceField.getText());
+            properties.setProperty(REMOTEUSER, emailField.getText());
+            properties.setProperty(REMOTEPASSWORD, new String(passwordField.getPassword()));
             return true;
         }
         return false;
@@ -112,20 +121,6 @@ public class CredentialsDialog extends OkCancelDialog
         return properties;
     }
     
-    public String getEmail()
-    {
-        return emailField.getText();
-    }
-
-    public char[] getPassword()
-    {
-        return passwordField.getPassword();
-    }
-
-    public String getServer()
-    {
-        return (String) serverField.getSelectedItem();
-    }
     private class SaveAction extends AbstractAction
     {
 
@@ -155,6 +150,7 @@ public class CredentialsDialog extends OkCancelDialog
             }
             sb.setLength(sb.length()-1);
             properties.setProperty(REMOTESERVER, sb.toString());
+            properties.setProperty(REMOTENAMESPACE, namespaceField.getText());
             properties.setProperty(REMOTEUSER, emailField.getText());
             properties.setProperty(REMOTEPASSWORD, new String(passwordField.getPassword()));
             try (FileOutputStream fos = new FileOutputStream(propertiesFile))

@@ -37,16 +37,29 @@ public class AncestorOfCondition extends ParserLocator2Impl implements Condition
 {
     protected DSTable ancestor;
     protected DSTable descendant;
+    protected String ancestorKind;
+    protected String descendantKind;
 
-    public AncestorOfCondition(DSTable ancestor, DSTable descendant)
+    public AncestorOfCondition(String ancestor, String descendant)
     {
-        this.ancestor = ancestor;
-        this.descendant = descendant;
+        this.ancestorKind = ancestor;
+        this.descendantKind = descendant;
     }
 
     @Override
-    public void associateCondition(SelectStatement select, boolean andPath)
+    public void associateCondition(SelectStatement<Entity,Object> select, boolean andPath)
     {
+        for (Table<Entity,Object> table : select.getTables())
+        {
+            if (table.nameMatches(ancestorKind))
+            {
+                ancestor = (DSTable) table;
+            }
+            if (table.nameMatches(descendantKind))
+            {
+                descendant = (DSTable) table;
+            }
+        }
         descendant.setDescendantOf(ancestor);
         ancestor.addAndColumn(Entity.KEY_RESERVED_PROPERTY);
     }

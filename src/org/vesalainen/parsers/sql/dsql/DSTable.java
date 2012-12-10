@@ -27,9 +27,9 @@ public class DSTable<R,C> extends Table<R,C>
 {
     private DSTable ancestor;
 
-    public DSTable(Engine<R,C> selector)
+    public DSTable(Engine<R,C> engine, String schema, String tablename, String correlationName)
     {
-        super(selector);
+        super(engine, schema, tablename, correlationName);
     }
 
     public void setDescendantOf(DSTable<R,C> ancestor)

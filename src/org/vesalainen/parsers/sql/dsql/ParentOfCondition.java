@@ -18,6 +18,9 @@
 package org.vesalainen.parsers.sql.dsql;
 
 import com.google.appengine.api.datastore.Entity;
+import java.util.ArrayList;
+import java.util.List;
+import org.vesalainen.parsers.sql.ColumnReference;
 import org.vesalainen.parsers.sql.ColumnReferenceImpl;
 import org.vesalainen.parsers.sql.JoinComparison;
 import org.vesalainen.parsers.sql.Relation;
@@ -28,22 +31,34 @@ import org.vesalainen.parsers.sql.SelectStatement;
  */
 public class ParentOfCondition extends JoinComparison<Entity,Object>
 {
-    private DSTable parent;
-    private DSTable child;
-    public ParentOfCondition(DSTable parent, DSTable child)
+    public ParentOfCondition(String parent, String child)
     {
         super(
-                new ColumnReferenceImpl<Entity,Object>(parent, Entity.KEY_RESERVED_PROPERTY),
+                parentInit(parent),
                 Relation.EQ,
-                new ColumnReferenceImpl<Entity,Object>(child, DSQLEngine.PARENT)
+                childInit(child)
                 );
-        this.parent = parent;
-        this.child = child;
     }
 
+    private static ColumnReference<Entity,Object> parentInit(String parent)
+    {
+        List<String> parentList = new ArrayList<>();
+        parentList.add(parent);
+        parentList.add(Entity.KEY_RESERVED_PROPERTY);
+        return new ColumnReferenceImpl<Entity,Object>(parentList);
+    }
+    private static ColumnReference<Entity,Object> childInit(String child)
+    {
+        List<String> childList = new ArrayList<>();
+        childList.add(child);
+        childList.add(DSQLEngine.PARENT);
+        return new ColumnReferenceImpl<Entity,Object>(childList);
+    }
     @Override
     public void associateCondition(SelectStatement select, boolean andPath)
     {
+        DSTable child = (DSTable) columnReference2.getTable();
+        DSTable parent = (DSTable) columnReference.getTable();
         child.setDescendantOf(parent);
         super.associateCondition(select, andPath);
     }

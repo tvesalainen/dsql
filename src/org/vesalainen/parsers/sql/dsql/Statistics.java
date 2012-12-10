@@ -48,7 +48,6 @@ public class Statistics
         update();
     }
 
-
     public void update()
     {
         synchronized(map)

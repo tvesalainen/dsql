@@ -4,6 +4,7 @@
  */
 package org.vesalainen.parsers.sql.dsql;
 
+import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.tools.remoteapi.RemoteApiInstaller;
@@ -31,10 +32,12 @@ public abstract class DatastoreProxy<T> implements Runnable, InvocationHandler
     private Thread thread;
     private Class<T> cls;
     private T proxy;
+    private String namespace;
 
-    public DatastoreProxy(String server, String user, String password, Class<T> cls)
+    public DatastoreProxy(String server, String namespace, String user, String password, Class<T> cls)
     {
         this.server = server;
+        this.namespace = namespace;
         this.user = user;
         this.password = password;
         this.cls = cls;
@@ -90,6 +93,10 @@ public abstract class DatastoreProxy<T> implements Runnable, InvocationHandler
             options.server(server, port);
             options.credentials(user, password);
             installer.install(options);
+            if (namespace != null)
+            {
+                NamespaceManager.set(namespace);
+            }
             DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
             T engine = create(datastore);
             while (true)

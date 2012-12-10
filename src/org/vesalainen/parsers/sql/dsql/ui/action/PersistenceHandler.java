@@ -102,7 +102,7 @@ public class PersistenceHandler
     {
         if (statements == null)
         {
-            statements = engine.execute("select key from "+storedStatementsKind);
+            statements = engine.execute("select key from "+storedStatementsKind+";");
         }
         if (statements.getRowCount() == 0)
         {

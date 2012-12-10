@@ -129,9 +129,10 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         this.embed = embed;
         this.readonly = readonly;
         engine = DSQLEngine.getProxyInstance(
-                properties.getProperty("remoteserver"), 
-                properties.getProperty("remoteuser"), 
-                properties.getProperty("remotepassword")
+                properties.getProperty(CredentialsDialog.REMOTESERVER), 
+                properties.getProperty(CredentialsDialog.REMOTENAMESPACE), 
+                properties.getProperty(CredentialsDialog.REMOTEUSER), 
+                properties.getProperty(CredentialsDialog.REMOTEPASSWORD)
                     );
         title = TITLE+" - "+properties.getProperty("remoteserver");
         frame = new JFrame(title);

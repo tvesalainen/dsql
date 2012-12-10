@@ -32,6 +32,7 @@ import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.User;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -120,61 +121,51 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
             RowValue rv1, 
             String identifier, 
             @ParserContext("engine") Engine<Entity,Object> engine,
-            @ParserContext("correlationMap") Map<String,Table> correlationMap
+            @ParserContext("tableList") List<Table<Entity,Object>> tableList
             )
     {
-        DSTable table = (DSTable) getTableForCorrelation(identifier, engine, correlationMap);
-        Condition<Object, Object> comparisonCondition = newComparisonCondition(rv1, Relation.EQ, new ColumnReferenceImpl(table, Entity.KEY_RESERVED_PROPERTY));
-        table.addAndColumn(Entity.KEY_RESERVED_PROPERTY);
+        List<String> list = new ArrayList<>();
+        list.add(identifier);
+        list.add(Entity.KEY_RESERVED_PROPERTY);
+        Condition<Object, Object> comparisonCondition = newComparisonCondition(rv1, Relation.EQ, new ColumnReferenceImpl(list), tableList);
         return comparisonCondition;
     }
     @Rule(left="comparisonPredicate", value="identifier is ancestor of identifier")
-    protected Condition comparisonAncestorOf(
-            String identifier1, 
-            String identifier2, 
-            @ParserContext("engine") Engine<Entity,Object> engine,
-            @ParserContext("correlationMap") Map<String,Table> correlationMap
-            )
+    protected Condition comparisonAncestorOf(String ancestor, String descendant)
     {
-        DSTable table1 = (DSTable) getTableForCorrelation(identifier1, engine, correlationMap);
-        DSTable table2 = (DSTable) getTableForCorrelation(identifier2, engine, correlationMap);
-        return new AncestorOfCondition(table1, table2);
+        return new AncestorOfCondition(ancestor, descendant);
     }
     @Rule(left="comparisonPredicate", value="identifier is parent of identifier")
     protected Condition comparisonParentOf(
-            String identifier1, 
-            String identifier2, 
-            @ParserContext("engine") Engine<Entity,Object> engine,
-            @ParserContext("correlationMap") Map<String,Table> correlationMap
+            String parent, 
+            String child, 
+            @ParserContext("engine") Engine<Entity,Object> engine
             )
     {
-        DSTable table1 = (DSTable) getTableForCorrelation(identifier1, engine, correlationMap);
-        DSTable table2 = (DSTable) getTableForCorrelation(identifier2, engine, correlationMap);
-        Condition<Entity, Object> parentOfCondition = new ParentOfCondition(table1, table2);
+        Condition<Entity, Object> parentOfCondition = new ParentOfCondition(parent, child);
         return parentOfCondition;
     }
     
     @Rule(left="rowValuePredicant", value="key")
     protected RowValue keyPredicant1(
-            @ParserContext("engine") Engine engine,
-            @ParserContext("correlationMap") Map<String,Table> correlationMap
+            @ParserContext("engine") Engine engine
             )
     {
-        Table table = getTableForCorrelation(null, engine, correlationMap);
-        table.addConditionColumn(Entity.KEY_RESERVED_PROPERTY);
-        return new ColumnReferenceImpl<>(table, Entity.KEY_RESERVED_PROPERTY);
+        List<String> list = new ArrayList<>();
+        list.add(Entity.KEY_RESERVED_PROPERTY);
+        return new ColumnReferenceImpl<>(list);
     }
     
     @Rule(left="rowValuePredicant", value="identifier '\\.' key")
     protected RowValue keyPredicant2(
             String id1,
-            @ParserContext("engine") Engine engine,
-            @ParserContext("correlationMap") Map<String,Table> correlationMap
+            @ParserContext("engine") Engine engine
             )
     {
-        Table table = getTableForCorrelation(id1, engine, correlationMap);
-        table.addConditionColumn(Entity.KEY_RESERVED_PROPERTY);
-        return new ColumnReferenceImpl<>(table, id1, Entity.KEY_RESERVED_PROPERTY);
+        List<String> list = new ArrayList<>();
+        list.add(id1);
+        list.add(Entity.KEY_RESERVED_PROPERTY);
+        return new ColumnReferenceImpl<>(list);
     }
     
     @Rule("key")

@@ -17,6 +17,7 @@
 
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
+import com.google.appengine.api.datastore.Entity;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -24,6 +25,7 @@ import java.beans.PropertyChangeEvent;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.KeyStroke;
+import org.vesalainen.parsers.sql.BatchStatement;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
@@ -60,6 +62,14 @@ public class SelectForUpdateAction extends ExecuteAction
         if (DSqlParseAction.PropertyName.equals(evt.getPropertyName()))
         {
             statement = (Statement) evt.getNewValue();
+            if (statement instanceof BatchStatement)
+            {
+                BatchStatement<Entity,Object> bs = (BatchStatement) statement;
+                if (bs.getStatementList().size() == 1)
+                {
+                    statement = bs.getStatementList().get(0);
+                }
+            }
             if (statement != null && (statement instanceof SelectStatement))
             {
                 setEnabled(true);

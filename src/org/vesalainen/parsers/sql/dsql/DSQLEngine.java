@@ -59,6 +59,7 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     private DSProxyInterface proxy;
     private static Statistics statistics;
     private String email;
+    private String namespace;
 
     private DSQLEngine(DSProxyInterface proxy)
     {
@@ -68,7 +69,7 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
         proxy.setConverter(this);
     }
 
-    public static DSQLEngine getInstance(String server, String email, String password) throws IOException
+    public static DSQLEngine getInstance(String server, String namespace, String email, String password) throws IOException
     {
         RemoteApiInstaller installer = new RemoteApiInstaller();
         RemoteApiOptions options = new RemoteApiOptions();
@@ -77,6 +78,7 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
         installer.install(options);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         DSQLEngine engine = getInstance(datastore);
+        engine.namespace = namespace;
         engine.email = email;
         return engine;
     }
@@ -85,9 +87,9 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
         DatastoreEngine dse = new DatastoreEngine(datastore);
         return new DSQLEngine(dse);
     }
-    public static DSQLEngine getProxyInstance(String server, String email, String password) throws IOException, InterruptedException
+    public static DSQLEngine getProxyInstance(String server, String namespace, String email, String password) throws IOException, InterruptedException
     {
-        DatastoreEngineProxy dep = new DatastoreEngineProxy(server, email, password);
+        DatastoreEngineProxy dep = new DatastoreEngineProxy(server, namespace, email, password);
         dep.start();
         DSQLEngine engine = new DSQLEngine(dep.getProxy());
         engine.email = email;
@@ -163,9 +165,9 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     }
 
     @Override
-    protected Table<Entity,Object> createTable()
+    protected Table<Entity,Object> createTable(String schema, String tablename, String correlationName)
     {
-        return new DSTable(this);
+        return new DSTable(this, schema, tablename, correlationName);
     }
 
     @Override
