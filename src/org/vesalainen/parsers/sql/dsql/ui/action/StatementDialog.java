@@ -29,6 +29,7 @@ import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultPlugin;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 import org.vesalainen.parsers.sql.dsql.ui.ListDialog;
 
 /**
@@ -76,6 +77,7 @@ public class StatementDialog extends ListDialog<String>
     }
     private void init()
     {
+        okButton.setText(I18n.get("EDIT"));
         for (AutoAction aa : autoActions)
         {
             aa.setAuto(false);

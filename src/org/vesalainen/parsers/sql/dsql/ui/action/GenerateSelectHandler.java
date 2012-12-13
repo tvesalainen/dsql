@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.parsers.sql.dsql.ui;
+package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +24,7 @@ import javax.swing.tree.TreePath;
 import org.vesalainen.parsers.sql.ColumnMetadata;
 import org.vesalainen.parsers.sql.TableMetadata;
 import org.vesalainen.parsers.sql.dsql.Statistics;
+import org.vesalainen.parsers.sql.dsql.ui.MetadataHandler;
 
 /**
  * @author Timo Vesalainen
@@ -78,7 +79,7 @@ public class GenerateSelectHandler implements MetadataHandler
                 f = false;
                 sb.append("  "+kind+"."+p);
             }
-            sb.append("\nfrom\n  "+kind+"\n");
+            sb.append("\nfrom\n  "+kind+"\n;\n");
             text.replaceSelection(sb.toString());
         }
     }

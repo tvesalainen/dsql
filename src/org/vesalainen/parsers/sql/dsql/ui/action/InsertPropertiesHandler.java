@@ -15,11 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.parsers.sql.dsql.ui;
+package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import javax.swing.JTextPane;
 import javax.swing.tree.TreePath;
 import org.vesalainen.parsers.sql.dsql.Statistics;
+import org.vesalainen.parsers.sql.dsql.ui.MetadataHandler;
 
 /**
  * @author Timo Vesalainen

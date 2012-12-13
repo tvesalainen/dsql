@@ -17,6 +17,8 @@
 
 package org.vesalainen.parsers.sql.dsql.ui;
 
+import org.vesalainen.parsers.sql.dsql.ui.action.InsertPropertiesHandler;
+import org.vesalainen.parsers.sql.dsql.ui.action.GenerateSelectHandler;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
 import org.vesalainen.parsers.sql.dsql.ui.action.MetadataTreeAction;
@@ -134,7 +136,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
                 properties.getProperty(CredentialsDialog.REMOTEUSER), 
                 properties.getProperty(CredentialsDialog.REMOTEPASSWORD)
                     );
-        title = TITLE+" - "+properties.getProperty("remoteserver");
+        title = TITLE+" - "+properties.getProperty(CredentialsDialog.REMOTENAMESPACE)+"."+properties.getProperty(CredentialsDialog.REMOTESERVER);
         frame = new JFrame(title);
         frame.addWindowListener(this);
         if (!embed)
