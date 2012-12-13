@@ -44,7 +44,7 @@ public class ReplacerAction extends TextAction
         super(I18n.get("REPLACE"));
         this.owner = owner;
         this.model = model;
-        putValue(Action.SHORT_DESCRIPTION, I18n.get("ADD A PROPERTY REFERENCE. REFERENCES WILL BE REPLACED WITH ACTUAL VALUES, WHEN SENDING THE MAIL"));
+        putValue(Action.SHORT_DESCRIPTION, I18n.get("ADD A PROPERTY REFERENCE TOOLTIP"));
     }
 
     public void setFetchResult(FetchResultTableModel model)

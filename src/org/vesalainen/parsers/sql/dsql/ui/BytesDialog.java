@@ -77,7 +77,7 @@ public class BytesDialog extends CancelDialog
         combobox.setEditable(true);
         
         loadButton = new JButton(I18n.get("LOAD"));
-        loadButton.setToolTipText(I18n.get("LOAD BINARY PROPERTIES VALUE FROM A FILE. ENTER EXTENSION TO FILTER FILE TYPES"));
+        loadButton.setToolTipText(I18n.get("LOAD BINARY PROPERTIES VALUE FROM A FILE TOOLTIP"));
         ActionListener loadAction = new ActionListener()
         {
 

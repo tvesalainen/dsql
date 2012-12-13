@@ -34,7 +34,7 @@ public class AboutAction extends AbstractAction
     public AboutAction()
     {
         super(I18n.get("ABOUT"));
-        putValue(Action.SHORT_DESCRIPTION, I18n.get("ABOUT DATASTORE STRUCTURED QUERY LANGUAGE"));
+        putValue(Action.SHORT_DESCRIPTION, I18n.get("ABOUT DSQL"));
     }
 
     @Override

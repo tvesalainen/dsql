@@ -362,7 +362,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
             int confirm = JOptionPane.showConfirmDialog(frame, I18n.get("CONFIRMSQLOVERWRITE") );
             if (confirm != JOptionPane.YES_OPTION)
             {
-                throw new PropertyVetoException(I18n.get("REFUCED"), evt);
+                throw new PropertyVetoException(I18n.get("REFUSED"), evt);
             }
         }
         sqlPane.setText(sql);

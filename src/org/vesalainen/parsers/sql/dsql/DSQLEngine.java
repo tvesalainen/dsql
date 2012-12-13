@@ -50,6 +50,7 @@ import org.vesalainen.parsers.sql.TableContextComparator;
 import org.vesalainen.parsers.sql.TableMetadata;
 import org.vesalainen.parsers.sql.ToFunction;
 import org.vesalainen.parsers.sql.Updateable;
+import org.vesalainen.parsers.sql.dsql.ui.I18n;
 
 /**
  * @author Timo Vesalainen
@@ -215,7 +216,7 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
                 }
                 else
                 {
-                    throw new IllegalArgumentException("updating through function attempts to change propertys "+property+" type");
+                    throw new IllegalArgumentException(String.format(I18n.get("UPDATING THROUGH FUNCTION ATTEMPS TO CHANGE x TYPE"), property));
                 }
             }
         }

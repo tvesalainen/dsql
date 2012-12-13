@@ -41,7 +41,7 @@ public class SelectForUpdateAction extends ExecuteAction
     {
         super(frame);
         putValue(NAME, I18n.get("SELECT FOR UPDATE"));
-        putValue(Action.SHORT_DESCRIPTION, I18n.get("EXECUTE THE SELECT STATEMENT FOR UPDATING. FETCHED PROPERTIES VALUES CAN BE UPDATED AND STORED BACK TO DATASTORE"));
+        putValue(Action.SHORT_DESCRIPTION, I18n.get("EXECUTE THE SELECT STATEMENT FOR UPDATING TOOLTIP"));
         putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));
     }
 

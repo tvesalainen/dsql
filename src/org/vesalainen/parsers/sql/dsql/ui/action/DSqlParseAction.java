@@ -110,7 +110,7 @@ public class DSqlParseAction extends AbstractAction implements DocumentListener,
                     {
                         if (!(statement instanceof SelectStatement))
                         {
-                            JOptionPane.showMessageDialog(workBench.getFrame(), I18n.get("IN READONLY MODE"), I18n.get("REFUCED"), JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(workBench.getFrame(), I18n.get("IN READONLY MODE"), I18n.get("REFUSED"), JOptionPane.ERROR_MESSAGE);
                             return;
                         }
                     }

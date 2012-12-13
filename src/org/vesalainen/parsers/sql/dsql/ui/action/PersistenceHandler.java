@@ -136,7 +136,7 @@ public class PersistenceHandler
             }
             catch (PropertyVetoException ex)
             {
-                JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUCED"), JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUSED"), JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -152,7 +152,7 @@ public class PersistenceHandler
             }
             catch (PropertyVetoException ex)
             {
-                JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUCED"), JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUSED"), JOptionPane.ERROR_MESSAGE);
             }
         }
         else
@@ -181,7 +181,7 @@ public class PersistenceHandler
                 }
                 catch (PropertyVetoException ex)
                 {
-                    JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUCED"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUSED"), JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -206,7 +206,7 @@ public class PersistenceHandler
                 }
                 catch (PropertyVetoException ex)
                 {
-                    JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUCED"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(workBench.getFrame(), ex.getLocalizedMessage(), I18n.get("REFUSED"), JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -271,7 +271,7 @@ public class PersistenceHandler
         public SaveStatementAction()
         {
             super(I18n.get("SAVE"));
-            putValue(Action.SHORT_DESCRIPTION, I18n.get("SAVES THE STATEMENT AND PLUGINS DATA. PLUGINS ARE MAIL ETC."));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("SAVES THE STATEMENT AND PLUGINS TOOLTIP"));
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
         }
 
@@ -286,7 +286,7 @@ public class PersistenceHandler
         public SaveAsStatementAction()
         {
             super(I18n.get("SAVEAS"));
-            putValue(Action.SHORT_DESCRIPTION, I18n.get("SAVES THE STATEMENT AND PLUGINS DATA WITH ANOTHER NAME. PLUGINS ARE MAIL ETC."));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("SAVES THE STATEMENT AND PLUGINS TOOLTIP"));
         }
 
         @Override
@@ -300,7 +300,7 @@ public class PersistenceHandler
         public RemoveStatementAction()
         {
             super(I18n.get("REMOVE"));
-            putValue(Action.SHORT_DESCRIPTION, I18n.get("REMOVES THE CURRENT STATEMENT AND ALL IT'S PLUGIN DATA FROM STORAGE. PLUGINS ARE MAIL ETC."));
+            putValue(Action.SHORT_DESCRIPTION, I18n.get("REMOVES THE CURRENT STATEMENT TOOLTIP"));
         }
 
         @Override

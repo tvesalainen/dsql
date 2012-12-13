@@ -83,7 +83,7 @@ public class CredentialsDialog extends OkCancelDialog
         JPanel panel = new JPanel(new SpringLayout());
         add(panel, BorderLayout.CENTER);
         
-        panel.add(new JLabel(I18n.get("SERVER"), JLabel.TRAILING));
+        panel.add(new JLabel(I18n.get("REMOTE SERVER"), JLabel.TRAILING));
         panel.add(serverField);
         
         panel.add(new JLabel(I18n.get("NAMESPACE"), JLabel.TRAILING));
