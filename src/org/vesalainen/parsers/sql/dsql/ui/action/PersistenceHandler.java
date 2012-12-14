@@ -196,7 +196,7 @@ public class PersistenceHandler
                     I18n.get("CONFIRM REMOVE?"),
                     JOptionPane.OK_CANCEL_OPTION
                     );
-            if (JOptionPane.YES_OPTION != confirm)
+            if (JOptionPane.YES_OPTION == confirm)
             {
                 try
                 {

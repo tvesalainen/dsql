@@ -108,7 +108,7 @@ public class DSqlParseAction extends AbstractAction implements DocumentListener,
                     Statement statement = engine.prepare(sql);
                     if (readonly)
                     {
-                        if (!(statement instanceof SelectStatement))
+                        if (!(statement.isSelectStatement()))
                         {
                             JOptionPane.showMessageDialog(workBench.getFrame(), I18n.get("IN READONLY MODE"), I18n.get("REFUSED"), JOptionPane.ERROR_MESSAGE);
                             return;

@@ -25,12 +25,11 @@ import java.util.ResourceBundle;
  */
 public class I18n 
 {
-    private static ResourceBundle bundle = ResourceBundle.getBundle("org/vesalainen/parsers/sql/dsql/ui/i18n");
     public static String get(String key)
     {
         try
         {
-            return bundle.getString(key);
+            return ResourceBundle.getBundle("org/vesalainen/parsers/sql/dsql/ui/i18n").getString(key);
         }
         catch (MissingResourceException ex)
         {
