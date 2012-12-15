@@ -17,6 +17,7 @@
 
 package org.vesalainen.parsers.sql.dsql;
 
+import com.google.appengine.api.datastore.Entity;
 import org.vesalainen.parsers.sql.Engine;
 import org.vesalainen.parsers.sql.Table;
 
@@ -30,6 +31,36 @@ public class DSTable<R,C> extends Table<R,C>
     public DSTable(Engine<R,C> engine, String schema, String tablename, String correlationName)
     {
         super(engine, schema, tablename, correlationName);
+    }
+
+    @Override
+    public void addSelectListColumn(String column)
+    {
+        if ("key".equalsIgnoreCase(column))
+        {
+            column = Entity.KEY_RESERVED_PROPERTY;
+        }
+        super.addSelectListColumn(column);
+    }
+
+    @Override
+    public void addConditionColumn(String column)
+    {
+        if ("key".equalsIgnoreCase(column))
+        {
+            column = Entity.KEY_RESERVED_PROPERTY;
+        }
+        super.addConditionColumn(column);
+    }
+
+    @Override
+    public void addAndColumn(String column)
+    {
+        if ("key".equalsIgnoreCase(column))
+        {
+            column = Entity.KEY_RESERVED_PROPERTY;
+        }
+        super.addAndColumn(column);
     }
 
     public void setDescendantOf(DSTable<R,C> ancestor)

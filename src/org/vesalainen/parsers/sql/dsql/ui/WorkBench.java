@@ -321,10 +321,10 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
     {
         Entity entity = (Entity) evt.getNewValue();
         String name = "";
+        String sql = null;
         switch (evt.getPropertyName())
         {
             case PersistenceHandler.OPEN:
-                String sql = null;
                 if (entity != null)
                 {
                     // Open
@@ -335,7 +335,6 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
                     }
                     name = entity.getKey().getName();
                 }
-                setSql(sql, evt);
                 break;
             case PersistenceHandler.SAVE:
                 if (entity != null)
@@ -343,15 +342,19 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
                     // Save
                     Text text = new Text(sqlPane.getText());
                     entity.setUnindexedProperty(SqlProperty, text);
+                    if (text != null)
+                    {
+                        sql = text.getValue();
+                    }
                     name = entity.getKey().getName();
                 }
                 else
                 {
                     // Remove
-                    setSql(null, evt);
                 }
                 break;
         }
+        setSql(sql, evt);
         frame.setTitle(name+" - "+title);
     }
 

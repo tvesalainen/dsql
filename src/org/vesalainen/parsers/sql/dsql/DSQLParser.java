@@ -33,8 +33,8 @@ import com.google.appengine.api.users.User;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +69,10 @@ import org.vesalainen.regex.Regex;
 /**
  * @author Timo Vesalainen
  * @see <a href="doc-files/DSQLParser-statement.html#BNF">BNF Syntax for DSQL-statement</a>
+ * <p>
+ * Functions
+ * @see Engine.createFunction
+ * @see DSQLEngine.createFunction
  */
 @GenClassname("org.vesalainen.parsers.sql.dsql.DSQLParserImpl")
 @GrammarDef()
@@ -121,13 +125,13 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
             RowValue rv1, 
             String identifier, 
             @ParserContext("engine") Engine<Entity,Object> engine,
-            @ParserContext("tableList") List<Table<Entity,Object>> tableList
+            @ParserContext("tableListStack") Deque<List<Table<Entity,Object>>> tableListStack
             )
     {
         List<String> list = new ArrayList<>();
         list.add(identifier);
         list.add(Entity.KEY_RESERVED_PROPERTY);
-        Condition<Object, Object> comparisonCondition = newComparisonCondition(rv1, Relation.EQ, new ColumnReferenceImpl(list), tableList);
+        Condition<Object, Object> comparisonCondition = newComparisonCondition(rv1, Relation.EQ, new ColumnReferenceImpl(list), tableListStack.peek());
         return comparisonCondition;
     }
     @Rule(left="comparisonPredicate", value="identifier is ancestor of identifier")

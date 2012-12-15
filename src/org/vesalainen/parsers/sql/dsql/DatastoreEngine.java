@@ -54,6 +54,7 @@ import javax.mail.internet.MimeMessage;
 import org.vesalainen.parsers.sql.ColumnCondition;
 import org.vesalainen.parsers.sql.ColumnMetadata;
 import org.vesalainen.parsers.sql.ColumnReference;
+import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.InsertStatement;
 import org.vesalainen.parsers.sql.JoinCondition;
 import org.vesalainen.parsers.sql.Literal;
@@ -214,38 +215,46 @@ public class DatastoreEngine  implements DSProxyInterface
     {
         Table table = insertStatement.getTable();
         String kind = table.getName();
-        Map<String, Literal<Entity, Object>> valueMap = insertStatement.getValueMap();
-        Entity entity = null;
-        Literal keyLiteral = valueMap.get(Entity.KEY_RESERVED_PROPERTY);
-        if (keyLiteral != null)
+        FetchResult<Entity,Object> result = insertStatement.getFetchResult();
+        for (int row=0;row<result.getRowCount();row++)
         {
-            Key key = (Key) keyLiteral.getValue();
-            if (!key.getKind().equals(kind))
+            Entity entity = null;
+            Key key = (Key) result.getValueAt(row, Entity.KEY_RESERVED_PROPERTY);
+            if (key != null)
             {
-                keyLiteral.throwException(key+" key <> tablename "+kind);
+                if (!key.getKind().equals(kind))
+                {
+                    insertStatement.throwException(key+" key <> tablename "+kind);
+                }
+                entity = new Entity(key);
             }
-            entity = new Entity(key);
-        }
-        else
-        {
-            entity = new Entity(kind);
-        }
-        for (Map.Entry<String, Literal<Entity, Object>> entry : valueMap.entrySet())
-        {
-            if (!Entity.KEY_RESERVED_PROPERTY.equals(entry.getKey()))
+            else
             {
-                ColumnMetadata cm = statistics.getProperty(kind, entry.getKey());
-                if (cm != null && !cm.isIndexed())
+                entity = new Entity(kind);
+            }
+            int keyIndex = result.getColumnIndex(Entity.KEY_RESERVED_PROPERTY);
+            for (int col=0;col<result.getColumnCount();col++)
+            {
+                if (col != keyIndex)
                 {
-                    entity.setUnindexedProperty(entry.getKey(), entry.getValue().getValue());
-                }
-                else
-                {
-                    entity.setProperty(entry.getKey(), entry.getValue().getValue());
+                    Object value = result.getValueAt(row, col);
+                    if (value != null)
+                    {
+                        String columnName = result.getColumnName(col);
+                        ColumnMetadata cm = statistics.getProperty(kind, columnName);
+                        if (cm != null && !cm.isIndexed())
+                        {
+                            entity.setUnindexedProperty(columnName, value);
+                        }
+                        else
+                        {
+                            entity.setProperty(columnName, value);
+                        }
+                    }
                 }
             }
+            datastore.put(entity);
         }
-        datastore.put(entity);
     }
 
     private void handleParentOfCondition(TableContext<Entity, Object> tc, ParentOfCondition poc, Query query)
