@@ -35,12 +35,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractCellEditor;
+import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -117,6 +120,7 @@ public class DSJTable extends JTable
     {
         setRowSelectionAllowed(true);
         
+        setDefaultEditor(ComboBoxModel.class, new ComboBoxModelCellEditor());
         setDefaultEditor(GeoPt.class, new GeoPtCellEditor());
         setDefaultEditor(ShortBlob.class, new ShortBlobCellEditor());
         setDefaultEditor(Blob.class, new BlobCellEditor());
@@ -128,6 +132,7 @@ public class DSJTable extends JTable
         setDefaultEditor(Email.class, new EmailCellEditor());
         setDefaultEditor(Category.class, new CategoryCellEditor());
         
+        setDefaultRenderer(ComboBoxModel.class, new ComboBoxModelCellRenderer());
         setDefaultRenderer(GeoPt.class, new GeoPtTableCellRenderer());
         setDefaultRenderer(ShortBlob.class, new ShortBlobTableCellRenderer());
         setDefaultRenderer(Blob.class, new BlobTableCellRenderer());
@@ -198,6 +203,32 @@ public class DSJTable extends JTable
         super.paint(g);
     }
 
+    public class ComboBoxModelCellEditor extends AbstractCellEditor implements TableCellEditor
+    {
+        private JComboBox combo = new JComboBox();
+        
+        @Override
+        public Object getCellEditorValue()
+        {
+            return combo.getModel();
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
+        {
+            if (value != null)
+            {
+                ComboBoxModel model = (ComboBoxModel) value;
+                combo.setModel(model);
+            }
+            else
+            {
+                combo.setModel(null);
+            }
+            return combo;
+        }
+        
+    }
     public class GeoPtCellEditor extends AbstractCellEditor implements TableCellEditor
     {
         private JTextField editor = new JTextField();
@@ -534,6 +565,22 @@ public class DSJTable extends JTable
             return new Category(editor.getText());
         }
         
+    }
+    public class ComboBoxModelCellRenderer extends TooltippedTableCellRenderer
+    {
+        @Override
+        protected void setValue(Object value)
+        {
+            if (value != null)
+            {
+                ComboBoxModel model = (ComboBoxModel) value;
+                super.setValue(model.getSelectedItem());
+            }
+            else
+            {
+                super.setValue(value);
+            }
+        }
     }
     public class GeoPtTableCellRenderer extends TooltippedTableCellRenderer
     {

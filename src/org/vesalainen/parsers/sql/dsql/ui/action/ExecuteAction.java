@@ -98,7 +98,7 @@ public class ExecuteAction extends AbstractAutoAction implements PropertyChangeL
             for (Map.Entry<String,Placeholder> entry : placeholderMap.entrySet())
             {
                 Placeholder ph = entry.getValue();
-                inputDialog.add(ph.getName(), ph.getValue(), ph.getType());
+                inputDialog.add(ph.getName(), ph.getDefaultValue(), ph.getType());
             }
             if (inputDialog.input())
             {
