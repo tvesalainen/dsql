@@ -20,11 +20,7 @@ package org.vesalainen.parsers.sql.dsql.ui;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Queue;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.SynchronousQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Timo Vesalainen

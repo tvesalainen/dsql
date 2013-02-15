@@ -38,9 +38,9 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.vesalainen.parser.GenClassFactory;
 import org.vesalainen.parser.ParserCompiler;
 import org.vesalainen.parser.ParserConstants;
-import org.vesalainen.parser.ParserFactory;
 import org.vesalainen.parser.ParserInfo;
 import org.vesalainen.parser.Trace;
 import org.vesalainen.parser.TraceHelper;
@@ -104,7 +104,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     }
     public static DSQLParser getInstance()
     {
-        return (DSQLParser) ParserFactory.loadParserInstance(DSQLParser.class);
+        return (DSQLParser) GenClassFactory.loadGenInstance(DSQLParser.class);
     }
 
     private static void addGoogleType(Class<?> aClass)
