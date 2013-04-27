@@ -38,6 +38,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.vesalainen.bcc.model.El;
 import org.vesalainen.parser.GenClassFactory;
 import org.vesalainen.parser.ParserCompiler;
 import org.vesalainen.parser.ParserConstants;
@@ -508,7 +509,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     {
         try
         {
-            ParserCompiler pc = new ParserCompiler(DSQLParser.class);
+            ParserCompiler pc = new ParserCompiler(El.getTypeElement(DSQLParser.class.getCanonicalName()));
             pc.compile();
         }
         catch (Exception ex)

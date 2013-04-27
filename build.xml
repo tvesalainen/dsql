@@ -71,19 +71,6 @@
     nbproject/build-impl.xml file. 
 
     -->
-    <target name="-post-compile">
-        <taskdef
-            name="parsercomp"
-            classname="org.vesalainen.parser.ant.ParserBuilder"
-            classpath="${run.classpath}"
-            />
-        <parsercomp
-            src="org.vesalainen.parsers.sql.dsql.DSQLParser"
-            destdir="${build.classes.dir}"
-            srcdir="${src.dir}"
-            debug="true"
-            />
-    </target>
     <target name="-post-jar">
         <taskdef
             name="runtimejar"
@@ -94,9 +81,23 @@
             include="org.vesalainen" 
             classpath="${javac.classpath}"
             mainjar="${dist.jar}"
-            targetjar="../vesalainen-docs/web/dsql/dsql.jar"
+            targetjar="dist/dsql.jar"
             mainclass="org.vesalainen.parsers.sql.dsql.ui.WorkBench"
         />
+        <property file="nbproject/private/private.properties"/>
+        <!--
+        <exec executable="cmd">
+            <arg value="/c"/>
+            <arg value="jarsigner"/>
+            <arg value="-keystore"/>
+            <arg value="../MyKeystore"/>
+            <arg value="-storepass"/>
+            <arg value="${keystorepw}"/>
+            <arg value="dist/dsql.jar"/>
+            <arg value="timo"/>
+        </exec>
+        -->
+        <copy file="dist/dsql.jar" tofile="../vesalainen-docs/web/dsql/dsql.jar"/>
     </target>
     <target name="-javadoc-browse">
         <move todir="../vesalainen-docs/web/dsql/javadoc">

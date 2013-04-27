@@ -18,7 +18,6 @@
 package org.vesalainen.parsers.sql.dsql;
 
 import com.google.appengine.api.datastore.DatastoreService;
-import org.vesalainen.parsers.sql.Engine;
 
 /**
  * @author Timo Vesalainen
