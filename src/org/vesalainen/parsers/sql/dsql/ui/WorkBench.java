@@ -72,6 +72,7 @@ import org.vesalainen.parsers.sql.dsql.ui.action.FetchResultHandler;
 import org.vesalainen.parsers.sql.dsql.ui.action.OpenSQLFileAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.PersistenceHandler;
 import org.vesalainen.parsers.sql.dsql.ui.action.PrintAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.DSQLHelpAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.SaveSQLFileAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.SelectForUpdateAction;
 import org.vesalainen.parsers.sql.dsql.ui.plugin.MailPlugin;
@@ -272,6 +273,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         helpMenu = new JMenu(I18n.get("HELP"));
         menuBar.add(helpMenu);
         
+        helpMenu.add(new DSQLHelpAction());
         helpMenu.add(new AboutAction());
         
         exportCVSAction = new ExportCVSAction();

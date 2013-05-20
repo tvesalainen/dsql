@@ -118,7 +118,9 @@ public class DSJTable extends JTable
 
     private void init()
     {
+        setAutoCreateRowSorter(true);
         setRowSelectionAllowed(true);
+        setDragEnabled(true);
         
         setDefaultEditor(ComboBoxModel.class, new ComboBoxModelCellEditor());
         setDefaultEditor(GeoPt.class, new GeoPtCellEditor());

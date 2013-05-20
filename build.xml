@@ -71,6 +71,11 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="-pre-jar">
+        <copy todir="${build.classes.dir}">
+          <fileset dir="${annotation.processing.source.output}" includes="**/*.html" />
+        </copy>
+    </target>
     <target name="-post-jar">
         <taskdef
             name="runtimejar"
