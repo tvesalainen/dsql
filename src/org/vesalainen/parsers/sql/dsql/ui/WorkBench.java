@@ -54,6 +54,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -186,9 +187,26 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         menuBar.add(editMenu);
         editMenu.add(new UndoAction(I18n.get("UNDO"), undoManager));
         editMenu.add(new RedoAction(I18n.get("REDO"), undoManager));
+        JMenuItem menuItem = new JMenuItem(new DefaultEditorKit.CutAction());
+        menuItem.setText(I18n.get("CUT"));
+        menuItem.setMnemonic(KeyEvent.VK_T);
+        editMenu.add(menuItem);
+
+        menuItem = new JMenuItem(new DefaultEditorKit.CopyAction());
+        menuItem.setText(I18n.get("COPY"));
+        menuItem.setMnemonic(KeyEvent.VK_C);
+        menuItem.addActionListener(new TransferActionListener());
+        editMenu.add(menuItem);
+
+        menuItem = new JMenuItem(new DefaultEditorKit.PasteAction());
+        menuItem.setText(I18n.get("PASTE"));
+        menuItem.setMnemonic(KeyEvent.VK_P);
+        editMenu.add(menuItem);        
+        /*
         editMenu.add(actions.get(DefaultEditorKit.cutAction));
         editMenu.add(actions.get(DefaultEditorKit.copyAction));
         editMenu.add(actions.get(DefaultEditorKit.pasteAction));
+        */
         
         upperPane = new JScrollPane(sqlPane);
         

@@ -30,25 +30,40 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
-import java.util.Collection;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.Locale;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractCellEditor;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.ComboBoxModel;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.TransferHandler;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -118,6 +133,12 @@ public class DSJTable extends JTable
 
     private void init()
     {
+        MyTransferHandler myTransferHandler = new MyTransferHandler(getTransferHandler());
+        setTransferHandler(myTransferHandler);
+        ActionMap actionMap = getActionMap();
+        Action copyAction = MyTransferHandler.getCopyAction();
+        actionMap.put(I18n.get("COPY"), copyAction);
+        
         setAutoCreateRowSorter(true);
         setRowSelectionAllowed(true);
         setDragEnabled(true);
@@ -203,6 +224,302 @@ public class DSJTable extends JTable
         totalColumnWidth = columnModel.getTotalColumnWidth();
         revalidate();
         super.paint(g);
+    }
+
+    private static class MyTransferHandler extends TransferHandler implements ClipboardOwner
+    {
+        private TransferHandler transferHandler;
+        public MyTransferHandler(TransferHandler transferHandler)
+        {
+            this.transferHandler = transferHandler;
+        }
+
+        @Override
+        protected Transferable createTransferable(JComponent c)
+        {
+            return new MyTransferable((JTable)c);
+        }
+
+        @Override
+        public void setDragImage(Image img)
+        {
+            transferHandler.setDragImage(img);
+        }
+
+        @Override
+        public Image getDragImage()
+        {
+            return transferHandler.getDragImage();
+        }
+
+        @Override
+        public void setDragImageOffset(Point p)
+        {
+            transferHandler.setDragImageOffset(p);
+        }
+
+        @Override
+        public Point getDragImageOffset()
+        {
+            return transferHandler.getDragImageOffset();
+        }
+
+        @Override
+        public void exportAsDrag(JComponent comp, InputEvent e, int action)
+        {
+            transferHandler.exportAsDrag(comp, e, action);
+        }
+
+        @Override
+        public void exportToClipboard(JComponent comp, Clipboard clip, int action) throws IllegalStateException
+        {
+            Transferable transferable = createTransferable(comp);
+            clip.setContents(transferable, this);
+        }
+
+        @Override
+        public boolean importData(TransferSupport support)
+        {
+            return transferHandler.importData(support);
+        }
+
+        @Override
+        public boolean importData(JComponent comp, Transferable t)
+        {
+            return transferHandler.importData(comp, t);
+        }
+
+        @Override
+        public boolean canImport(TransferSupport support)
+        {
+            return transferHandler.canImport(support);
+        }
+
+        @Override
+        public boolean canImport(JComponent comp, DataFlavor[] transferFlavors)
+        {
+            return transferHandler.canImport(comp, transferFlavors);
+        }
+
+        @Override
+        public int getSourceActions(JComponent c)
+        {
+            return transferHandler.getSourceActions(c);
+        }
+
+        @Override
+        public Icon getVisualRepresentation(Transferable t)
+        {
+            return transferHandler.getVisualRepresentation(t);
+        }
+
+        @Override
+        public void lostOwnership(Clipboard clipboard, Transferable contents)
+        {
+        }
+        
+    }
+
+    private static class MyTransferable implements Transferable
+    {
+        private static DataFlavor[] flavors;
+        static
+        {
+            try
+            {
+                flavors = new DataFlavor[]{
+                new DataFlavor("text/html;class=java.lang.String"),
+                new DataFlavor("text/html;class=java.io.Reader"),
+                new DataFlavor("text/html;charset=utf-8;class=java.io.InputStream"),
+                new DataFlavor("text/plain;class=java.lang.String"),
+                new DataFlavor("text/plain;class=java.io.Reader"),
+                new DataFlavor("text/plain;charset=utf-8;class=java.io.InputStream"),
+                DataFlavor.stringFlavor
+                };
+            }
+            catch (ClassNotFoundException ex)
+            {
+                throw new UnsupportedOperationException(ex);
+            }
+                        
+        }
+        private final String htmlData;
+        private final String plainData;
+        public MyTransferable(JTable table)
+        {
+            StringBuilder html = new StringBuilder();
+            html.append("<html><body><table>");
+            StringBuilder plain = new StringBuilder();
+            boolean selectAll = table.getSelectedRowCount() == table.getRowCount();
+
+            int columnCount = table.getColumnCount();
+            if (selectAll)
+            {
+                html.append("<thead><tr>");
+                for (int ii=0;ii<columnCount;ii++)
+                {
+                    String columnName = table.getColumnName(ii);
+                    html.append("<th>");
+                    html.append(columnName);
+                    html.append("</th>");
+                    plain.append(columnName+"\t");
+                }
+                html.append("</tr></thead>");
+                plain.append("\n");
+            }
+            html.append("<tbody>");
+            int[] selectedRows = table.getSelectedRows();
+            TableModel model = table.getModel();
+            for (int row : selectedRows)
+            {
+                html.append("<tr>");
+                for (int col=0;col<columnCount;col++)
+                {
+                    html.append("<td>");
+                    Object value = model.getValueAt(row, col);
+                    if (value != null)
+                    {
+                        populate(html, plain, value);
+                    }
+                    html.append("</td>");
+                    plain.append("\t");
+                }
+                html.append("</tr>");
+                plain.append("\n");
+            }
+            html.append("</tbody></table></body><html>");
+            htmlData = html.toString();
+            plainData = plain.toString();
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors()
+        {
+            return flavors;
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor)
+        {
+            for (DataFlavor df : flavors)
+            {
+                if (df.equals(flavor))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException
+        {
+            String data = null;
+            if (flavor.getMimeType().startsWith("text/html"))
+            {
+                data = htmlData;
+            }
+            else
+            {
+                if (flavor.getMimeType().startsWith("text/plain"))
+                {
+                        data = plainData;
+                }
+                else
+                {
+                    throw new UnsupportedFlavorException(flavor);
+                }
+            }
+            switch (flavor.getRepresentationClass().getCanonicalName())
+            {
+                case "java.lang.String":
+                    return data;
+                case "java.io.Reader":
+                    return new StringReader(data);
+                case "java.io.InputStream":
+                    return new ByteArrayInputStream(data.getBytes("utf-8"));
+                default:
+                    throw new UnsupportedFlavorException(flavor);
+            }
+        }
+
+        private void populate(StringBuilder html, StringBuilder plain, Object value)
+        {
+            if (value instanceof GeoPt)
+            {
+                GeoPt p = (GeoPt) value;
+                html.append(DSJTable.toString(p));
+                plain.append(DSJTable.toString(p));
+            }
+            else
+            {
+                if (value instanceof Rating)
+                {
+                    Rating r = (Rating) value;
+                    html.append(r.getRating());
+                    plain.append(r.getRating());
+                }
+                else
+                {
+                    if (value instanceof PostalAddress)
+                    {
+                        PostalAddress p = (PostalAddress) value;
+                        html.append(p.getAddress());
+                        plain.append(p.getAddress());
+                    }
+                    else
+                    {
+                        if (value instanceof PhoneNumber)
+                        {
+                            PhoneNumber p = (PhoneNumber) value;
+                            html.append(p.getNumber());
+                            plain.append(p.getNumber());
+                        }
+                        else
+                        {
+                            if (value instanceof Link)
+                            {
+                                Link l = (Link) value;
+                                html.append(l.getValue());
+                                plain.append(l.getValue());
+                            }
+                            else
+                            {
+                                if (value instanceof Text)
+                                {
+                                    Text t = (Text) value;
+                                    html.append(t.getValue());
+                                    plain.append(t.getValue());
+                                }
+                                else
+                                {
+                                    if (value instanceof Email)
+                                    {
+                                        Email e = (Email) value;
+                                        html.append(e.getEmail());
+                                        plain.append(e.getEmail());
+                                    }
+                                    else
+                                    {
+                                        if (value instanceof Category)
+                                        {
+                                            Category c = (Category) value;
+                                            html.append(c.getCategory());
+                                            plain.append(c.getCategory());
+                                        }
+                                        else
+                                        {
+                                            html.append(value.toString());
+                                            plain.append(value.toString());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public class ComboBoxModelCellEditor extends AbstractCellEditor implements TableCellEditor

@@ -22,5 +22,6 @@ package org.vesalainen.parsers.sql.dsql;
  */
 public interface DSConstants
 {
-    public static final String PARENT = "__Parent__";
+    public static final String KEY = "key";
+    public static final String PARENT = "parent";
 }

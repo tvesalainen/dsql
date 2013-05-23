@@ -129,11 +129,11 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     @Override
     public Object get(Entity r, String property)
     {
-        if (Entity.KEY_RESERVED_PROPERTY.equals(property))
+        if (KEY.equalsIgnoreCase(property))
         {
             return r.getKey();
         }
-        if (PARENT.equals(property))
+        if (PARENT.equalsIgnoreCase(property))
         {
             return r.getParent();
         }
