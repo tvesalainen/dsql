@@ -16,12 +16,15 @@
  */
 package org.vesalainen.parsers.sql.dsql;
 
+import com.google.appengine.api.datastore.Entity;
+
 /**
  *
  * @author Timo Vesalainen
  */
 public interface DSConstants
 {
-    public static final String KEY = "key";
-    public static final String PARENT = "parent";
+    public static final String PARENT = "__parent__";   // parent of entity
+    public static final String ID = "__id__";   // key.id
+    public static final String NAME = "__name__";   // key.name
 }

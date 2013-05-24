@@ -116,7 +116,7 @@ public class FetchResultTableModel extends AbstractTableModel
     @Override
     public Class<?> getColumnClass(int columnIndex)
     {
-        if (columnClass[columnIndex] != null)
+        if (columnClass != null && columnClass[columnIndex] != null)
         {
             return columnClass[columnIndex];
         }

@@ -24,7 +24,7 @@ import org.vesalainen.parsers.sql.Table;
 /**
  * @author Timo Vesalainen
  */
-public class DSTable<R,C> extends Table<R,C> 
+public class DSTable<R,C> extends Table<R,C> implements DSConstants
 {
     private DSTable ancestor;
 
@@ -36,33 +36,37 @@ public class DSTable<R,C> extends Table<R,C>
     @Override
     public void addSelectListColumn(String column)
     {
-        if ("key".equalsIgnoreCase(column))
-        {
-            column = Entity.KEY_RESERVED_PROPERTY;
-        }
-        super.addSelectListColumn(column);
+        super.addSelectListColumn(convert(column));
     }
 
     @Override
     public void addConditionColumn(String column)
     {
-        if ("key".equalsIgnoreCase(column))
-        {
-            column = Entity.KEY_RESERVED_PROPERTY;
-        }
-        super.addConditionColumn(column);
+        super.addConditionColumn(convert(column));
     }
 
     @Override
     public void addAndColumn(String column)
     {
-        if ("key".equalsIgnoreCase(column))
-        {
-            column = Entity.KEY_RESERVED_PROPERTY;
-        }
-        super.addAndColumn(column);
+        super.addAndColumn(convert(column));
     }
 
+    private String convert(String column)
+    {
+        if ("key".equalsIgnoreCase(column))
+        {
+            return Entity.KEY_RESERVED_PROPERTY;
+        }
+        if ("key.id".equalsIgnoreCase(column))
+        {
+            return ID;
+        }
+        if ("key.name".equalsIgnoreCase(column))
+        {
+            return NAME;
+        }
+        return column;
+    }
     public void setDescendantOf(DSTable<R,C> ancestor)
     {
         if (this.ancestor != null)
