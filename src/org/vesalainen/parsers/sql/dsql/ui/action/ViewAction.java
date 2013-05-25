@@ -28,63 +28,58 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
+import org.vesalainen.parsers.sql.dsql.ui.ViewDialog;
 
 /**
  * @author Timo Vesalainen
  */
-public class PrintAction extends AbstractAutoAction implements PropertyChangeListener
+public class ViewAction extends AbstractAutoAction implements PropertyChangeListener
 {
-    private JTable table;
+    private FetchResultTableModel model;
+    private ViewDialog dialog;
 
-    public PrintAction()
+    public ViewAction()
     {
-        super(I18n.get("PRINT"));
-        putValue(Action.SHORT_DESCRIPTION, I18n.get("PRINT THE RESULTS"));
+        super(I18n.get("VIEW"));
+        putValue(Action.SHORT_DESCRIPTION, I18n.get("VIEW THE RESULTS"));
         setEnabled(false);
     }
     
     @Override
     public void actionPerformed(ActionEvent e)
     {
-        try
+        assert model != null;
+        if (dialog == null)
         {
-            MessageFormat header = new MessageFormat(I18n.get("PAGE {0,NUMBER,INTEGER}"));
-            table.print(JTable.PrintMode.FIT_WIDTH, header, null);
+            dialog = new ViewDialog(model);
         }
-        catch (PrinterException ex)
+        else
         {
-            JOptionPane.showMessageDialog(null, ex.getLocalizedMessage(), I18n.get("ERROR"), JOptionPane.ERROR_MESSAGE);
+            dialog.refresh(model);
         }
+        dialog.input();
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
-        if (FetchResultHandler.TablePropertyName.equals(evt.getPropertyName()))
+        if (FetchResultHandler.ModelPropertyName.equals(evt.getPropertyName()))
         {
-            table = (JTable) evt.getNewValue();
-        }
-        else
-        {
-            assert table != null;
-            if (FetchResultHandler.ModelPropertyName.equals(evt.getPropertyName()))
+            model = (FetchResultTableModel) evt.getNewValue();
+            if (model != null)
             {
-                FetchResultTableModel model = (FetchResultTableModel) evt.getNewValue();
-                if (model != null)
+                if (model.getRowCount() > 0)
                 {
-                    if (model.getRowCount() > 0)
-                    {
-                        setEnabled(true);
-                    }
-                    else
-                    {
-                        setEnabled(false);
-                    }
+                    setEnabled(true);
                 }
                 else
                 {
                     setEnabled(false);
                 }
+            }
+            else
+            {
+                setEnabled(false);
             }
         }
     }

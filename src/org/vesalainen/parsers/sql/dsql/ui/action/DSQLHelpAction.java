@@ -28,6 +28,7 @@ import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import org.vesalainen.parsers.sql.dsql.DSQLParser;
 import org.vesalainen.parsers.sql.dsql.ui.CancelDialog;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
 
@@ -62,8 +63,8 @@ public class DSQLHelpAction extends AbstractAction
             {
                 JTextPane pane = new JTextPane();
                 pane.setEditable(false);
-                String path = "../../doc-files/DSQLParser-batchStatement.html";
-                URL url = DSQLHelpAction.class.getResource(path);
+                String path = "doc-files/DSQLParser-batchStatement.html";
+                URL url = DSQLParser.class.getResource(path);
                 pane.setPage(url);
                 JScrollPane scrollPane = new JScrollPane(pane);
                 setPreferredSize(new Dimension(450, 410));

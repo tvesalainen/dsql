@@ -76,6 +76,7 @@ import org.vesalainen.parsers.sql.dsql.ui.action.PrintAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.DSQLHelpAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.SaveSQLFileAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.SelectForUpdateAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.ViewAction;
 import org.vesalainen.parsers.sql.dsql.ui.plugin.MailPlugin;
 
 /**
@@ -122,6 +123,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
     private boolean embed;
     private boolean readonly;
     private String savedSql;
+    private JButton viewButton;
     
     public WorkBench(Properties properties) throws IOException, InterruptedException
     {
@@ -279,7 +281,16 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         rollbackButton = new JButton(fetchResultHandler.getRollbackAction());
         buttonPanel.add(rollbackButton);
         actionMenu.add(rollbackButton.getAction());
-        
+
+        //if (embed)
+        {
+            ViewAction viewAction = new ViewAction();
+            fetchResultHandler.addPropertyChangeListener(viewAction);
+            viewButton = new JButton(viewAction);
+            buttonPanel.add(viewButton);
+            persistenceHandler.addAutoAction(viewAction);
+        }
+
         PrintAction printAction = new PrintAction();
         fetchResultHandler.addPropertyChangeListener(printAction);
         printButton = new JButton(printAction);
