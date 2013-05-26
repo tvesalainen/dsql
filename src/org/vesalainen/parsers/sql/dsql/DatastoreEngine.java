@@ -450,6 +450,7 @@ public class DatastoreEngine  implements DSProxyInterface
     {
         Set<String> minOutput = new HashSet<>();       // minimum set of output
         minOutput.addAll(table.getConditionColumns()); // all columns needed in conditions
+        minOutput.addAll(table.getSortColumns()); // all columns needed in conditions
         for (FilterPredicate fp : query.getFilterPredicates())
         {
             switch (fp.getOperator())
