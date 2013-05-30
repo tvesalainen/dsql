@@ -192,17 +192,20 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         JMenuItem menuItem = new JMenuItem(new DefaultEditorKit.CutAction());
         menuItem.setText(I18n.get("CUT"));
         menuItem.setMnemonic(KeyEvent.VK_T);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
         editMenu.add(menuItem);
 
         menuItem = new JMenuItem(new DefaultEditorKit.CopyAction());
         menuItem.setText(I18n.get("COPY"));
         menuItem.setMnemonic(KeyEvent.VK_C);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         menuItem.addActionListener(new TransferActionListener());
         editMenu.add(menuItem);
 
         menuItem = new JMenuItem(new DefaultEditorKit.PasteAction());
         menuItem.setText(I18n.get("PASTE"));
         menuItem.setMnemonic(KeyEvent.VK_P);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
         editMenu.add(menuItem);        
         /*
         editMenu.add(actions.get(DefaultEditorKit.cutAction));
