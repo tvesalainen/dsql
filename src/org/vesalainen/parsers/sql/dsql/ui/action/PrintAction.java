@@ -17,6 +17,7 @@
 
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.print.PrinterException;
 import java.beans.PropertyChangeEvent;
@@ -24,6 +25,7 @@ import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
@@ -35,10 +37,12 @@ import org.vesalainen.parsers.sql.dsql.ui.I18n;
 public class PrintAction extends AbstractAutoAction implements PropertyChangeListener
 {
     private JTable table;
+    private final JFrame frame;
 
-    public PrintAction()
+    public PrintAction(JFrame frame)
     {
         super(I18n.get("PRINT"));
+        this.frame = frame;
         putValue(Action.SHORT_DESCRIPTION, I18n.get("PRINT THE RESULTS"));
         setEnabled(false);
     }
@@ -49,7 +53,10 @@ public class PrintAction extends AbstractAutoAction implements PropertyChangeLis
         try
         {
             MessageFormat header = new MessageFormat(I18n.get("PAGE {0,NUMBER,INTEGER}"));
+            boolean visible = frame.isVisible();
+            frame.setVisible(true);
             table.print(JTable.PrintMode.FIT_WIDTH, header, null);
+            frame.setVisible(visible);
         }
         catch (PrinterException ex)
         {

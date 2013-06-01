@@ -207,11 +207,6 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         menuItem.setMnemonic(KeyEvent.VK_P);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
         editMenu.add(menuItem);        
-        /*
-        editMenu.add(actions.get(DefaultEditorKit.cutAction));
-        editMenu.add(actions.get(DefaultEditorKit.copyAction));
-        editMenu.add(actions.get(DefaultEditorKit.pasteAction));
-        */
         
         upperPane = new JScrollPane(sqlPane);
         
@@ -285,20 +280,20 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         buttonPanel.add(rollbackButton);
         actionMenu.add(rollbackButton.getAction());
 
-        //if (embed)
+        PrintAction printAction = new PrintAction(frame);
+        fetchResultHandler.addPropertyChangeListener(printAction);
+        printButton = new JButton(printAction);
+        buttonPanel.add(printButton);
+        persistenceHandler.addAutoAction(printAction);
+
+        if (embed)
         {
-            ViewAction viewAction = new ViewAction();
+            ViewAction viewAction = new ViewAction(printAction);
             fetchResultHandler.addPropertyChangeListener(viewAction);
             viewButton = new JButton(viewAction);
             buttonPanel.add(viewButton);
             persistenceHandler.addAutoAction(viewAction);
         }
-
-        PrintAction printAction = new PrintAction();
-        fetchResultHandler.addPropertyChangeListener(printAction);
-        printButton = new JButton(printAction);
-        buttonPanel.add(printButton);
-        persistenceHandler.addAutoAction(printAction);
 
         frame.setContentPane(contentPane);
 

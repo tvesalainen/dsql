@@ -18,7 +18,6 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -37,7 +36,6 @@ import javax.swing.KeyStroke;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
-import org.vesalainen.parsers.sql.dsql.ui.ListDialog;
 import org.vesalainen.parsers.sql.dsql.ui.WorkBench;
 
 /**

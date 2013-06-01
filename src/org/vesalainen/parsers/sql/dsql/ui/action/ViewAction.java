@@ -18,14 +18,9 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.event.ActionEvent;
-import java.awt.print.PrinterException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.MessageFormat;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JOptionPane;
-import javax.swing.JTable;
 import org.vesalainen.parsers.sql.dsql.ui.FetchResultTableModel;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
 import org.vesalainen.parsers.sql.dsql.ui.ViewDialog;
@@ -35,23 +30,25 @@ import org.vesalainen.parsers.sql.dsql.ui.ViewDialog;
  */
 public class ViewAction extends AbstractAutoAction implements PropertyChangeListener
 {
+    private PrintAction printAction;
     private FetchResultTableModel model;
     private ViewDialog dialog;
 
-    public ViewAction()
+    public ViewAction(PrintAction printAction)
     {
         super(I18n.get("VIEW"));
+        this.printAction = printAction;
         putValue(Action.SHORT_DESCRIPTION, I18n.get("VIEW THE RESULTS"));
         setEnabled(false);
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e)
     {
         assert model != null;
         if (dialog == null)
         {
-            dialog = new ViewDialog(model);
+            dialog = new ViewDialog(model, printAction);
         }
         else
         {

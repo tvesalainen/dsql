@@ -73,6 +73,7 @@ import javax.swing.table.TableModel;
 import org.vesalainen.parsers.magic.Magic;
 import org.vesalainen.parsers.magic.Magic.MagicResult;
 import org.vesalainen.parsers.sql.dsql.DSQLParser;
+import org.vesalainen.parsers.sql.dsql.GObjectHelper;
 
 /**
  * @author Timo Vesalainen
@@ -182,7 +183,7 @@ public class DSJTable extends JTable
             for (int row=0;row<getRowCount();row++)
             {
                 Object value = dataModel.getValueAt(row, col);
-                String str = value != null ? value.toString() : "";
+                String str = value != null ? GObjectHelper.getString(value) : "";
                 Matcher matcher = NUMERIC.matcher(str);
                 if (!matcher.matches())
                 {

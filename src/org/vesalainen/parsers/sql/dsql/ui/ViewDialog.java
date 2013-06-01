@@ -20,8 +20,11 @@ package org.vesalainen.parsers.sql.dsql.ui;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import org.vesalainen.parsers.sql.dsql.ui.action.PrintAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.StatementDialog;
 
 /**
  * @author Timo Vesalainen
@@ -30,11 +33,13 @@ public class ViewDialog extends CancelDialog
 {
     private DSJTable table;
     private FetchResultTableModel model;
+    private final PrintAction printAction;
 
-    public ViewDialog(FetchResultTableModel model)
+    public ViewDialog(FetchResultTableModel model, PrintAction printAction)
     {
         super();
         this.model = model;
+        this.printAction = printAction;
         init();
     }
 
@@ -49,6 +54,10 @@ public class ViewDialog extends CancelDialog
         table = new DSJTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
+        
+        JButton jButton = new JButton(printAction);
+        buttonPanel.add(jButton);
+        
         setMinimumSize(new Dimension(800, 500));
         setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
     }
