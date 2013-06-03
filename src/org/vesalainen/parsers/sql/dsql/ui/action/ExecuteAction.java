@@ -17,6 +17,7 @@
 
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
+import com.google.appengine.api.datastore.Entity;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -24,14 +25,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.KeyStroke;
 import org.vesalainen.parsers.sql.FetchResult;
+import org.vesalainen.parsers.sql.FetchResultComboBoxModel;
 import org.vesalainen.parsers.sql.Placeholder;
 import org.vesalainen.parsers.sql.SelectStatement;
 import org.vesalainen.parsers.sql.Statement;
+import org.vesalainen.parsers.sql.dsql.GObjectHelper;
 import org.vesalainen.parsers.sql.dsql.ui.I18n;
 import org.vesalainen.parsers.sql.dsql.ui.InputDialog;
 
@@ -41,6 +45,7 @@ import org.vesalainen.parsers.sql.dsql.ui.InputDialog;
 public class ExecuteAction extends AbstractAutoAction implements PropertyChangeListener
 {
     public static final String PropertyName = "fetchResult";
+    public static final String OptionsProperty = "optionsProperty";
     protected JFrame frame;
     protected Statement statement;
     
@@ -88,14 +93,14 @@ public class ExecuteAction extends AbstractAutoAction implements PropertyChangeL
         }
     }
 
-    protected boolean enterPlaceHolders(Statement statement)
+    protected boolean enterPlaceHolders(Statement<Entity,Object> statement)
     {
-        LinkedHashMap<String,Placeholder> placeholderMap = statement.getPlaceholderMap();
+        LinkedHashMap<String,Placeholder<Entity,Object>> placeholderMap = statement.getPlaceholderMap();
         if (!placeholderMap.isEmpty())
         {
             
             InputDialog inputDialog = new InputDialog(frame, I18n.get("ENTER PLACEHOLDER VALUES"));
-            for (Map.Entry<String,Placeholder> entry : placeholderMap.entrySet())
+            for (Map.Entry<String,Placeholder<Entity,Object>> entry : placeholderMap.entrySet())
             {
                 Placeholder ph = entry.getValue();
                 inputDialog.add(ph.getName(), ph.getDefaultValue(), ph.getType());
@@ -103,17 +108,36 @@ public class ExecuteAction extends AbstractAutoAction implements PropertyChangeL
             if (inputDialog.input())
             {
                 int row = 0;
-                for (Map.Entry<String,Placeholder> entry : placeholderMap.entrySet())
+                StringBuilder sb = new StringBuilder();
+                for (Map.Entry<String,Placeholder<Entity,Object>> entry : placeholderMap.entrySet())
                 {
                     Placeholder ph = entry.getValue();
-                    statement.bindValue(ph.getName(), inputDialog.get(row++));
+                    Object value = inputDialog.get(row++);
+                    statement.bindValue(ph.getName(), value);
+                    sb.append(entry.getKey());
+                    sb.append("=");
+                    if (value instanceof FetchResultComboBoxModel)
+                    {
+                        FetchResultComboBoxModel<Entity,Object> model = (FetchResultComboBoxModel) value;
+                        sb.append(model.getSelectedItem());
+                    }
+                    else
+                    {
+                        sb.append(GObjectHelper.getString(value));
+                    }
+                    sb.append(" ");
                 }
+                firePropertyChange(OptionsProperty, null, sb.toString());
                 return true;
             }
             else
             {
                 return false;
             }
+        }
+        else
+        {
+            firePropertyChange(OptionsProperty, null, " ");
         }
         return true;
     }

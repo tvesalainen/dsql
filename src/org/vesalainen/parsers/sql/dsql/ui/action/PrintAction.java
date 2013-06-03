@@ -17,11 +17,15 @@
 
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Text;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.print.PrinterException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.text.MessageFormat;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -34,10 +38,12 @@ import org.vesalainen.parsers.sql.dsql.ui.I18n;
 /**
  * @author Timo Vesalainen
  */
-public class PrintAction extends AbstractAutoAction implements PropertyChangeListener
+public class PrintAction extends AbstractAutoAction implements PropertyChangeListener, VetoableChangeListener
 {
     private JTable table;
     private final JFrame frame;
+    private String title="";
+    private String options="";
 
     public PrintAction(JFrame frame)
     {
@@ -52,7 +58,7 @@ public class PrintAction extends AbstractAutoAction implements PropertyChangeLis
     {
         try
         {
-            MessageFormat header = new MessageFormat(I18n.get("PAGE {0,NUMBER,INTEGER}"));
+            MessageFormat header = new MessageFormat(title+" "+options+" {0,NUMBER,INTEGER}");
             boolean visible = frame.isVisible();
             frame.setVisible(true);
             table.print(JTable.PrintMode.FIT_WIDTH, header, null);
@@ -67,32 +73,67 @@ public class PrintAction extends AbstractAutoAction implements PropertyChangeLis
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
-        if (FetchResultHandler.TablePropertyName.equals(evt.getPropertyName()))
+        if (ExecuteAction.OptionsProperty.equals(evt.getPropertyName()))
         {
-            table = (JTable) evt.getNewValue();
+            options = (String) evt.getNewValue();
         }
         else
         {
-            assert table != null;
-            if (FetchResultHandler.ModelPropertyName.equals(evt.getPropertyName()))
+            if (FetchResultHandler.TablePropertyName.equals(evt.getPropertyName()))
             {
-                FetchResultTableModel model = (FetchResultTableModel) evt.getNewValue();
-                if (model != null)
+                table = (JTable) evt.getNewValue();
+            }
+            else
+            {
+                assert table != null;
+                if (FetchResultHandler.ModelPropertyName.equals(evt.getPropertyName()))
                 {
-                    if (model.getRowCount() > 0)
+                    FetchResultTableModel model = (FetchResultTableModel) evt.getNewValue();
+                    if (model != null)
                     {
-                        setEnabled(true);
+                        if (model.getRowCount() > 0)
+                        {
+                            setEnabled(true);
+                        }
+                        else
+                        {
+                            setEnabled(false);
+                        }
                     }
                     else
                     {
                         setEnabled(false);
                     }
                 }
+            }
+        }
+    }
+
+    @Override
+    public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException
+    {
+        Entity entity = (Entity) evt.getNewValue();
+        title = "";
+        switch (evt.getPropertyName())
+        {
+            case PersistenceHandler.OPEN:
+                if (entity != null)
+                {
+                    // Open
+                    title = entity.getKey().getName();
+                }
+                break;
+            case PersistenceHandler.SAVE:
+                if (entity != null)
+                {
+                    // Save
+                    title = entity.getKey().getName();
+                }
                 else
                 {
-                    setEnabled(false);
+                    // Remove
                 }
-            }
+                break;
         }
     }
     

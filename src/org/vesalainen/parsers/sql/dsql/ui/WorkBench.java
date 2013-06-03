@@ -282,6 +282,8 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
 
         PrintAction printAction = new PrintAction(frame);
         fetchResultHandler.addPropertyChangeListener(printAction);
+        executeAction.addPropertyChangeListener(printAction);
+        persistenceHandler.addVetoableChangeListener(printAction);
         printButton = new JButton(printAction);
         buttonPanel.add(printButton);
         persistenceHandler.addAutoAction(printAction);

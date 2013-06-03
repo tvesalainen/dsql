@@ -46,6 +46,8 @@ import java.awt.geom.Rectangle2D;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -183,7 +185,7 @@ public class DSJTable extends JTable
             for (int row=0;row<getRowCount();row++)
             {
                 Object value = dataModel.getValueAt(row, col);
-                String str = value != null ? GObjectHelper.getString(value) : "";
+                String str = value != null ? getString(value) : "";
                 Matcher matcher = NUMERIC.matcher(str);
                 if (!matcher.matches())
                 {
@@ -227,6 +229,16 @@ public class DSJTable extends JTable
         super.paint(g);
     }
 
+    private String getString(Object value)
+    {
+        if (value instanceof Date)
+        {
+            DateFormat df = DateFormat.getDateTimeInstance();
+            return df.format(value);
+        }
+        return GObjectHelper.getString(value);
+    }
+    
     private static class MyTransferHandler extends TransferHandler implements ClipboardOwner
     {
         private TransferHandler transferHandler;
