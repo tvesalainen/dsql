@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,7 +73,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.vesalainen.parsers.magic.Magic;
 import org.vesalainen.parsers.magic.Magic.MagicResult;
-import org.vesalainen.parsers.sql.dsql.DSQLParser;
 import org.vesalainen.parsers.sql.dsql.GObjectHelper;
 
 /**
@@ -84,7 +82,6 @@ public class DSJTable extends JTable
 {
     private static final Pattern NUMERIC = Pattern.compile("[0-9\\,\\.\\- ]+");
     private static final Magic magic = Magic.getInstance();
-    private static final DSQLParser parser = DSQLParser.getInstance();
     
     private Window owner;
     
@@ -147,28 +144,28 @@ public class DSJTable extends JTable
         setDragEnabled(true);
         
         setDefaultEditor(ComboBoxModel.class, new ComboBoxModelCellEditor());
-        setDefaultEditor(GeoPt.class, new GeoPtCellEditor());
+        setDefaultEditor(GeoPt.class, new GoogleObjectCellEditor(GeoPt.class));
         setDefaultEditor(ShortBlob.class, new ShortBlobCellEditor());
         setDefaultEditor(Blob.class, new BlobCellEditor());
         setDefaultEditor(Rating.class, new RatingCellEditor());
-        setDefaultEditor(PostalAddress.class, new PostalAddressCellEditor());
-        setDefaultEditor(PhoneNumber.class, new PhoneNumberCellEditor());
-        setDefaultEditor(Link.class, new LinkCellEditor());
+        setDefaultEditor(PostalAddress.class, new GoogleObjectCellEditor(PostalAddress.class));
+        setDefaultEditor(PhoneNumber.class, new GoogleObjectCellEditor(PhoneNumber.class));
+        setDefaultEditor(Link.class, new GoogleObjectCellEditor(Link.class));
         setDefaultEditor(Text.class, new TextCellEditor());
-        setDefaultEditor(Email.class, new EmailCellEditor());
-        setDefaultEditor(Category.class, new CategoryCellEditor());
+        setDefaultEditor(Email.class, new GoogleObjectCellEditor(Email.class));
+        setDefaultEditor(Category.class, new GoogleObjectCellEditor(Category.class));
         
         setDefaultRenderer(ComboBoxModel.class, new ComboBoxModelCellRenderer());
-        setDefaultRenderer(GeoPt.class, new GeoPtTableCellRenderer());
+        setDefaultRenderer(GeoPt.class, new GoogleObjectTableCellRenderer());
         setDefaultRenderer(ShortBlob.class, new ShortBlobTableCellRenderer());
         setDefaultRenderer(Blob.class, new BlobTableCellRenderer());
-        setDefaultRenderer(Rating.class, new RatingTableCellRenderer());
-        setDefaultRenderer(PostalAddress.class, new PostalAddressTableCellRenderer());
-        setDefaultRenderer(PhoneNumber.class, new PhoneNumberTableCellRenderer());
-        setDefaultRenderer(Link.class, new LinkTableCellRenderer());
-        setDefaultRenderer(Text.class, new TextTableCellRenderer());
-        setDefaultRenderer(Email.class, new EmailTableCellRenderer());
-        setDefaultRenderer(Category.class, new CategoryTableCellRenderer());
+        setDefaultRenderer(Rating.class, new GoogleObjectTableCellRenderer());
+        setDefaultRenderer(PostalAddress.class, new GoogleObjectTableCellRenderer());
+        setDefaultRenderer(PhoneNumber.class, new GoogleObjectTableCellRenderer());
+        setDefaultRenderer(Link.class, new GoogleObjectTableCellRenderer());
+        setDefaultRenderer(Text.class, new GoogleObjectTableCellRenderer());
+        setDefaultRenderer(Email.class, new GoogleObjectTableCellRenderer());
+        setDefaultRenderer(Category.class, new GoogleObjectTableCellRenderer());
     }
 
     @Override
@@ -458,80 +455,8 @@ public class DSJTable extends JTable
 
         private void populate(StringBuilder html, StringBuilder plain, Object value)
         {
-            if (value instanceof GeoPt)
-            {
-                GeoPt p = (GeoPt) value;
-                html.append(DSJTable.toString(p));
-                plain.append(DSJTable.toString(p));
-            }
-            else
-            {
-                if (value instanceof Rating)
-                {
-                    Rating r = (Rating) value;
-                    html.append(r.getRating());
-                    plain.append(r.getRating());
-                }
-                else
-                {
-                    if (value instanceof PostalAddress)
-                    {
-                        PostalAddress p = (PostalAddress) value;
-                        html.append(p.getAddress());
-                        plain.append(p.getAddress());
-                    }
-                    else
-                    {
-                        if (value instanceof PhoneNumber)
-                        {
-                            PhoneNumber p = (PhoneNumber) value;
-                            html.append(p.getNumber());
-                            plain.append(p.getNumber());
-                        }
-                        else
-                        {
-                            if (value instanceof Link)
-                            {
-                                Link l = (Link) value;
-                                html.append(l.getValue());
-                                plain.append(l.getValue());
-                            }
-                            else
-                            {
-                                if (value instanceof Text)
-                                {
-                                    Text t = (Text) value;
-                                    html.append(t.getValue());
-                                    plain.append(t.getValue());
-                                }
-                                else
-                                {
-                                    if (value instanceof Email)
-                                    {
-                                        Email e = (Email) value;
-                                        html.append(e.getEmail());
-                                        plain.append(e.getEmail());
-                                    }
-                                    else
-                                    {
-                                        if (value instanceof Category)
-                                        {
-                                            Category c = (Category) value;
-                                            html.append(c.getCategory());
-                                            plain.append(c.getCategory());
-                                        }
-                                        else
-                                        {
-                                            html.append(value.toString());
-                                            plain.append(value.toString());
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            html.append(GObjectHelper.getString(value));
+            plain.append(GObjectHelper.getString(value));
         }
     }
 
@@ -561,17 +486,22 @@ public class DSJTable extends JTable
         }
         
     }
-    public class GeoPtCellEditor extends AbstractCellEditor implements TableCellEditor
+    public class GoogleObjectCellEditor extends AbstractCellEditor implements TableCellEditor
     {
+        private Class<?> type;
         private JTextField editor = new JTextField();
+
+        public GoogleObjectCellEditor(Class<?> type)
+        {
+            this.type = type;
+        }
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
         {
             if (value != null)
             {
-                GeoPt pt = (GeoPt) value;
-                editor.setText(DSJTable.toString(pt));
+                editor.setText(GObjectHelper.getString(value));
             }
             else
             {
@@ -586,7 +516,7 @@ public class DSJTable extends JTable
             String text = editor.getText();
             if (text != null && !text.isEmpty())
             {
-                return parser.parseCoordinate(editor.getText(), null);
+                return GObjectHelper.valueOf(type, text);
             }
             else
             {
@@ -720,84 +650,6 @@ public class DSJTable extends JTable
         }
         
     }
-    public class PostalAddressCellEditor extends AbstractCellEditor implements TableCellEditor
-    {
-        private JTextField editor = new JTextField();
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
-        {
-            if (value != null)
-            {
-                PostalAddress addr = (PostalAddress) value;
-                editor.setText(addr.getAddress());
-            }
-            else
-            {
-                editor.setText(null);
-            }
-            return editor;
-        }
-
-        @Override
-        public Object getCellEditorValue()
-        {
-            return new PostalAddress(editor.getText());
-        }
-        
-    }
-    public class PhoneNumberCellEditor extends AbstractCellEditor implements TableCellEditor
-    {
-        private JTextField editor = new JTextField();
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
-        {
-            if (value != null)
-            {
-                PhoneNumber phone = (PhoneNumber) value;
-                editor.setText(phone.getNumber());
-            }
-            else
-            {
-                editor.setText(null);
-            }
-            return editor;
-        }
-
-        @Override
-        public Object getCellEditorValue()
-        {
-            return new PhoneNumber(editor.getText());
-        }
-        
-    }
-    public class LinkCellEditor extends AbstractCellEditor implements TableCellEditor
-    {
-        private JTextField editor = new JTextField();
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
-        {
-            if (value != null)
-            {
-                Link link = (Link) value;
-                editor.setText(link.getValue());
-            }
-            else
-            {
-                editor.setText(null);
-            }
-            return editor;
-        }
-
-        @Override
-        public Object getCellEditorValue()
-        {
-            return new Link(editor.getText());
-        }
-        
-    }
     public class TextCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener
     {
         private static final String EDIT = "edit";
@@ -846,58 +698,6 @@ public class DSJTable extends JTable
         }
         
     }
-    public class EmailCellEditor extends AbstractCellEditor implements TableCellEditor
-    {
-        private JTextField editor = new JTextField();
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
-        {
-            if (value != null)
-            {
-                Email email = (Email) value;
-                editor.setText(email.getEmail());
-            }
-            else
-            {
-                editor.setText(null);
-            }
-            return editor;
-        }
-
-        @Override
-        public Object getCellEditorValue()
-        {
-            return new Email(editor.getText());
-        }
-        
-    }
-    public class CategoryCellEditor extends AbstractCellEditor implements TableCellEditor
-    {
-        private JTextField editor = new JTextField();
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
-        {
-            if (value != null)
-            {
-                Category category = (Category) value;
-                editor.setText(category.getCategory());
-            }
-            else
-            {
-                editor.setText(null);
-            }
-            return editor;
-        }
-
-        @Override
-        public Object getCellEditorValue()
-        {
-            return new Category(editor.getText());
-        }
-        
-    }
     public class ComboBoxModelCellRenderer extends TooltippedTableCellRenderer
     {
         @Override
@@ -914,7 +714,7 @@ public class DSJTable extends JTable
             }
         }
     }
-    public class GeoPtTableCellRenderer extends TooltippedTableCellRenderer
+    public class GoogleObjectTableCellRenderer extends TooltippedTableCellRenderer
     {
 
         @Override
@@ -922,8 +722,7 @@ public class DSJTable extends JTable
         {
             if (value != null)
             {
-                GeoPt pt = (GeoPt) value;
-                super.setValue(toString(pt));
+                super.setValue(GObjectHelper.getString(value));
             }
             else
             {
@@ -932,28 +731,6 @@ public class DSJTable extends JTable
         }
     }
 
-    public static String toString(GeoPt pt)
-    {
-        float lat = pt.getLatitude();
-        char ns = lat > 0 ? 'N' : 'S';
-        lat = Math.abs(lat);
-        int lati = (int) lat;
-        lat = lat-lati;
-        float lon = pt.getLongitude();
-        char we = lon > 0 ? 'E' : 'W';
-        lon = Math.abs(lon);
-        int loni = (int) lon;
-        lon = lon-loni;
-        return String.format(Locale.US,
-                "%c %d\u00b0 %.3f', %c %d\u00b0 %.3f'", 
-                ns,
-                lati,
-                lat*60,
-                we,
-                loni,
-                lon*60
-                );
-    }
     public class BlobTableCellRenderer extends TooltippedTableCellRenderer
     {
 
@@ -1006,130 +783,6 @@ public class DSJTable extends JTable
         }
     }
 
-    public class RatingTableCellRenderer extends TooltippedTableCellRenderer
-    {
-
-        @Override
-        protected void setValue(Object value)
-        {
-            if (value != null)
-            {
-                Rating rating = (Rating) value;
-                super.setValue(rating.getRating());
-            }
-            else
-            {
-                super.setValue(value);
-            }
-        }
-    }
-
-    public class PostalAddressTableCellRenderer extends TooltippedTableCellRenderer
-    {
-
-        @Override
-        protected void setValue(Object value)
-        {
-            if (value != null)
-            {
-                PostalAddress address = (PostalAddress) value;
-                super.setValue(address.getAddress());
-            }
-            else
-            {
-                super.setValue(value);
-            }
-        }
-    }
-
-    public class PhoneNumberTableCellRenderer extends TooltippedTableCellRenderer
-    {
-
-        @Override
-        protected void setValue(Object value)
-        {
-            if (value != null)
-            {
-                PhoneNumber number = (PhoneNumber) value;
-                super.setValue(number.getNumber());
-            }
-            else
-            {
-                super.setValue(value);
-            }
-        }
-    }
-
-    public class LinkTableCellRenderer extends TooltippedTableCellRenderer
-    {
-
-        @Override
-        protected void setValue(Object value)
-        {
-            if (value != null)
-            {
-                Link link = (Link) value;
-                super.setValue(link.getValue());
-            }
-            else
-            {
-                super.setValue(value);
-            }
-        }
-    }
-
-    public class TextTableCellRenderer extends TooltippedTableCellRenderer
-    {
-
-        @Override
-        protected void setValue(Object value)
-        {
-            if (value != null)
-            {
-                Text text = (Text) value;
-                super.setValue(text.getValue());
-            }
-            else
-            {
-                super.setValue(value);
-            }
-        }
-    }
-
-    public class EmailTableCellRenderer extends TooltippedTableCellRenderer
-    {
-
-        @Override
-        protected void setValue(Object value)
-        {
-            if (value != null)
-            {
-                Email email = (Email) value;
-                super.setValue(email.getEmail());
-            }
-            else
-            {
-                super.setValue(value);
-            }
-        }
-    }
-    public class CategoryTableCellRenderer extends TooltippedTableCellRenderer
-    {
-
-        @Override
-        protected void setValue(Object value)
-        {
-            if (value != null)
-            {
-                Category category = (Category) value;
-                super.setValue(category.getCategory());
-            }
-            else
-            {
-                super.setValue(value);
-            }
-        }
-    }
     public class TooltippedTableCellRenderer extends DefaultTableCellRenderer
     {
         @Override

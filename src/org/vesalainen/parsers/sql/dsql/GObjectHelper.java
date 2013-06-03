@@ -20,6 +20,7 @@ package org.vesalainen.parsers.sql.dsql;
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Category;
 import com.google.appengine.api.datastore.Email;
+import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.datastore.PhoneNumber;
 import com.google.appengine.api.datastore.PostalAddress;
@@ -32,6 +33,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -40,6 +42,7 @@ import java.util.Map;
 public class GObjectHelper 
 {
     public static final Map<Class<?>,Class<?>> typeMap = new HashMap<>();
+    private static final DSQLParser locationParser = DSQLParser.getInstance();
     static
     {
         typeMap.put(Long.class, Long.class);
@@ -114,7 +117,15 @@ public class GObjectHelper
                                 }
                                 else
                                 {
-                                    return ob.toString();
+                                    if (ob instanceof GeoPt)
+                                    {
+                                        GeoPt p = (GeoPt) ob;
+                                        return toString(p);
+                                    }
+                                    else
+                                    {
+                                        return ob.toString();
+                                    }
                                 }
                             }
                         }
@@ -122,6 +133,28 @@ public class GObjectHelper
                 }
             }
         }
+    }
+    public static String toString(GeoPt pt)
+    {
+        float lat = pt.getLatitude();
+        char ns = lat > 0 ? 'N' : 'S';
+        lat = Math.abs(lat);
+        int lati = (int) lat;
+        lat = lat-lati;
+        float lon = pt.getLongitude();
+        char we = lon > 0 ? 'E' : 'W';
+        lon = Math.abs(lon);
+        int loni = (int) lon;
+        lon = lon-loni;
+        return String.format(Locale.US,
+                "%c %d\u00b0 %.3f', %c %d\u00b0 %.3f'", 
+                ns,
+                lati,
+                lat*60,
+                we,
+                loni,
+                lon*60
+                );
     }
     public static byte[] getBytes(Object ob)
     {
@@ -157,6 +190,14 @@ public class GObjectHelper
     }
     public static Object valueOf(Class<?> type, String... params)
     {
+        if (GeoPt.class == type)
+        {
+            if (params.length != 1)
+            {
+                throw new IllegalArgumentException(params+" not valid");
+            }
+            return locationParser.parseCoordinate(params[0], null);
+        }
         try
         {
             Class[] paramTypes = new Class[params.length];
