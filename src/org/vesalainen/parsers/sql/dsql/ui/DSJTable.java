@@ -382,6 +382,7 @@ public class DSJTable extends JTable
             TableModel model = table.getModel();
             for (int row : selectedRows)
             {
+                row = table.convertRowIndexToModel(row);
                 html.append("<tr>");
                 for (int col=0;col<columnCount;col++)
                 {
