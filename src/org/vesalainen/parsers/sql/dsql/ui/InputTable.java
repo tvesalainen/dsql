@@ -22,6 +22,7 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import org.vesalainen.parsers.sql.dsql.GObjectHelper;
 
 /**
  * @author Timo Vesalainen
@@ -44,7 +45,7 @@ public class InputTable extends DSJTable
     {
         Model model = (Model) dataModel;
         Row r = model.list.get(row);
-        return r.value;
+        return r.getValue();
     }
     @Override
     public TableCellRenderer getCellRenderer(int row, int column)
@@ -143,6 +144,10 @@ public class InputTable extends DSJTable
             this.value = value;
             this.type = type;
         }
-
+        
+        public Object getValue()
+        {
+            return GObjectHelper.convertType(type, value);
+        }
     }
 }

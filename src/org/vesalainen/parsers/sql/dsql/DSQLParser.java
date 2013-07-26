@@ -85,6 +85,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
     private static Map<String,Class<?>> googleTypeMap = new HashMap<>();
     static
     {
+        addGoogleType(Integer.class);
         addGoogleType(Long.class);
         addGoogleType(Double.class);
         addGoogleType(Boolean.class);
@@ -179,7 +180,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
         return Entity.KEY_RESERVED_PROPERTY;
     }
     
-    @Rule("identifier")
+    @Rule(value="identifier", doc="one of java/google type: integer, long, double, date, category, email, link, phonenumber, postaladdress, rating, blob, shortblob, text, key, user, geopt")
     protected Class<?> placeholderType(
             String typeName,
             @ParserContext(ParserConstants.INPUTREADER) InputReader reader

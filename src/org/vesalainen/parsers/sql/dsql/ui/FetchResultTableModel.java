@@ -100,7 +100,7 @@ public class FetchResultTableModel extends AbstractTableModel
     @Override
     public String getColumnName(int columnIndex)
     {
-        return fetchResult.getColumnName(columnIndex);
+        return fetchResult.getDisplayName(columnIndex);
     }
 
     @Override

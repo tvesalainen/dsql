@@ -210,4 +210,27 @@ public class GObjectHelper
             throw new IllegalArgumentException(type+" not valid");
         }
     }
+    public static Object convertType(Class<?> type, Object value)
+    {
+        if (GeoPt.class == type && (value instanceof String))
+        {
+            String str = (String) value;
+            return locationParser.parseCoordinate(str, null);
+        }
+        try
+        {
+            Class[] paramTypes = new Class[1];
+            paramTypes[0] = value.getClass();
+            Constructor constructor = type.getConstructor(paramTypes);
+            return constructor.newInstance(value);
+        }
+        catch (NoSuchMethodException ex)
+        {
+            return value;
+        }
+        catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException ex)
+        {
+            throw new IllegalArgumentException(type+" not valid");
+        }
+    }
 }
