@@ -56,13 +56,13 @@ public class Statistics
             {
                 indexes = datastore.getIndexes();
                 map.clear();
-                Query q0 = new Query("__Stat_Total__");
+                Query q0 = new Query("__Stat_Ns_Total__");
                 Entity total = datastore.prepare(q0).asSingleEntity();
                 if (total != null)
                 {
                     Date timestamp = (Date) total.getProperty("timestamp");
                     nextUpdate = timestamp.getTime() + DAY;
-                    Query q1 = new Query("__Stat_PropertyName_Kind__");
+                    Query q1 = new Query("__Stat_Ns_PropertyName_Kind__");
                     q1.addFilter("timestamp", Query.FilterOperator.EQUAL, timestamp);
                     PreparedQuery p1 = datastore.prepare(q1);
                     for (Entity prop : p1.asIterable())
