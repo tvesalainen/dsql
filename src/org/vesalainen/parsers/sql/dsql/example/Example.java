@@ -20,7 +20,6 @@ package org.vesalainen.parsers.sql.dsql.example;
 import com.google.appengine.api.datastore.Entity;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.dsql.DSQLEngine;
-import org.vesalainen.parsers.sql.dsql.ui.CredentialsDialog;
 
 /**
  *
