@@ -32,13 +32,13 @@ import org.vesalainen.parsers.sql.Statement;
  *
  * @author Timo Vesalainen
  */
-public class DSQLTest
+public class DSQLT
 {
-    ClassLoader classLoader = DSQLTest.class.getClassLoader();
-    static final String PACKAGE = DSQLTest.class.getPackage().getName().replace('.', '/')+"/";
+    ClassLoader classLoader = DSQLT.class.getClassLoader();
+    static final String PACKAGE = DSQLT.class.getPackage().getName().replace('.', '/')+"/";
     static Engine engine;
             
-    public DSQLTest()
+    public DSQLT()
     {
     }
 
