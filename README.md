@@ -3,12 +3,6 @@ dsql
 
 Datastore SQL. SQL engine for Google app engine datastore
 
-Depends on:
-https://github.com/tvesalainen/parsers.git
-https://github.com/tvesalainen/javalpg.git
-https://github.com/tvesalainen/lpg.git
-https://github.com/tvesalainen/bcc.git
-
 User interface class for testing: org.vesalainen.parsers.sql.dsql.ui.WorkBench
 
 Example of join:
