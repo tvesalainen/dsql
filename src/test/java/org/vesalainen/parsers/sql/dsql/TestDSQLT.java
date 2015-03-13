@@ -16,10 +16,16 @@
  */
 package org.vesalainen.parsers.sql.dsql;
 
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
+import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import java.io.InputStream;
+import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.vesalainen.parser.util.Input;
@@ -33,66 +39,86 @@ import org.vesalainen.parsers.sql.Statement;
  *
  * @author Timo Vesalainen
  */
-public class DSQLT
+public class TestDSQLT
 {
-    ClassLoader classLoader = DSQLT.class.getClassLoader();
-    static final String PACKAGE = DSQLT.class.getPackage().getName().replace('.', '/')+"/";
+
+    ClassLoader classLoader = TestDSQLT.class.getClassLoader();
+    static final String PACKAGE = TestDSQLT.class.getPackage().getName().replace('.', '/') + "/";
     static Engine engine;
-            
-    public DSQLT()
+
+    private final LocalServiceTestHelper helper = 
+            new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig()
+                    .setDefaultHighRepJobPolicyUnappliedJobPercentage(0));
+
+    public TestDSQLT()
     {
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception
+    @Before
+    public void setUp()
     {
-        engine = DSQLEngine.getInstance("<app>.appspot.com", "<namespace>", "<user email>", "<password>");
+        helper.setUp();
+        DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
+        engine = DSQLEngine.getInstance(ds);
+        InputStream is = classLoader.getResourceAsStream(PACKAGE + "populate1.sql");
+        assertNotNull(is);
+        FetchResult<Entity, Object> result = engine.execute(is);
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception
+    @After
+    public void tearDown()
     {
-        engine.exit();
+        engine = null;
+        helper.tearDown();
     }
 
     @Test
     public void test1()
     {
-        InputStream is = classLoader.getResourceAsStream(PACKAGE+"test1.sql");
+        InputStream is = classLoader.getResourceAsStream(PACKAGE + "test1.sql");
         assertNotNull(is);
         FetchResult<Entity, Object> result = engine.execute(is);
-        assertTrue(result.getRowCount() == 2);
         result.print(System.err);
+        assertEquals(1, result.getRowCount());
+        assertEquals(5, result.getColumnCount());
+        assertEquals("Timo", result.getValueAt(0, 0));
+        assertEquals("Vesalainen", result.getValueAt(0, 1));
+        assertEquals("Valpuri", result.getValueAt(0, 2));
+        assertEquals("PV", result.getValueAt(0, 3));
+        assertEquals(123L, result.getValueAt(0, 4));
         System.err.print("end");
     }
+
     @Test
     public void test2()
     {
-        InputStream is = classLoader.getResourceAsStream(PACKAGE+"test2.sql");
+        InputStream is = classLoader.getResourceAsStream(PACKAGE + "test2.sql");
         assertNotNull(is);
         FetchResult<Entity, Object> result = engine.execute(is);
         assertNotNull(result);
         result.print(System.err);
     }
+
     @Test
     public void test3()
     {
-        InputStream is = classLoader.getResourceAsStream(PACKAGE+"test3.sql");
+        InputStream is = classLoader.getResourceAsStream(PACKAGE + "test3.sql");
         assertNotNull(is);
         FetchResult<Entity, Object> result = engine.execute(is);
         assertNotNull(result);
         result.print(System.err);
     }
+
     @Test
     public void test4()
     {
-        InputStream is = classLoader.getResourceAsStream(PACKAGE+"test4.sql");
+        InputStream is = classLoader.getResourceAsStream(PACKAGE + "test4.sql");
         assertNotNull(is);
         FetchResult<Entity, Object> result = engine.execute(is);
         assertNotNull(result);
         result.print(System.err);
     }
-    
+
     @Test
     public void test5()
     {
@@ -100,7 +126,7 @@ public class DSQLT
         assertNotNull(result);
         result.print(System.err);
     }
-    
+
     @Test
     public void test6()
     {
@@ -108,26 +134,27 @@ public class DSQLT
         assertNotNull(result);
         result.print(System.err);
     }
-    
+
     @Test
     public void test7()
     {
-        InputStream is = classLoader.getResourceAsStream(PACKAGE+"test7.sql");
+        InputStream is = classLoader.getResourceAsStream(PACKAGE + "test7.sql");
         assertNotNull(is);
         FetchResult<Entity, Object> result = engine.execute(is);
         assertNotNull(result);
         result.print(System.err);
     }
+
     @Test
     public void test8()
     {
-        InputStream is = classLoader.getResourceAsStream(PACKAGE+"test8.sql");
+        InputStream is = classLoader.getResourceAsStream(PACKAGE + "test8.sql");
         assertNotNull(is);
         FetchResult<Entity, Object> result = engine.execute(is);
         assertNotNull(result);
         result.print(System.err);
     }
-    
+
     @Test
     public void test9()
     {
@@ -141,7 +168,7 @@ public class DSQLT
             assertEquals(7, ex.getStart());
         }
     }
-    
+
     @Test
     public void test10()
     {
@@ -155,7 +182,7 @@ public class DSQLT
             assertEquals(42, ex.getStart());
         }
     }
-    
+
     @Test
     public void test11()
     {
@@ -169,7 +196,7 @@ public class DSQLT
             assertEquals(39, ex.getStart());
         }
     }
-    
+
     @Test
     public void test12()
     {
@@ -178,6 +205,7 @@ public class DSQLT
         engine.execute("delete from test where name = 'nut';");
         engine.execute("INSERT INTO test2 (name, price, date) select name, price, date from test;");
     }
+
     @Test
     public void test14()
     {
@@ -203,7 +231,7 @@ public class DSQLT
             assertEquals(7, ex.getStart());
         }
     }
-    
+
     @Test
     public void test15()
     {
@@ -212,5 +240,5 @@ public class DSQLT
         FetchResult fr = statement.execute();
         fr.print(System.err);
     }
-    
+
 }
