@@ -49,6 +49,8 @@ import java.io.StringReader;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractCellEditor;
@@ -80,11 +82,12 @@ import org.vesalainen.parsers.sql.dsql.GObjectHelper;
  */
 public class DSJTable extends JTable
 {
+
     private static final Pattern NUMERIC = Pattern.compile("[0-9\\,\\.\\- ]+");
     private static final Magic magic = Magic.getInstance();
-    
+
     private Window owner;
-    
+
     public DSJTable(Object[][] rowData, Object[] columnNames)
     {
         super(rowData, columnNames);
@@ -138,11 +141,11 @@ public class DSJTable extends JTable
         ActionMap actionMap = getActionMap();
         Action copyAction = MyTransferHandler.getCopyAction();
         actionMap.put(I18n.get("COPY"), copyAction);
-        
+
         setAutoCreateRowSorter(true);
         setRowSelectionAllowed(true);
         setDragEnabled(true);
-        
+
         setDefaultEditor(ComboBoxModel.class, new ComboBoxModelCellEditor());
         setDefaultEditor(GeoPt.class, new GoogleObjectCellEditor(GeoPt.class));
         setDefaultEditor(ShortBlob.class, new ShortBlobCellEditor());
@@ -154,7 +157,7 @@ public class DSJTable extends JTable
         setDefaultEditor(Text.class, new TextCellEditor());
         setDefaultEditor(Email.class, new GoogleObjectCellEditor(Email.class));
         setDefaultEditor(Category.class, new GoogleObjectCellEditor(Category.class));
-        
+
         setDefaultRenderer(ComboBoxModel.class, new ComboBoxModelCellRenderer());
         setDefaultRenderer(GeoPt.class, new GoogleObjectTableCellRenderer());
         setDefaultRenderer(ShortBlob.class, new ShortBlobTableCellRenderer());
@@ -174,12 +177,12 @@ public class DSJTable extends JTable
         int totalColumnWidth = columnModel.getTotalColumnWidth();
         Graphics2D gg = (Graphics2D) g;
         FontRenderContext fontRenderContext = gg.getFontRenderContext();
-        for (int col=0;col<columnModel.getColumnCount();col++)
+        for (int col = 0; col < columnModel.getColumnCount(); col++)
         {
             TableColumn column = columnModel.getColumn(col);
             int max = 0;
             boolean numeric = true;
-            for (int row=0;row<getRowCount();row++)
+            for (int row = 0; row < getRowCount(); row++)
             {
                 Object value = dataModel.getValueAt(row, col);
                 String str = value != null ? getString(value) : "";
@@ -192,7 +195,7 @@ public class DSJTable extends JTable
                 Component component = cellRenderer.getTableCellRendererComponent(this, value, false, false, row, col);
                 Font font = component.getFont();
                 Rectangle2D stringBounds = font.getStringBounds(str, fontRenderContext);
-                max = Math.max(max, (int)(1.5*stringBounds.getWidth()));
+                max = Math.max(max, (int) (1.5 * stringBounds.getWidth()));
             }
             if (numeric)
             {
@@ -206,19 +209,19 @@ public class DSJTable extends JTable
         }
         int left = totalColumnWidth - columnModel.getTotalColumnWidth();
         int hiddenTotal = 0;
-        for (int col=0;col<columnModel.getColumnCount();col++)
+        for (int col = 0; col < columnModel.getColumnCount(); col++)
         {
             TableColumn column = columnModel.getColumn(col);
-            hiddenTotal += column.getMaxWidth()-column.getWidth();
+            hiddenTotal += column.getMaxWidth() - column.getWidth();
         }
-        float ratio = (float)left/(float)hiddenTotal;
-        for (int col=0;col<columnModel.getColumnCount();col++)
+        float ratio = (float) left / (float) hiddenTotal;
+        for (int col = 0; col < columnModel.getColumnCount(); col++)
         {
             TableColumn column = columnModel.getColumn(col);
-            int hidden = column.getMaxWidth()-column.getWidth();
+            int hidden = column.getMaxWidth() - column.getWidth();
             if (hidden > 0)
             {
-                column.setMinWidth(column.getWidth()+(int)(ratio*(float)hidden));
+                column.setMinWidth(column.getWidth() + (int) (ratio * (float) hidden));
             }
         }
         totalColumnWidth = columnModel.getTotalColumnWidth();
@@ -235,10 +238,12 @@ public class DSJTable extends JTable
         }
         return GObjectHelper.getString(value);
     }
-    
+
     private static class MyTransferHandler extends TransferHandler implements ClipboardOwner
     {
+
         private TransferHandler transferHandler;
+
         public MyTransferHandler(TransferHandler transferHandler)
         {
             this.transferHandler = transferHandler;
@@ -247,7 +252,7 @@ public class DSJTable extends JTable
         @Override
         protected Transferable createTransferable(JComponent c)
         {
-            return new MyTransferable((JTable)c);
+            return new MyTransferable((JTable) c);
         }
 
         @Override
@@ -327,34 +332,38 @@ public class DSJTable extends JTable
         public void lostOwnership(Clipboard clipboard, Transferable contents)
         {
         }
-        
+
     }
 
     private static class MyTransferable implements Transferable
     {
+
         private static DataFlavor[] flavors;
+
         static
         {
             try
             {
-                flavors = new DataFlavor[]{
-                new DataFlavor("text/html;class=java.lang.String"),
-                new DataFlavor("text/html;class=java.io.Reader"),
-                new DataFlavor("text/html;charset=utf-8;class=java.io.InputStream"),
-                new DataFlavor("text/plain;class=java.lang.String"),
-                new DataFlavor("text/plain;class=java.io.Reader"),
-                new DataFlavor("text/plain;charset=utf-8;class=java.io.InputStream"),
-                DataFlavor.stringFlavor
+                flavors = new DataFlavor[]
+                {
+                    new DataFlavor("text/html;class=java.lang.String"),
+                    new DataFlavor("text/html;class=java.io.Reader"),
+                    new DataFlavor("text/html;charset=utf-8;class=java.io.InputStream"),
+                    new DataFlavor("text/plain;class=java.lang.String"),
+                    new DataFlavor("text/plain;class=java.io.Reader"),
+                    new DataFlavor("text/plain;charset=utf-8;class=java.io.InputStream"),
+                    DataFlavor.stringFlavor
                 };
             }
             catch (ClassNotFoundException ex)
             {
                 throw new UnsupportedOperationException(ex);
             }
-                        
+
         }
         private final String htmlData;
         private final String plainData;
+
         public MyTransferable(JTable table)
         {
             StringBuilder html = new StringBuilder();
@@ -366,13 +375,13 @@ public class DSJTable extends JTable
             if (selectAll)
             {
                 html.append("<thead><tr>");
-                for (int ii=0;ii<columnCount;ii++)
+                for (int ii = 0; ii < columnCount; ii++)
                 {
                     String columnName = table.getColumnName(ii);
                     html.append("<th>");
                     html.append(columnName);
                     html.append("</th>");
-                    plain.append(columnName+"\t");
+                    plain.append(columnName + "\t");
                 }
                 html.append("</tr></thead>");
                 plain.append("\n");
@@ -384,7 +393,7 @@ public class DSJTable extends JTable
             {
                 row = table.convertRowIndexToModel(row);
                 html.append("<tr>");
-                for (int col=0;col<columnCount;col++)
+                for (int col = 0; col < columnCount; col++)
                 {
                     html.append("<td>");
                     Object value = model.getValueAt(row, col);
@@ -434,7 +443,7 @@ public class DSJTable extends JTable
             {
                 if (flavor.getMimeType().startsWith("text/plain"))
                 {
-                        data = plainData;
+                    data = plainData;
                 }
                 else
                 {
@@ -463,8 +472,9 @@ public class DSJTable extends JTable
 
     public class ComboBoxModelCellEditor extends AbstractCellEditor implements TableCellEditor
     {
+
         private JComboBox combo = new JComboBox();
-        
+
         @Override
         public Object getCellEditorValue()
         {
@@ -485,10 +495,12 @@ public class DSJTable extends JTable
             }
             return combo;
         }
-        
+
     }
+
     public class GoogleObjectCellEditor extends AbstractCellEditor implements TableCellEditor
     {
+
         private Class<?> type;
         private JTextField editor = new JTextField();
 
@@ -524,10 +536,12 @@ public class DSJTable extends JTable
                 return null;
             }
         }
-        
+
     }
+
     public class ShortBlobCellEditor extends BlobCellEditor
     {
+
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
         {
@@ -560,14 +574,16 @@ public class DSJTable extends JTable
         }
 
     }
+
     public class BlobCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener
     {
+
         protected static final String EDIT = "edit";
         protected JButton button = new JButton();
         protected BytesDialog dialog = new BytesDialog(owner);
         protected MagicResult guess;
         protected String columnName;
-        
+
         public BlobCellEditor()
         {
             button.setActionCommand(EDIT);
@@ -617,10 +633,12 @@ public class DSJTable extends JTable
                 fireEditingStopped();
             }
         }
-        
+
     }
+
     public class RatingCellEditor extends AbstractCellEditor implements TableCellEditor
     {
+
         private JSpinner editor;
 
         public RatingCellEditor()
@@ -647,12 +665,14 @@ public class DSJTable extends JTable
         @Override
         public Object getCellEditorValue()
         {
-            return new Rating((Integer)editor.getValue());
+            return new Rating((Integer) editor.getValue());
         }
-        
+
     }
+
     public class TextCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener
     {
+
         private static final String EDIT = "edit";
         private JButton button = new JButton();
         private TextDialog dialog = new TextDialog(owner);
@@ -697,10 +717,12 @@ public class DSJTable extends JTable
                 fireEditingStopped();
             }
         }
-        
+
     }
+
     public class ComboBoxModelCellRenderer extends TooltippedTableCellRenderer
     {
+
         @Override
         protected void setValue(Object value)
         {
@@ -715,6 +737,7 @@ public class DSJTable extends JTable
             }
         }
     }
+
     public class GoogleObjectTableCellRenderer extends TooltippedTableCellRenderer
     {
 
@@ -741,7 +764,15 @@ public class DSJTable extends JTable
             if (value != null)
             {
                 Blob blob = (Blob) value;
-                MagicResult guess = magic.guess(blob.getBytes());
+                MagicResult guess;
+                try
+                {
+                    guess = magic.guess(blob.getBytes());
+                }
+                catch (IOException ex)
+                {
+                    throw new IllegalArgumentException(ex);
+                }
                 if (guess != null)
                 {
                     super.setValue(guess.getDescription());
@@ -767,7 +798,15 @@ public class DSJTable extends JTable
             if (value != null)
             {
                 ShortBlob blob = (ShortBlob) value;
-                MagicResult guess = magic.guess(blob.getBytes());
+                MagicResult guess;
+                try
+                {
+                    guess = magic.guess(blob.getBytes());
+                }
+                catch (IOException ex)
+                {
+                    throw new IllegalArgumentException(ex);
+                }
                 if (guess != null)
                 {
                     super.setValue(guess.getDescription());
@@ -786,6 +825,7 @@ public class DSJTable extends JTable
 
     public class TooltippedTableCellRenderer extends DefaultTableCellRenderer
     {
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
         {

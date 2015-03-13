@@ -30,6 +30,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.StyledEditorKit.ForegroundAction;
+import org.vesalainen.parser.util.Input;
 import org.vesalainen.parser.util.InputReader;
 import org.vesalainen.parser.util.OffsetLocatorException;
 import org.vesalainen.parsers.sql.Engine;
@@ -94,7 +95,7 @@ public class DSqlParseAction extends AbstractAction implements DocumentListener,
             {
                 if (reader == null)
                 {
-                    reader = new InputReader(sql);
+                    reader = Input.getInstance(sql);
                 }
                 else
                 {

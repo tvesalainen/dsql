@@ -19,13 +19,14 @@ package org.vesalainen.parsers.sql.dsql;
 import com.google.appengine.api.datastore.Entity;
 import java.io.InputStream;
 import org.junit.AfterClass;
-import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
+import org.junit.Test;
+import org.vesalainen.parser.util.Input;
 import org.vesalainen.parser.util.InputReader;
+import org.vesalainen.parser.util.OffsetLocatorException;
 import org.vesalainen.parsers.sql.Engine;
 import org.vesalainen.parsers.sql.FetchResult;
-import org.vesalainen.parser.util.OffsetLocatorException;
 import org.vesalainen.parsers.sql.Statement;
 
 /**
@@ -183,7 +184,7 @@ public class DSQLT
         InputReader reader = null;
         try
         {
-            reader = new InputReader("select company.name, from company order by emp.name;");
+            reader = Input.getInstance("select company.name, from company order by emp.name;");
             engine.check(reader);
             fail();
         }

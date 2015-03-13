@@ -28,6 +28,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -300,7 +302,14 @@ public class BytesDialog extends CancelDialog
     public void setBytes(byte[] bytes)
     {
         this.bytes = bytes;
-        guess = magic.guess(bytes);
+        try
+        {
+            guess = magic.guess(bytes);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     public String getContentDescription()

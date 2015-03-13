@@ -22,6 +22,8 @@ import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.Index.IndexState;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,7 +35,7 @@ import org.vesalainen.parsers.sql.TableMetadata;
 /**
  * @author Timo Vesalainen
  */
-public class Statistics
+public final class Statistics
 {
     private static final long DAY = 24*60*60*1000;
     
@@ -41,6 +43,7 @@ public class Statistics
     private DatastoreService datastore;
     private final Map<String, TableMetadata> map = new TreeMap<>();
     private Map<Index, IndexState> indexes;
+    private boolean hasNamespaces = true;
 
     public Statistics(DatastoreService datastore)
     {
@@ -58,12 +61,28 @@ public class Statistics
                 map.clear();
                 Query q0 = new Query("__Stat_Ns_Total__");
                 Entity total = datastore.prepare(q0).asSingleEntity();
+                if (total == null)
+                {
+                    hasNamespaces = false;
+                    q0 = new Query("__Stat_Total__");
+                    total = datastore.prepare(q0).asSingleEntity();
+                }
                 if (total != null)
                 {
                     Date timestamp = (Date) total.getProperty("timestamp");
                     nextUpdate = timestamp.getTime() + DAY;
-                    Query q1 = new Query("__Stat_Ns_PropertyName_Kind__");
-                    q1.addFilter("timestamp", Query.FilterOperator.EQUAL, timestamp);
+                    String statProperty;
+                    if (hasNamespaces)
+                    {
+                        statProperty = "__Stat_Ns_PropertyName_Kind__";
+                    }
+                    else
+                    {
+                        statProperty = "__Stat_PropertyName_Kind__";
+                    }
+                    Query q1 = new Query(statProperty);
+                    Filter filter = new FilterPredicate("timestamp", Query.FilterOperator.EQUAL, timestamp);
+                    q1.setFilter(filter);
                     PreparedQuery p1 = datastore.prepare(q1);
                     for (Entity prop : p1.asIterable())
                     {
