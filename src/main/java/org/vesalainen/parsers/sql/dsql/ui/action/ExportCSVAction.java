@@ -18,7 +18,6 @@
 package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Text;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -42,16 +41,16 @@ import org.vesalainen.parsers.sql.dsql.ui.I18n;
 /**
  * @author Timo Vesalainen
  */
-public class ExportCVSAction extends AbstractAction implements PropertyChangeListener, VetoableChangeListener
+public class ExportCSVAction extends AbstractAction implements PropertyChangeListener, VetoableChangeListener
 {
     private FetchResultTableModel model;
     private File currentDirectory;
     private String name = "file";
 
-    public ExportCVSAction()
+    public ExportCSVAction()
     {
-        super(I18n.get("EXPORT CVS"));
-        putValue(Action.SHORT_DESCRIPTION, I18n.get("EXPORT CVS TOOLTIP"));
+        super(I18n.get("EXPORT CSV"));
+        putValue(Action.SHORT_DESCRIPTION, I18n.get("EXPORT CSV TOOLTIP"));
         setEnabled(false);
     }
 
