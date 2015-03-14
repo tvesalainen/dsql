@@ -68,7 +68,7 @@ import org.vesalainen.parsers.sql.dsql.DSQLEngine;
 import org.vesalainen.parsers.sql.dsql.ui.action.AboutAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.DSqlParseAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.ExecuteAction;
-import org.vesalainen.parsers.sql.dsql.ui.action.ExportCVSAction;
+import org.vesalainen.parsers.sql.dsql.ui.action.ExportCSVAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.FetchResultHandler;
 import org.vesalainen.parsers.sql.dsql.ui.action.OpenSQLFileAction;
 import org.vesalainen.parsers.sql.dsql.ui.action.PersistenceHandler;
@@ -84,7 +84,7 @@ import org.vesalainen.parsers.sql.dsql.ui.plugin.MailPlugin;
  */
 public class WorkBench extends WindowAdapter implements VetoableChangeListener
 {
-    static final String TITLE = I18n.get("DATASTORE QUERY 1.0");
+    static final String TITLE = I18n.get("DATASTORE QUERY VERSION");
     static final String SqlProperty = WorkBench.class.getName()+".sql";
     final static Cursor busyCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
     final static Cursor defaultCursor = Cursor.getDefaultCursor();
@@ -119,7 +119,7 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
     private JButton printButton;
     private JMenu helpMenu;
     private String title;
-    private ExportCVSAction exportCVSAction;
+    private ExportCSVAction exportCSVAction;
     private boolean embed;
     private boolean readonly;
     private String savedSql;
@@ -305,10 +305,10 @@ public class WorkBench extends WindowAdapter implements VetoableChangeListener
         helpMenu.add(new DSQLHelpAction());
         helpMenu.add(new AboutAction());
         
-        exportCVSAction = new ExportCVSAction();
-        fetchResultHandler.addPropertyChangeListener(exportCVSAction);
-        persistenceHandler.addVetoableChangeListener(exportCVSAction);
-        fileMenu.add(exportCVSAction);
+        exportCSVAction = new ExportCSVAction();
+        fetchResultHandler.addPropertyChangeListener(exportCSVAction);
+        persistenceHandler.addVetoableChangeListener(exportCSVAction);
+        fileMenu.add(exportCSVAction);
         
         frame.pack();
         frame.setLocationByPlatform(true);
