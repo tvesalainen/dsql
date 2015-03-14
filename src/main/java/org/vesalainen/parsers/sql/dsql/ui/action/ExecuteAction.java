@@ -25,11 +25,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.KeyStroke;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.FetchResultComboBoxModel;
 import org.vesalainen.parsers.sql.Placeholder;
@@ -63,8 +63,29 @@ public class ExecuteAction extends AbstractAutoAction implements PropertyChangeL
     {
         if (enterPlaceHolders(statement))
         {
-            FetchResult fetchResult = statement.execute();
-            firePropertyChange(PropertyName, null, fetchResult);
+            final ExecuteAction act = this;
+            SwingWorker<Void, Void> task = new SwingWorker<Void, Void>()
+            {
+                private FetchResult fetchResult;
+                @Override
+                protected Void doInBackground() throws Exception
+                {
+                    ProgressMonitor mon = new ProgressMonitor(frame, "Exec", "", 0, 100);
+                    mon.setNote("");
+                    statement.getEngine().createProgressMonitor(mon);
+                    fetchResult = statement.execute();
+                    mon.close();
+                    return null;
+                }
+
+                @Override
+                protected void done()
+                {
+                    act.firePropertyChange(PropertyName, null, fetchResult);
+                }
+                
+            };
+            task.execute();
         }
     }
 

@@ -39,6 +39,7 @@ import java.util.Date;
 import java.util.List;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
+import javax.swing.ProgressMonitor;
 import org.vesalainen.parsers.sql.ColumnMetadata;
 import org.vesalainen.parsers.sql.ColumnReference;
 import org.vesalainen.parsers.sql.Engine;
@@ -61,6 +62,7 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     private static Statistics statistics;
     private String email;
     private String namespace;
+    private ProgressMonitor progressMonitor;
 
     private DSQLEngine(DSProxyInterface proxy)
     {
@@ -428,6 +430,49 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
     public List<Entity> getAll(String kind)
     {
         return proxy.getAll(kind);
+    }
+
+    @Override
+    public void createProgressMonitor(Object ob)
+    {
+        progressMonitor = (ProgressMonitor) ob;
+    }
+
+    @Override
+    public void destroyProgressMonitor()
+    {
+        progressMonitor = null;
+    }
+
+    @Override
+    protected void startProgressMonitor(int min, int max)
+    {
+        if (progressMonitor != null)
+        {
+            System.err.println("startProgressMonitor("+min+", "+max+")");
+            progressMonitor.setMinimum(min);
+            progressMonitor.setMaximum(max);
+        }
+    }
+
+    @Override
+    protected void progressNote(String note)
+    {
+        if (progressMonitor != null)
+        {
+            System.err.println("progressNote("+note+")");
+            progressMonitor.setNote(note);
+        }
+    }
+
+    @Override
+    protected void updateProgressMonitor(int now)
+    {
+        if (progressMonitor != null)
+        {
+            System.err.println("updateProgressMonitor("+now+")");
+            progressMonitor.setProgress(now);
+        }
     }
 
 }

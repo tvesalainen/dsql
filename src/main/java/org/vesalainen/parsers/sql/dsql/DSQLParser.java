@@ -55,6 +55,7 @@ import org.vesalainen.parser.annotation.Rule;
 import org.vesalainen.parser.annotation.Rules;
 import org.vesalainen.parser.annotation.Terminal;
 import org.vesalainen.parser.util.InputReader;
+import org.vesalainen.parser.util.OffsetLocatorException;
 import org.vesalainen.parsers.sql.Relation;
 import org.vesalainen.parsers.sql.ColumnReferenceImpl;
 import org.vesalainen.parsers.sql.Condition;
@@ -120,7 +121,7 @@ public abstract class DSQLParser extends SqlParser<Entity,Object> implements Par
      * @see <a href="doc-files/DSQLParser-coordinate.html#BNF">BNF Syntax for Geological Coordinate</a>
      */
     @ParseMethod(start="coordinate", whiteSpace ="whiteSpace")
-    public abstract GeoPt parseCoordinate(String text, @ParserContext("locator") SQLLocator locator);
+    public abstract GeoPt parseCoordinate(String text, @ParserContext("locator") SQLLocator locator) throws OffsetLocatorException;
     
     @Rule(left="comparisonPredicate", value="rowValuePredicant is key of identifier")
     protected Condition comparisonKeyOf(

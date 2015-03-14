@@ -22,15 +22,18 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import java.io.InputStream;
+import java.util.EnumSet;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.vesalainen.bcc.model.Typ;
+import static org.vesalainen.parser.ParserFeature.*;
+import org.vesalainen.parser.ParserOffsetLocator;
 import org.vesalainen.parser.util.Input;
 import org.vesalainen.parser.util.InputReader;
 import org.vesalainen.parser.util.OffsetLocatorException;
+import org.vesalainen.parsers.sql.ColumnReferenceImpl;
 import org.vesalainen.parsers.sql.Engine;
 import org.vesalainen.parsers.sql.FetchResult;
 import org.vesalainen.parsers.sql.Statement;
@@ -172,6 +175,11 @@ public class TestDSQLT
     @Test
     public void test10()
     {
+        assertTrue(Typ.isAssignable(
+                Typ.getTypeFor(ColumnReferenceImpl.class), 
+                Typ.getTypeFor(ParserOffsetLocator.class)
+        ));
+
         try
         {
             engine.execute("select company.name from company order by emp.name;");
@@ -179,6 +187,7 @@ public class TestDSQLT
         }
         catch (OffsetLocatorException ex)
         {
+            ex.printStackTrace();
             assertEquals(42, ex.getStart());
         }
     }
@@ -212,8 +221,8 @@ public class TestDSQLT
         InputReader reader = null;
         try
         {
-            reader = Input.getInstance("select company.name, from company order by emp.name;");
-            engine.check(reader);
+            reader = Input.getInstance("select company.name, from company order by emp.name;", EnumSet.of(UseOffsetLocatorException));
+            engine.check("select company.name, from company order by emp.name;");
             fail();
         }
         catch (OffsetLocatorException ex)

@@ -19,6 +19,7 @@ package org.vesalainen.parsers.sql.dsql.ui.action;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.util.EnumSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JOptionPane;
@@ -30,6 +31,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.StyledEditorKit.ForegroundAction;
+import static org.vesalainen.parser.ParserFeature.*;
 import org.vesalainen.parser.util.Input;
 import org.vesalainen.parser.util.InputReader;
 import org.vesalainen.parser.util.OffsetLocatorException;
@@ -95,7 +97,7 @@ public class DSqlParseAction extends AbstractAction implements DocumentListener,
             {
                 if (reader == null)
                 {
-                    reader = Input.getInstance(sql);
+                    reader = Input.getInstance(sql, EnumSet.of(UseOffsetLocatorException));
                 }
                 else
                 {
