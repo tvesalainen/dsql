@@ -70,7 +70,7 @@ public class ExecuteAction extends AbstractAutoAction implements PropertyChangeL
                 @Override
                 protected Void doInBackground() throws Exception
                 {
-                    ProgressMonitor mon = new ProgressMonitor(frame, "Exec", "", 0, 100);
+                    ProgressMonitor mon = new ProgressMonitor(frame, I18n.get("WAIT"), "", 0, 100);
                     mon.setNote("");
                     statement.getEngine().createProgressMonitor(mon);
                     fetchResult = statement.execute();
