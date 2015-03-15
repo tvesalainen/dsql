@@ -3,12 +3,12 @@
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <version>9</version>
     </parent>    
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.vesalainen.dsql</groupId>
     <artifactId>dsql</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
 
     <name>Datastore SQL Engine</name>
