@@ -38,8 +38,7 @@ public class Example
             DSQLEngine engine = DSQLEngine.getProxyInstance(
                     "app.appspot.com", 
                     "namespace",
-                    "user@gmail.com", 
-                    "password"
+                    "user@gmail.com" 
             );
             FetchResult<Entity, Object> res = engine.execute("select Tunnus from Laiturit;");
             for (int row=0;row<res.getRowCount();row++)

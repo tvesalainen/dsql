@@ -90,9 +90,9 @@ public class DSQLEngine extends Engine<Entity, Object> implements DSConstants, D
         DatastoreEngine dse = new DatastoreEngine(datastore);
         return new DSQLEngine(dse);
     }
-    public static DSQLEngine getProxyInstance(String server, String namespace, String email, String password) throws IOException, InterruptedException
+    public static DSQLEngine getProxyInstance(String server, String namespace, String email) throws IOException, InterruptedException
     {
-        DatastoreEngineProxy dep = new DatastoreEngineProxy(server, namespace, email, password);
+        DatastoreEngineProxy dep = new DatastoreEngineProxy(server, namespace, email);
         dep.start();
         DSQLEngine engine = new DSQLEngine(dep.getProxy());
         engine.email = email;
